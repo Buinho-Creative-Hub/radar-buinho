@@ -1,5 +1,5 @@
 /* Offline cache: everything the app needs is precached on first visit. */
-var CACHE = 'vulca-clinic-v3';
+var CACHE = 'vulca-clinic-v4';
 var FILES = ['./', 'index.html', 'styles.css', 'app.js', 'data.js', 'logo.svg', 'icon.svg', 'manifest.webmanifest'];
 var CDN = ['https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js',
   'https://cdn.jsdelivr.net/npm/@expo-google-fonts/asap@0.4.3/400Regular/Asap_400Regular.ttf',
@@ -13,7 +13,8 @@ self.addEventListener('activate', function (e) {
 /* Network first for data/app files (so updates arrive), cache fallback offline. */
 self.addEventListener('fetch', function (e) {
   if (e.request.method !== 'GET') return;
-  e.respondWith(fetch(e.request).then(function (r) {
+  var same = new URL(e.request.url).origin === location.origin;
+  e.respondWith((same ? fetch(e.request, { cache: 'no-cache' }) : fetch(e.request)).then(function (r) {
     var copy = r.clone(); var u = new URL(e.request.url); if (r.ok && (u.origin === location.origin || u.host === 'cdn.jsdelivr.net' || u.host.indexOf('fonts.g') === 0)) caches.open(CACHE).then(function (c) { c.put(e.request, copy); });
     return r;
   }).catch(function () { return caches.match(e.request, { ignoreSearch: true }).then(function (m) { return m || caches.match('index.html'); }); }));
