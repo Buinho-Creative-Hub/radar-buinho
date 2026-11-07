@@ -6,9 +6,9 @@
   var KEY = 'vulca-clinic-v2';
 
   /* ---------- state ---------- */
-  function blank() { return { lab: { code: '', name: '', country: '', exp: '', domains: [], needs: [], vision: '', themes: ['', '', ''], cap: {}, target: '' }, fav: [], path: [], questions: [], told: {}, road: { ms: [], ready: {}, review: '', init: false } }; }
+  function blank() { return { lab: { code: '', name: '', country: '', exp: '', domains: [], needs: [], vision: '', themes: ['', '', ''], cap: {}, targets: [] }, fav: [], path: [], questions: [], told: {}, road: { ms: [], ready: {}, review: '', init: false } }; }
   var S = load() || blank();
-  (function () { if (!S.told) S.told = {}; if (!S.road) S.road = blank().road; var b = blank().lab; Object.keys(b).forEach(function (k) { if (S.lab[k] == null) S.lab[k] = b[k]; }); S.path.forEach(function (st) { if (!st.themes) st.themes = []; if (!st.prio) st.prio = []; if (st.how == null) st.how = ''; if (st.peer == null) st.peer = ''; }); })();
+  (function () { if (!S.told) S.told = {}; if (S.lab && !S.lab.targets) S.lab.targets = S.lab.target ? [S.lab.target] : []; if (!S.road) S.road = blank().road; var b = blank().lab; Object.keys(b).forEach(function (k) { if (S.lab[k] == null) S.lab[k] = b[k]; }); S.path.forEach(function (st) { if (!st.themes) st.themes = []; if (!st.prio) st.prio = []; if (st.how == null) st.how = ''; if (st.peer == null) st.peer = ''; }); })();
   function load() { try { var s = JSON.parse(localStorage.getItem(KEY)); return s && s.fav ? s : null; } catch (e) { return null; } }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 
@@ -88,7 +88,7 @@
       '<ol class="steps">' +
       '<li><div><b>Where you stand</b> and what your lab needs. <span class="muted">Just below.</span></div></li>' +
       '<li><div><b>Where you want to be</b> in 2030. <span class="muted">Your strategy, in one sentence.</span></div></li>' +
-      '<li><div><b>What fits:</b> star projects and put up to 3 in order. <span class="muted">Your path.</span></div></li>' +
+      '<li><div><b>Choose your reference projects:</b> star the ones that interest you, then put up to 3 in order. <span class="muted">Your path.</span></div></li>' +
       '<li><div><b>Your roadmap:</b> what your lab must build to get there. <span class="muted">Ask Carlos and the other labs as you go.</span></div></li>' +
       '<li><div><b>Your guidelines:</b> download them and keep them for your next applications.</div></li>' +
       '</ol>' +
@@ -105,15 +105,15 @@
       (D.capacities || []).map(function (c) { var v = l.cap[c.id] || 0; return '<div class="caprow"><span>' + esc(c.label) + '</span><span class="chips" data-cap="' + c.id + '">' + [1, 2, 3].map(function (n) { return '<button class="chip dot' + (n <= v ? ' on' : '') + '" data-v="' + n + '" aria-pressed="' + (n === v) + '" aria-label="' + esc(c.label) + ' ' + n + '">' + n + '</button>'; }).join('') + '</span></div>'; }).join('') +
       '<h2 class="h2">2 \u00b7 Where you want to be</h2><p class="muted">EU projects should serve your lab\'s plans, not the other way round.</p>' +
       '<label class="f" for="vision">Your lab in 2030, in one sentence</label><input type="text" id="vision" maxlength="160" placeholder="What will you be known for, and for whom?" value="' + esc(l.vision) + '">' +
-      '<div class="f lab" style="margin-top:12px">Your role in EU projects by 2030</div><div class="chips" data-group="target">' + (D.targets || []).map(function (t) { return '<button class="chip" data-v="' + t.id + '" aria-pressed="' + (l.target === t.id) + '">' + esc(t.label) + '</button>'; }).join('') + '</div>' +
+      '<div class="f lab" style="margin-top:12px">Your role in EU projects by 2030 <span class="muted" style="text-transform:none;letter-spacing:0">(one or more)</span></div><div class="chips" data-group="target">' + (D.targets || []).map(function (t) { return '<button class="chip" data-v="' + t.id + '" aria-pressed="' + (l.targets.indexOf(t.id) > -1) + '">' + esc(t.label) + '</button>'; }).join('') + '</div>' +
       '<div class="f lab" style="margin-top:12px">What your lab is about (up to 3)</div><p class="muted small">The few things you keep working on, project after project, whatever the funding. Each EU project should feed at least one.</p>' + [0, 1, 2].map(function (k) { return '<input type="text" id="theme' + k + '" maxlength="40" placeholder="' + ['e.g. Repair', 'e.g. Citizen science', 'e.g. Young people and technology'][k] + '" value="' + esc(l.themes[k] || '') + '" style="margin-bottom:8px">'; }).join('') +
-      '<div class="row" style="margin-top:18px"><a class="btn blue" href="#/cards">3 \u00b7 See what fits</a></div><p class="muted" style="margin-top:10px">Background, when you need it: <a href="#/actions">the 2028 map</a> \u00b7 <a href="#/priorities">priorities in plain words</a></p>', 'home');
+      '<div class="row" style="margin-top:18px"><a class="btn blue" href="#/cards">3 \u00b7 Choose your reference projects</a></div><p class="muted" style="margin-top:10px">Background, when you need it: <a href="#/actions">the 2028 map</a> \u00b7 <a href="#/priorities">priorities in plain words</a></p>', 'home');
     ['name', 'country'].forEach(function (k) { document.getElementById(k).addEventListener('input', function (e) { S.lab[k] = e.target.value; save(); }); });
     chipGroup('exp', function (v) { S.lab.exp = S.lab.exp === v ? '' : v; save(); home(); });
     document.getElementById('vision').addEventListener('input', function (e) { S.lab.vision = e.target.value; save(); });
     [0, 1, 2].forEach(function (k) { document.getElementById('theme' + k).addEventListener('input', function (e) { S.lab.themes[k] = e.target.value; save(); }); });
     chipGroup('needs', function (v, b) { var i = S.lab.needs.indexOf(v); if (i > -1) S.lab.needs.splice(i, 1); else if (S.lab.needs.length < 3) S.lab.needs.push(v); else return; b.setAttribute('aria-pressed', i < 0); save(); });
-    chipGroup('target', function (v) { S.lab.target = S.lab.target === v ? '' : v; save(); app.querySelectorAll('[data-group="target"] button').forEach(function (x) { x.setAttribute('aria-pressed', x.dataset.v === S.lab.target); }); });
+    chipGroup('target', function (v, b) { var i = S.lab.targets.indexOf(v); if (i > -1) S.lab.targets.splice(i, 1); else S.lab.targets.push(v); b.setAttribute('aria-pressed', i < 0); save(); });
     app.querySelectorAll('[data-cap]').forEach(function (box) { box.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; var c = box.dataset.cap, n = +b.dataset.v; S.lab.cap[c] = S.lab.cap[c] === n ? 0 : n; save(); box.querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', +x.dataset.v <= S.lab.cap[c]); x.setAttribute('aria-pressed', +x.dataset.v === S.lab.cap[c]); }); }); });
     chipGroup('domains', function (v, b) { var i = S.lab.domains.indexOf(v); if (i > -1) S.lab.domains.splice(i, 1); else S.lab.domains.push(v); b.setAttribute('aria-pressed', i < 0); save(); });
   }
@@ -147,7 +147,7 @@
     render(
       '<div class="kicker">Buinho · 2016–2028</div><h1 class="h1">The projects</h1>' +
       '<div class="chips" data-group="src">' + [['buinho', 'Buinho projects'], ['ext', 'Other labs in Europe']].map(function (o) { return '<button class="chip" data-v="' + o[0] + '" aria-pressed="' + (F.src === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</div>' +
-      '<p class="lead">Star 3 to 5 projects that look like your next step. Colour is the kind of action; the badge says how well it fits where you are.</p>' +
+      '<p class="lead">All the projects are here. Star 3 to 5 that look like your next step: they become your reference projects. The ones that fit where you stand come first, with a badge.</p>' +
       '<div class="chips" data-group="dom">' + doms.map(function (d) { return '<button class="chip" data-v="' + esc(d) + '" aria-pressed="' + (F.dom === d) + '">' + esc(d) + '</button>'; }).join('') + '</div>' +
       '<div class="chips" data-group="fam">' + fams.map(function (f) { return '<button class="chip f-' + f + '" data-v="' + f + '" aria-pressed="' + (F.fam === f) + '">' + esc(famLabel(f)) + '</button>'; }).join('') +
       '<button class="chip" data-v="mine" aria-pressed="' + F.mine + '">★ My cards (' + S.fav.length + ')</button></div>' +
@@ -463,7 +463,7 @@
     font(false, 14); doc.text(doc.splitTextToSize((S.lab.name || 'Your lab') + (S.lab.country ? ' · ' + S.lab.country : '') + '', CW), M, 96);
     font(false, 10); doc.text(new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }), M, 104);
     if (S.lab.vision) { font(true, 12); doc.text(doc.splitTextToSize('\u201c' + S.lab.vision + '\u201d', CW), M, 118); }
-    if (S.lab.target) { font(false, 10.5); doc.text('By 2030: ' + ((byId(D.targets, S.lab.target) || {}).label || ''), M, 136); }
+    if (S.lab.targets.length) { font(false, 10.5); doc.text(doc.splitTextToSize('By 2030: ' + targetsTxt(), CW), M, 136); }
     /* path diagram */
     var n = Math.max(st.length, 1), gx0 = M + 14, gx1 = W - M - 14, gy = 168, stepW = n > 1 ? (gx1 - gx0) / (n - 1) : 0;
     doc.setLineWidth(1.2); stroke('#ffffff');
@@ -484,7 +484,7 @@
     roadInit();
     var RM = S.road, GC = st.map(function (s, i) { return goCheck(i); });
     doc.addPage(); page++; band(BLUE, 'Your roadmap', 'From where you stand to your 2030', 'What your lab must build, by when, and what builds it');
-    box('Where you want to be', [(S.lab.vision ? '\u201c' + S.lab.vision + '\u201d' : 'No 2030 sentence yet: what will your lab be known for, and for whom?')].concat(S.lab.target ? ['Your role by 2030: ' + (byId(D.targets, S.lab.target) || {}).label] : []), { rule: INK, bg: WALL, size: 11 });
+    box('Where you want to be', [(S.lab.vision ? '\u201c' + S.lab.vision + '\u201d' : 'No 2030 sentence yet: what will your lab be known for, and for whom?')].concat(S.lab.targets.length ? ['Your role by 2030: ' + targetsTxt()] : []), { rule: INK, bg: WALL, size: 11 });
     label('Where you stand today');
     var capList = D.capacities || [], cw2 = CW / 3;
     capList.forEach(function (c, k) { var cx = M + (k % 3) * cw2, cy = y + Math.floor(k / 3) * 9, v = S.lab.cap[c.id] || 0; font(false, 8.5); color(INK); doc.text(c.label, cx, cy); for (var n = 1; n <= 3; n++) { if (n <= v) { fill(BLUE); doc.circle(cx + cw2 - 20 + n * 4.5, cy - 1.2, 1.5, 'F'); } else { stroke(G2); doc.setLineWidth(0.4); doc.circle(cx + cw2 - 20 + n * 4.5, cy - 1.2, 1.5, 'S'); } } });
@@ -523,9 +523,9 @@
     var seenM = {}; st.forEach(function (s, i) { var a = ps[i].action, mo = (D.money || {})[a]; if (mo && !seenM[a]) { seenM[a] = 1; var ac = action(a); GL.push(['Know what a project like reference ' + (i + 1) + ' pays (' + (ac ? ac.short : a) + '): ' + mo.model, mo.lines[0] + ' Plan your budget before you write.']); } });
     var prep = []; GC.forEach(function (g, i) { if (g.lacks.length) prep.push('for a project like reference ' + (i + 1) + ', build ' + g.lacks.map(capLabel).join(' and ').toLowerCase()); });
     GL.push(['Go only when: a partner you trust is on board three months before the deadline, someone has the time to write, and you can advance the costs.', prep.length ? 'Before you go: ' + prep.join('; ') + '.' : 'Check it again for each call.']);
-    if (S.lab.target === 'coordinator') GL.push(['Coordinate a small project before a large one.', 'Large partnerships and Creative Europe ask for a track record and financial capacity; a small-scale partnership builds both.']);
-    else if (S.lab.target === 'accredited') GL.push(['Start the record for an accreditation now.', 'Accreditation asks for experience in the field and a plan for several years: short mobility projects are the usual way in.']);
-    else if (S.lab.target === 'partner') GL.push(['Join good projects as a partner, and lead one clear part of the work.', 'Ask the coordinator which part you lead, what money comes to you, and what stays in your lab afterwards.']);
+    if (S.lab.targets.indexOf('coordinator') > -1) GL.push(['Coordinate a small project before a large one.', 'Large partnerships and Creative Europe ask for a track record and financial capacity; a small-scale partnership builds both.']);
+    if (S.lab.targets.indexOf('accredited') > -1) GL.push(['Start the record for an accreditation now.', 'Accreditation asks for experience in the field and a plan for several years: short mobility projects are the usual way in.']);
+    if (S.lab.targets.indexOf('partner') > -1) GL.push(['Join good projects as a partner, and lead one clear part of the work.', 'Ask the coordinator which part you lead, what money comes to you, and what stays in your lab afterwards.']);
     GL.push(['In every application, argue only for the priorities you selected, and show them in the activities, the public and the results.', 'Inclusion is expected in almost every funded project: name who takes part and which barrier you lower.']);
     GL.push(['Prepare for 2028 without betting on details.', 'The horizontal priorities, trusted partners and results you can show will count in any version of the new programmes.']);
     GL.push(['Review this roadmap with your team in ' + (RM.review || 'November 2027') + '. Change the projects, keep the rules.', 'By then the 2028 calls and the new Programme Guide should be known.']);
@@ -730,6 +730,7 @@
   }
 
   /* ---------- roadmap ---------- */
+  function targetsTxt() { return (S.lab.targets || []).map(function (t) { return (byId(D.targets, t) || {}).label; }).filter(Boolean).join(' \u00b7 '); }
   function capOf(id) { return byId(D.capacities || [], id); }
   function capLabel(id) { var c = capOf(id); return c ? c.label : id; }
   function otherLabel(id) { var o = byId(D.otherRes || [], id); return o ? o.label : id; }
@@ -775,7 +776,7 @@
     roadInit();
     var st = steps(), R = S.road, html = '<div class="kicker">' + esc(S.lab.name || 'Your lab') + '</div><h1 class="h1">My roadmap</h1>' +
       '<p class="lead">What must your lab be able to do to reach your 2030? Pick up to 3 things to build, then say what builds each one.</p>' +
-      (S.lab.vision ? '<div class="advice"><b>2030:</b> ' + esc(S.lab.vision) + (S.lab.target ? '<br><span class="muted">' + esc((byId(D.targets, S.lab.target) || {}).label) + '</span>' : '') + '</div>' : '<p class="muted">No 2030 sentence yet. <a href="#/">Write it on the start screen.</a></p>');
+      (S.lab.vision ? '<div class="advice"><b>2030:</b> ' + esc(S.lab.vision) + (S.lab.targets.length ? '<br><span class="muted">' + esc(targetsTxt()) + '</span>' : '') + '</div>' : '<p class="muted">No 2030 sentence yet. <a href="#/">Write it on the start screen.</a></p>');
     html += '<div class="qn"><b>1 \u00b7 What to build</b> <span class="muted">(up to 3)</span></div><div class="chips" data-msel>' + (D.capacities || []).map(function (c) { var on = R.ms.some(function (m) { return m.cap === c.id; }); return '<button class="chip" data-v="' + c.id + '" aria-pressed="' + on + '">' + esc(c.label) + ' <span class="muted">\u00b7 today ' + (S.lab.cap[c.id] ? LV[S.lab.cap[c.id]] : 'not rated') + '</span></button>'; }).join('') + '</div>';
     html += '<div class="stack">' + R.ms.map(function (m, k) { var c = capOf(m.cap) || {};
       return '<div class="slot"><div class="step-b"><div class="qn"><b>' + esc(c.label) + '</b></div>' +
