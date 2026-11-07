@@ -27,7 +27,9 @@
   function ul(arr) { arr = list(arr); return arr.length ? '<ul>' + arr.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>' : ''; }
   function link(u, t) { return '<a href="' + esc(u) + '" target="_blank" rel="noopener">' + esc(t || u) + '</a>'; }
   function isFav(id) { return S.fav.indexOf(id) > -1; }
-  function toggleFav(id) { var i = S.fav.indexOf(id); if (i > -1) { S.fav.splice(i, 1); S.path = S.path.filter(function (s) { return s.project !== id; }); } else S.fav.push(id); save(); }
+  var MAXFAV = 5;
+  function toast(t) { var el = document.getElementById('toast'); if (!el) { el = document.createElement('div'); el.id = 'toast'; el.setAttribute('role', 'status'); document.body.appendChild(el); } el.textContent = t; el.className = 'show'; clearTimeout(toast.t); toast.t = setTimeout(function () { el.className = ''; }, 3200); }
+  function toggleFav(id) { var i = S.fav.indexOf(id); if (i > -1) { S.fav.splice(i, 1); S.path = S.path.filter(function (s) { return s.project !== id; }); } else if (S.fav.length >= MAXFAV) { toast('You already have ' + MAXFAV + ' projects. Remove one star to add another.'); return; } else S.fav.push(id); save(); }
   var PR = D.priorities || { horizontal: [], sectors: {}, culture: { shorts: [], items: [] }, rules: [], future: { lines: [] }, reflect: [], links: [] };
   function prioOpts(p) {
     var o = PR.horizontal.map(function (h) { return { id: h.id, short: h.short, name: h.name, group: 'Horizontal' }; });
@@ -147,10 +149,10 @@
     render(
       '<div class="kicker">Buinho · 2016–2028</div><h1 class="h1">The projects</h1>' +
       '<div class="chips" data-group="src">' + [['buinho', 'Buinho projects'], ['ext', 'Other labs in Europe']].map(function (o) { return '<button class="chip" data-v="' + o[0] + '" aria-pressed="' + (F.src === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</div>' +
-      '<p class="lead">All the projects are here. Star 3 to 5 that look like your next step: they become your reference projects. The ones that fit where you stand come first, with a badge.</p>' +
+      '<p class="lead">All the projects are here. Star 3 to 5 that look like your next step: they become your reference projects. The ones that fit where you stand come first, with a badge.</p>' + (S.fav.length > MAXFAV ? '<p class="advice">You have ' + S.fav.length + ' starred: keep the 5 that matter most.</p>' : '') +
       '<div class="chips" data-group="dom">' + doms.map(function (d) { return '<button class="chip" data-v="' + esc(d) + '" aria-pressed="' + (F.dom === d) + '">' + esc(d) + '</button>'; }).join('') + '</div>' +
       '<div class="chips" data-group="fam">' + fams.map(function (f) { return '<button class="chip f-' + f + '" data-v="' + f + '" aria-pressed="' + (F.fam === f) + '">' + esc(famLabel(f)) + '</button>'; }).join('') +
-      '<button class="chip" data-v="mine" aria-pressed="' + F.mine + '">★ My cards (' + S.fav.length + ')</button></div>' +
+      '<button class="chip" data-v="mine" aria-pressed="' + F.mine + '">★ My cards (' + S.fav.length + ' of ' + MAXFAV + ')</button></div>' +
       (ps.length ? '<div class="grid">' + ps.map(cardHTML).join('') + '</div>' : '<div class="empty">' + (F.mine ? 'No starred cards yet.' : 'No project with this filter.') + '</div>') +
       (S.fav.length ? '<div class="row" style="margin-top:18px"><a class="btn blue" href="#/path">Build my path with ' + S.fav.length + ' card' + (S.fav.length > 1 ? 's' : '') + '</a></div>' : ''), 'cards', true);
     chipGroup('dom', function (v) { F.dom = F.dom === v ? '' : v; cards(); });
