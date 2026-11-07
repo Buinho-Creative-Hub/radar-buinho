@@ -144,3 +144,6 @@ label.f{display:block;font-weight:600;margin:12px 0 6px}
 .fit-now{background:var(--ink);color:#fff}.fit-partner{background:#fff}.fit-later{background:#fff;border-style:dashed!important;color:var(--g5)}
 .fit-need{background:var(--note);border-color:var(--note)!important}
 .dist{border-left:4px solid var(--blue);background:var(--wall);padding:8px 12px;margin:12px 0;font-size:14px}.dist p{margin:4px 0}
+.small{font-size:13px;margin:6px 0 4px}
+[data-how]{margin-top:8px}
+[data-peer]{min-height:64px}

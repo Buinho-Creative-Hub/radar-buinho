@@ -8,7 +8,7 @@
   /* ---------- state ---------- */
   function blank() { return { lab: { code: '', name: '', country: '', exp: '', domains: [], needs: [], vision: '', themes: ['', '', ''] }, fav: [], path: [], questions: [] }; }
   var S = load() || blank();
-  (function () { var b = blank().lab; Object.keys(b).forEach(function (k) { if (S.lab[k] == null) S.lab[k] = b[k]; }); S.path.forEach(function (st) { if (!st.themes) st.themes = []; }); })();
+  (function () { var b = blank().lab; Object.keys(b).forEach(function (k) { if (S.lab[k] == null) S.lab[k] = b[k]; }); S.path.forEach(function (st) { if (!st.themes) st.themes = []; if (!st.prio) st.prio = []; if (st.how == null) st.how = ''; if (st.peer == null) st.peer = ''; }); })();
   function load() { try { var s = JSON.parse(localStorage.getItem(KEY)); return s && s.fav ? s : null; } catch (e) { return null; } }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 
@@ -28,6 +28,20 @@
   function link(u, t) { return '<a href="' + esc(u) + '" target="_blank" rel="noopener">' + esc(t || u) + '</a>'; }
   function isFav(id) { return S.fav.indexOf(id) > -1; }
   function toggleFav(id) { var i = S.fav.indexOf(id); if (i > -1) { S.fav.splice(i, 1); S.path = S.path.filter(function (s) { return s.project !== id; }); } else S.fav.push(id); save(); }
+  var PR = D.priorities || { horizontal: [], sectors: {}, culture: { shorts: [], items: [] }, rules: [], future: { lines: [] }, reflect: [], links: [] };
+  function prioOpts(p) {
+    var o = PR.horizontal.map(function (h) { return { id: h.id, short: h.short, name: h.name, group: 'Horizontal' }; });
+    if (p && p.action === 'crea') PR.culture.shorts.forEach(function (x, k) { o.push({ id: 'c-' + k, short: x, name: PR.culture.items[k], group: 'Creative Europe' }); });
+    else if (p && p.action !== 'cerv') (S.lab.domains || []).forEach(function (d) { var sc = PR.sectors[d]; if (sc) sc.shorts.forEach(function (x, k) { o.push({ id: 's-' + d + '-' + k, short: x, name: sc.items[k], group: sc.field }); }); });
+    return o;
+  }
+  function prioInfo(id) {
+    var m = String(id).split('-');
+    if (m[0] === 'h') { var h = byId(PR.horizontal, id); return h ? { short: h.short, name: h.name } : null; }
+    if (m[0] === 'c') return PR.culture.items[+m[1]] ? { short: PR.culture.shorts[+m[1]], name: 'Creative Europe: ' + PR.culture.items[+m[1]] } : null;
+    var sc = PR.sectors[m[1]]; return sc && sc.items[+m[2]] ? { short: sc.shorts[+m[2]], name: sc.field + ': ' + sc.items[+m[2]] } : null;
+  }
+  function prioList(st, full) { return (st.prio || []).map(prioInfo).filter(Boolean).map(function (x) { return full ? x.name : x.short; }); }
   function setTab(t) { var as = document.querySelectorAll('.tabs a'); for (var i = 0; i < as.length; i++) as[i].classList.toggle('on', as[i].getAttribute('data-tab') === t); }
   function render(html, tab, keepScroll) { var y = window.scrollY; app.innerHTML = html; setTab(tab || ''); window.scrollTo(0, keepScroll ? y : 0); }
   function famColor(f) { return { mobility: '#2364ff', cooperation: '#ff5050', culture: '#ffc850', volunteering: '#010101', national: '#d9d9d9', citizens: '#d9d9d9' }[f] || '#010101'; }
@@ -84,13 +98,13 @@
       '<div class="f lab" style="margin-top:16px">Experience with EU projects</div>' +
       '<div class="chips" data-group="exp">' + [['none', 'Never applied'], ['partner', 'Partner before'], ['coordinator', 'Coordinated before']].map(function (o) { return '<button class="chip" data-v="' + o[0] + '" aria-pressed="' + (l.exp === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</div>' +
       '<div class="f lab">Who you work with</div>' +
-      '<div class="chips" data-group="domains">' + (D.domains || []).map(function (d) { return '<button class="chip" data-v="' + esc(d.id) + '" aria-pressed="' + (l.domains.indexOf(d.id) > -1) + '">' + esc(d.label) + '</button>'; }).join('') + '</div>' +
+      '<div class="chips" data-group="domains">' + (D.domains || []).map(function (d) { return '<button class="chip" data-v="' + esc(d.id) + '" aria-pressed="' + (l.domains.indexOf(d.id) > -1) + '">' + esc(d.label) + '</button>'; }).join('') + '</div><p class="muted small">This decides which <a href="#/priorities">field priorities</a> you see in your path.</p>' +
       '<div class="f lab">What your organisation needs most (up to 3)</div>' +
       '<div class="chips" data-group="needs">' + (D.whys || []).map(function (w) { return '<button class="chip" data-v="' + esc(w.id) + '" aria-pressed="' + (l.needs.indexOf(w.id) > -1) + '">' + esc(w.label) + '</button>'; }).join('') + '</div>' +
       '<h2 class="h2">For which strategy?</h2><p class="muted">EU projects should serve where your lab wants to go, not the other way round.</p>' +
       '<label class="f" for="vision">Your lab in 2030, in one sentence</label><input type="text" id="vision" maxlength="160" value="' + esc(l.vision) + '">' +
       '<div class="f lab" style="margin-top:12px">Your long-term themes (up to 3)</div>' + [0, 1, 2].map(function (k) { return '<input type="text" id="theme' + k + '" maxlength="40" placeholder="Theme ' + (k + 1) + '" value="' + esc(l.themes[k] || '') + '" style="margin-bottom:8px">'; }).join('') +
-      '<div class="row" style="margin-top:18px"><a class="btn blue" href="#/cards">See the projects</a><a class="btn ghost" href="#/actions">The 2028 map</a></div>', '');
+      '<div class="row" style="margin-top:18px"><a class="btn blue" href="#/cards">See the projects</a><a class="btn ghost" href="#/actions">The 2028 map</a><a class="btn ghost" href="#/priorities">Priorities in plain words</a></div>', '');
     ['code', 'name', 'country'].forEach(function (k) { document.getElementById(k).addEventListener('input', function (e) { S.lab[k] = k === 'code' ? e.target.value.toUpperCase() : e.target.value; save(); }); });
     chipGroup('exp', function (v) { S.lab.exp = S.lab.exp === v ? '' : v; save(); home(); });
     document.getElementById('vision').addEventListener('input', function (e) { S.lab.vision = e.target.value; save(); });
@@ -217,6 +231,21 @@
   }
 
   /* ---------- path: built from starred cards ---------- */
+  function prioHTML(i, st, p) {
+    var o = prioOpts(p), g = '', h = '<div class="f lab">Which priority does it answer? <a href="#/priorities">What are they?</a></div><div class="chips" data-prio="' + i + '">';
+    o.forEach(function (x) { if (x.group !== g) { if (g) h += '</div><div class="muted small">' + esc(x.group) + '</div><div class="chips" data-prio="' + i + '">'; g = x.group; } h += '<button class="chip" data-v="' + esc(x.id) + '" aria-pressed="' + (st.prio.indexOf(x.id) > -1) + '" title="' + esc(x.name) + '">' + esc(x.short) + '</button>'; });
+    h += '</div>' + (S.lab.domains.length ? '' : '<p class="muted small">Tell the app who you work with (start screen) to see the priorities of your field.</p>');
+    h += '<input type="text" data-how="' + i + '" maxlength="140" placeholder="How, in one line: who takes part, what you will show" value="' + esc(st.how) + '">';
+    h += '<div class="f lab">From the exchange</div><textarea data-peer="' + i + '" maxlength="400" placeholder="What a colleague or the clinic said about this step">' + esc(st.peer) + '</textarea>';
+    return h;
+  }
+  function shareText() {
+    var t = 'Road to 2028 \u00b7 ' + (S.lab.name || 'My lab') + (S.lab.country ? ' (' + S.lab.country + ')' : '') + (S.lab.code ? ' \u00b7 ' + S.lab.code : '') + '\n';
+    if (S.lab.vision) t += 'In 2030: ' + S.lab.vision + '\n';
+    steps().forEach(function (st, i) { var p = project(st.project), a = action(p.action); t += '\nStep ' + (i + 1) + ': ' + (a ? a.short + ' ' + a.name : p.today) + (st.when ? ' (' + st.when + ')' : '') + ', like ' + p.name; var pr = prioList(st); if (pr.length) t += '\n  Priorities: ' + pr.join(', '); if (st.how) t += '\n  How: ' + st.how; });
+    if (S.questions.length) t += '\n\nMy questions:\n' + S.questions.map(function (q) { return '- ' + q; }).join('\n');
+    return t + '\n\nWhat would you change? Would you join one of these steps?\nhttps://buinho-creative-hub.github.io/radar-buinho/road-to-2028/';
+  }
   function stepOf(id) { for (var i = 0; i < S.path.length; i++) if (S.path[i].project === id) return i; return -1; }
   function pathView() {
     var favs = S.fav.map(project).filter(Boolean);
@@ -235,6 +264,7 @@
           '<button class="x" data-unstep="' + i + '" aria-label="Remove from path">×</button></div><div class="step-b">' +
           '<div class="f lab">Why this step</div><div class="chips" data-why="' + i + '">' + (D.whys || []).map(function (w) { return '<button class="chip" data-v="' + esc(w.id) + '" aria-pressed="' + (st.why.indexOf(w.id) > -1) + '">' + esc(w.label) + '</button>'; }).join('') + '</div>' +
           (S.lab.themes.filter(Boolean).length ? '<div class="f lab">Serves which theme</div><div class="chips" data-theme="' + i + '">' + S.lab.themes.map(function (t, k) { return t ? '<button class="chip" data-v="' + k + '" aria-pressed="' + (st.themes.indexOf(k) > -1) + '">' + esc(t) + '</button>' : ''; }).join('') + '</div>' : '') +
+          prioHTML(i, st, p) +
           '<div class="dist">' + distance(i).map(function (d) { return '<p>' + esc(d) + '</p>'; }).join('') + '</div>' +
           '<div class="f lab">When</div><div class="chips" data-when="' + i + '">' + ['2027', '2028', 'Later'].map(function (w) { return '<button class="chip" data-v="' + w + '" aria-pressed="' + (st.when === w) + '">' + w + '</button>'; }).join('') + '</div>' +
           (i > 0 ? '<button class="mini" data-up="' + i + '">↑ Move up</button>' : '') + '</div></div>';
@@ -252,13 +282,19 @@
       '<label class="f" for="nq">New question</label><textarea id="nq" maxlength="300"></textarea>' +
       '<div class="row" style="margin-top:10px"><button class="btn" id="addq">Add question</button></div>' +
       (D.questionPrompts && D.questionPrompts.length ? '<p class="muted" style="margin-top:14px">Stuck? Questions other labs often have:</p><div class="chips" data-group="qp">' + D.questionPrompts.map(function (q) { return '<button class="chip" data-v="' + esc(q) + '">' + esc(q) + '</button>'; }).join('') + '</div>' : '') +
+      '<h2 class="h2">Swap with a neighbour</h2><p class="muted">Send your path to a colleague or to the clinic desk. Their answer goes into \u201cFrom the exchange\u201d under each step, and into your PDF.</p>' +
+      '<div class="row"><button class="btn ghost" id="share">Share my path</button></div><p class="muted" id="sharemsg" role="status" style="white-space:pre-wrap"></p>' +
       '<hr><a class="btn blue" href="#/guide">Make my guide</a>';
     render(html, 'path', true);
-    app.querySelectorAll('[data-addstep]').forEach(function (b) { b.addEventListener('click', function () { S.path.push({ project: b.dataset.addstep, why: [], when: '', themes: [] }); save(); pathView(); }); });
+    app.querySelectorAll('[data-addstep]').forEach(function (b) { b.addEventListener('click', function () { S.path.push({ project: b.dataset.addstep, why: [], when: '', themes: [], prio: [], how: '', peer: '' }); save(); pathView(); }); });
     app.querySelectorAll('[data-unstep]').forEach(function (b) { b.addEventListener('click', function () { S.path.splice(+b.dataset.unstep, 1); save(); pathView(); }); });
     app.querySelectorAll('[data-up]').forEach(function (b) { b.addEventListener('click', function () { var i = +b.dataset.up, t = S.path[i - 1]; S.path[i - 1] = S.path[i]; S.path[i] = t; save(); pathView(); }); });
     app.querySelectorAll('[data-why]').forEach(function (box) { box.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; var st = S.path[+box.dataset.why], v = b.dataset.v, k = st.why.indexOf(v); if (k > -1) st.why.splice(k, 1); else st.why.push(v); b.setAttribute('aria-pressed', k < 0); save(); }); });
     app.querySelectorAll('[data-theme]').forEach(function (box) { box.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; var st = S.path[+box.dataset.theme], v = +b.dataset.v, k = st.themes.indexOf(v); if (k > -1) st.themes.splice(k, 1); else st.themes.push(v); b.setAttribute('aria-pressed', k < 0); save(); }); });
+    app.querySelectorAll('[data-prio]').forEach(function (box) { box.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; var st = S.path[+box.dataset.prio], v = b.dataset.v, k = st.prio.indexOf(v); if (k > -1) st.prio.splice(k, 1); else st.prio.push(v); b.setAttribute('aria-pressed', k < 0); save(); }); });
+    app.querySelectorAll('[data-how]').forEach(function (el) { el.addEventListener('input', function () { S.path[+el.dataset.how].how = el.value; save(); }); });
+    app.querySelectorAll('[data-peer]').forEach(function (el) { el.addEventListener('input', function () { S.path[+el.dataset.peer].peer = el.value; save(); }); });
+    var sh = document.getElementById('share'); if (sh) sh.addEventListener('click', function () { var t = shareText(), m = document.getElementById('sharemsg'); if (navigator.share) navigator.share({ title: 'My road to 2028', text: t }).catch(function () {}); else if (navigator.clipboard) navigator.clipboard.writeText(t).then(function () { m.textContent = 'Copied. Paste it in a message to a colleague or to the clinic.'; }, function () { m.textContent = t; }); else m.textContent = t; });
     app.querySelectorAll('[data-when]').forEach(function (box) { box.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; var st = S.path[+box.dataset.when]; st.when = st.when === b.dataset.v ? '' : b.dataset.v; box.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', x.dataset.v === st.when); }); save(); }); });
     app.querySelectorAll('[data-dq]').forEach(function (b) { b.addEventListener('click', function () { S.questions.splice(+b.dataset.dq, 1); save(); pathView(); }); });
     document.getElementById('addq').addEventListener('click', function () { var t = document.getElementById('nq').value.trim(); if (t) { S.questions.push(t); save(); pathView(); } });
@@ -325,6 +361,7 @@
       (st.length ? '<div class="stack">' + st.map(function (s, i) { var p = project(s.project), f = pfam(p); return '<div class="aitem"><span class="sw fam-' + f + '">' + (i + 1) + '</span><span class="tx"><b>' + esc(p.name) + '</b><span>' + esc(famLabel(f) + (s.when ? ' · ' + s.when : '') + (s.why.length ? ' · ' + whyLabels(s.why).join(', ') : '')) + '</span></span></div>'; }).join('') + '</div>'
         : '<div class="empty">No path yet. <a href="#/path">Put your starred cards in order first.</a></div>') +
       (S.questions.length ? '<h2 class="h2">Your questions, answered</h2><div class="stack">' + S.questions.map(function (q) { var an = answerFor(q); return '<div class="qcard"><div class="q"><span>' + esc(q) + '</span></div>' + (an.length ? an.map(function (a) { var pl = pathLink(a); return '<div class="ans"><div class="lab">' + esc(a.topic) + '</div><p>' + esc(a.a) + '</p>' + (a.next ? '<p class="muted">' + esc(a.next) + '</p>' : '') + (pl ? '<p><b>' + esc(pl) + '</b></p>' : '') + '<p>' + a.links.map(function (l) { return link(l.url, l.label); }).join(' · ') + '</p></div>'; }).join('') : '<div class="ans"><p>No ready answer in this guide. Take it to the next clinics, or ask your National Agency or Creative Desk (links in your PDF). That is exactly what the clinics are for.</p></div>') + '</div>'; }).join('') + '</div>' : '') +
+      (st.length ? '<h2 class="h2">Priorities your path answers</h2><div class="stack">' + st.map(function (s, i) { var pr = prioList(s); return '<div class="advice"><b>Step ' + (i + 1) + ':</b> ' + (pr.length ? esc(pr.join(' \u00b7 ')) + (s.how ? '<br><span class="muted">' + esc(s.how) + '</span>' : '') : '<span class="muted">No priority chosen yet. <a href="#/path">Which one would an expert see in it?</a></span>') + '</div>'; }).join('') + '</div>' : '') +
       (R.length ? '<h2 class="h2">What your path says</h2><div class="stack">' + R.map(function (t) { return '<div class="advice">' + esc(t) + '</div>'; }).join('') + '</div>' : '') +
       ((D.strategy && D.strategy.references) ? '<h2 class="h2">Official references</h2><p class="muted">The documents and tools behind this guide. Always read the current version.</p>' + D.strategy.references.map(function (g) { return '<h3 class="h3">' + esc(g.group) + '</h3><ul class="links">' + g.items.map(function (l) { return '<li><a href="' + esc(l.url) + '" target="_blank" rel="noopener">' + esc(l.label) + '</a></li>'; }).join('') + '</ul>'; }).join('') : '') +
       '<p class="muted" style="margin-top:14px">' + S.fav.length + ' starred card(s) · ' + S.questions.length + ' question(s)</p>' +
@@ -435,6 +472,7 @@
       var body = [(a ? a.short + ' \u00b7 ' + a.name : p.today) + (s.when ? ' \u00b7 ' + s.when : '') + (f.level ? ' \u00b7 ' + FIT_LABEL[f.level] : ''),
         'Example: ' + p.name + (p.external && p.coordinator ? ' (' + p.coordinator.name + ', ' + p.coordinator.country + ')' : ' (Buinho)')];
       if (REQ[p.action]) body.push('It asks for: ' + REQ[p.action]);
+      var prl = prioList(s); body.push('Answers: ' + (prl.length ? prl.join(', ') + (s.how ? ' \u2014 ' + s.how : '') : 'no priority chosen yet'));
       if (ev) { var prep = (ev.m + 8) % 12 + 1; body.push('Next move: talk to partners from ' + MONTHS.at(prep - 1) + '; the deadline was in ' + MONTHS.at(ev.m - 1) + ' in the 2026 calls (check the 2027 call).'); }
       box('Step ' + (i + 1) + ' \u00b7 ' + famLabel(pfam(p)), body, { rule: famColor(pfam(p)) === SUN ? INK : famColor(pfam(p)), bg: WALL, size: 9.8 });
     });
@@ -463,6 +501,32 @@
       ['Why these steps', st.map(function (s, i) { return (i + 1) + ': ' + (whyLabels(s.why).join(', ') || '—'); }).join('   ')]]);
     if (S.lab.exp && D.expNotes) box('A first reading', D.expNotes[S.lab.exp], { rule: BLUE, bg: WALL });
 
+    /* ===== 2b. priorities ===== */
+    if (PR.horizontal.length) {
+      newPage(); y = 0; band(BLUE, 'What Europe reads in your path', 'The priorities your path speaks to', 'Horizontal priorities for every action, specific ones for each field');
+      text(PR.intro, 10, false, G7, 3);
+      box('How they are used', PR.rules, { rule: BLUE, bg: WALL, bullets: true, size: 9.5 });
+      label('Which step answers which horizontal priority');
+      var hc = (CW - 50) / PR.horizontal.length; font(true, 8.5); color(INK); PR.horizontal.forEach(function (h, j) { doc.text(h.short, M + 50 + j * hc, y); }); y += 7;
+      st.forEach(function (s, i) { need(10); font(true, 9.5); color(INK); doc.text('Step ' + (i + 1), M, y); font(false, 8); color(G5); doc.text(doc.splitTextToSize(ps[i].name, 44)[0], M, y + 4); PR.horizontal.forEach(function (h, j) { var on = (s.prio || []).indexOf(h.id) > -1, cx = M + 50 + j * hc + 4; if (on) { fill(BLUE); doc.circle(cx, y - 1, 2.6, 'F'); } else { stroke(G2); doc.setLineWidth(0.4); doc.circle(cx, y - 1, 2.6, 'S'); } }); y += 11; });
+      var other = []; st.forEach(function (s, i) { var x = (s.prio || []).filter(function (id) { return id.indexOf('h-') !== 0; }).map(prioInfo).filter(Boolean).map(function (z) { return z.name; }); if (x.length) other.push('Step ' + (i + 1) + ': ' + x.join('; ')); if (s.how) other.push('Step ' + (i + 1) + ', how: ' + s.how); });
+      if (other.length) box('Field priorities and how', other, { rule: INK, bg: WALL, size: 9.5 });
+      var unused = PR.horizontal.filter(function (h) { return !st.some(function (s) { return (s.prio || []).indexOf(h.id) > -1; }); }).map(function (h) { return h.short; });
+      var none = st.filter(function (s) { return !(s.prio || []).length; }).length, pn = [];
+      if (none) pn.push(none + ' step(s) without a priority. An expert will look for one: which is the honest one?');
+      if (unused.length && unused.length < PR.horizontal.length) pn.push('Not in your path yet: ' + unused.join(', ') + '. You do not need all four; but is one of them already part of how your lab works?');
+      if (!none && st.length) pn.push('Every step has a priority. Now check that each one shows in the activities, the public and the results, not only in the text.');
+      if (pn.length) box('What this says', pn, { rule: RED, bg: WALL, size: 10 });
+      box('To discuss with your neighbour', PR.horizontal.map(function (h) { return h.short + ': ' + h.q; }), { rule: SUN === SUN ? INK : INK, bg: '#fff8d6', bullets: true, size: 10 });
+      var mine = (S.lab.domains || []).filter(function (d) { return PR.sectors[d]; });
+      mine.forEach(function (d) { var sc = PR.sectors[d]; box(sc.field + ' \u00b7 specific priorities (2026)', sc.items.concat([sc.lab]), { rule: BLUE, bg: '#ffffff', bullets: true, size: 9.5 }); });
+      if (!mine.length) text('Tell the app who you work with (start screen) and the specific priorities of your fields appear here.', 9.5, false, G5, 3);
+      if (acts0().indexOf('crea') > -1) box(PR.culture.field + ' (2026)', PR.culture.items.concat([PR.culture.rule]), { rule: famColor('culture') === SUN ? INK : famColor('culture'), bg: '#ffffff', bullets: true, size: 9.5 });
+      box(PR.future.title, PR.future.lines.concat([PR.future.status, PR.future.reading]), { rule: INK, bg: WALL, bullets: true, size: 9.5 });
+      label('Official sources'); PR.links.slice(0, 6).forEach(function (l) { linkLine(l); });
+    }
+    function acts0() { return ps.map(function (p) { return p.action; }); }
+
     /* ===== 3. reading your path ===== */
     newPage(); y = 0; band(RED, 'Practical advice', 'Reading your path', 'Inferences from your steps, their order, your reasons and your timing');
     var RD = readings();
@@ -471,7 +535,7 @@
 
     /* ===== 3b. your questions, answered ===== */
     newPage(); y = 0; band(SUN, 'Where your path stops', 'Your questions, answered', 'What this guide can already tell you, and where to take the rest');
-    function notes(n) { need(n * 7 + 6); font(true, 7.5); color(G5); doc.text('NOTES FROM THE CLINIC', M, y); y += 2; stroke(G2); doc.setLineWidth(0.3); for (var k = 0; k < n; k++) { y += 7; doc.line(M, y, M + CW, y); } y += 7; }
+    function notes(n, lb) { need(n * 7 + 6); font(true, 7.5); color(G5); doc.text(lb || 'NOTES FROM THE CLINIC', M, y); y += 2; stroke(G2); doc.setLineWidth(0.3); for (var k = 0; k < n; k++) { y += 7; doc.line(M, y, M + CW, y); } y += 7; }
     if (S.questions.length) S.questions.forEach(function (q, qi) {
       var L = lines(q, 11.5, true, CW - 12), h = L.length * lh(11.5) + 9; need(h + 40);
       fill(NOTE); doc.rect(M, y - 4, CW, h, 'F'); font(true, 11.5); color(INK); L.forEach(function (ln, k) { doc.text(ln, M + 6, y + 2 + k * lh(11.5)); }); y += h + 3;
@@ -499,6 +563,8 @@
       if (p.lesson) box('Lesson', p.lesson, { rule: RED, bg: '#ffffff' });
       var dd = distance(i); if (dd.length) box('Distance from where you are', dd, { rule: BLUE, bg: WALL, size: 10 });
       var th = (s.themes || []).map(function (k) { return S.lab.themes[k]; }).filter(Boolean); if (S.lab.themes.filter(Boolean).length) box('Serves your themes', th.length ? th.join(' \u00b7 ') : 'None of your themes yet. Is this step worth it, or does it need a different angle?', { rule: th.length ? INK : RED, bg: '#ffffff', size: 10 });
+      var prf = prioList(s, true); box('Priorities this step answers', prf.length ? prf.concat(s.how ? ['How: ' + s.how] : []) : ['No priority chosen yet. Which one would an expert see in this step, and what would you show for it?'], { rule: prf.length ? BLUE : RED, bg: '#ffffff', size: 10, bullets: !!prf.length });
+      if (s.peer) box('From the exchange', s.peer, { rule: SUN === SUN ? INK : INK, bg: '#fff8d6', size: 10 }); else notes(2, 'NOTES FROM THE EXCHANGE');
       if (SP.advice) box('If this is your step: practical advice', SP.advice, { rule: RED, bg: WALL, bullets: true, size: 10.5 });
       if (a) {
         box('After 2027', a.future, { rule: INK, bg: '#ffffff' });
@@ -600,6 +666,20 @@
     doc.save('road-to-2028' + (S.lab.code ? '-' + S.lab.code : '') + '.pdf');
   }
 
+  /* ---------- priorities ---------- */
+  function priorities() {
+    var mine = (S.lab.domains || []).filter(function (d) { return PR.sectors[d]; }), keys = mine.length ? mine : Object.keys(PR.sectors);
+    render('<div class="kicker">What Europe reads in your idea</div><h1 class="h1">Priorities in plain words</h1><p class="lead">' + esc(PR.intro) + '</p>' +
+      sec('How they are used', ul(PR.rules)) +
+      '<h2 class="h2">The four horizontal priorities</h2><div class="stack">' + PR.horizontal.map(function (h) { return '<div class="advice"><b>' + esc(h.name) + '</b><p>' + esc(h.plain) + '</p><p class="muted">In a lab: ' + esc(h.lab) + '</p><p><b>To discuss:</b> ' + esc(h.q) + '</p></div>'; }).join('') + '</div>' +
+      '<h2 class="h2">Specific priorities ' + (mine.length ? 'of your fields' : 'per field') + '</h2>' + keys.map(function (d) { var sc = PR.sectors[d]; return sec(sc.field, ul(sc.items) + '<p class="muted">' + esc(sc.lab) + '</p>'); }).join('') + '<p class="muted small">' + esc(PR.ukraineNote) + '</p>' +
+      sec(PR.culture.field, ul(PR.culture.items) + '<p class="muted">' + esc(PR.culture.rule) + ' ' + esc(PR.culture.lab) + '</p>') +
+      '<h2 class="h2">' + esc(PR.future.title) + '</h2>' + ul(PR.future.lines) + '<p class="muted">' + esc(PR.future.status) + '</p><div class="advice">' + esc(PR.future.reading) + '</div>' +
+      sec('Before you choose', ul(PR.reflect)) +
+      sec('Sources', PR.links.map(function (l) { return '<div>' + link(l.url, l.label) + '</div>'; }).join('')) +
+      '<div class="row" style="margin-top:16px"><a class="btn blue" href="#/path">Back to my path</a></div>', 'actions');
+  }
+
   /* ---------- router ---------- */
   function route() {
     var h = location.hash.replace(/^#\/?/, '').split('/');
@@ -611,6 +691,7 @@
       case '2028': return post2027();
       case 'path': return pathView();
       case 'guide': return guide();
+      case 'priorities': return priorities();
       default: return home();
     }
   }
