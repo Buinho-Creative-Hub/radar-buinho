@@ -147,3 +147,7 @@ label.f{display:block;font-weight:600;margin:12px 0 6px}
 .small{font-size:13px;margin:6px 0 4px}
 [data-how]{margin-top:8px}
 [data-peer]{min-height:64px}
+.stepd{margin-top:10px;border-top:1px solid #d9d9d9;padding-top:8px}
+.stepd summary{cursor:pointer;font-weight:700;padding:6px 0;color:#2364ff}
+.qn{margin:14px 0 6px;font-size:15px}
+.qcard input[data-told]{margin-top:6px}

@@ -6,9 +6,9 @@
   var KEY = 'vulca-clinic-v2';
 
   /* ---------- state ---------- */
-  function blank() { return { lab: { code: '', name: '', country: '', exp: '', domains: [], needs: [], vision: '', themes: ['', '', ''] }, fav: [], path: [], questions: [] }; }
+  function blank() { return { lab: { code: '', name: '', country: '', exp: '', domains: [], needs: [], vision: '', themes: ['', '', ''] }, fav: [], path: [], questions: [], told: {} }; }
   var S = load() || blank();
-  (function () { var b = blank().lab; Object.keys(b).forEach(function (k) { if (S.lab[k] == null) S.lab[k] = b[k]; }); S.path.forEach(function (st) { if (!st.themes) st.themes = []; if (!st.prio) st.prio = []; if (st.how == null) st.how = ''; if (st.peer == null) st.peer = ''; }); })();
+  (function () { if (!S.told) S.told = {}; var b = blank().lab; Object.keys(b).forEach(function (k) { if (S.lab[k] == null) S.lab[k] = b[k]; }); S.path.forEach(function (st) { if (!st.themes) st.themes = []; if (!st.prio) st.prio = []; if (st.how == null) st.how = ''; if (st.peer == null) st.peer = ''; }); })();
   function load() { try { var s = JSON.parse(localStorage.getItem(KEY)); return s && s.fav ? s : null; } catch (e) { return null; } }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 
@@ -84,14 +84,14 @@
     render(
       '<section class="hero"><div class="kicker">EU funding policy clinic</div>' +
       '<h1 class="h1">Find your lab\'s step on the road to 2028</h1>' +
-      '<p>Eleven years of European projects at Buinho, a rural fablab in Messejana, Alentejo, read through the programmes that come after 2027.</p></section>' +
+      '<p>You leave with a short guide for your lab\'s next EU steps: what fits you now, in which order, what Europe looks for, and where to ask. Keep it for your next applications, long after Cuenca.</p></section>' +
       '<ol class="steps">' +
-      '<li><div><b>Star the projects that speak to you.</b> Each card is a real project, Buinho\'s or another European lab\'s: what it was for, who the partners were, what it took and what it left.</div></li>' +
-      '<li><div><b>Turn your starred cards into a path.</b> Put them in order, up to three steps. Same numbers as your stickers on the wall.</div></li>' +
-      '<li><div><b>Write down what you still need to know</b> and take it to the next clinics of the seminar.</div></li>' +
-      '<li><div><b>Download your guide:</b> your path, how each step looks after 2027, partners, money and links.</div></li>' +
+      '<li><div><b>Say where your lab stands.</b> Two minutes, just below. <span class="muted">So the app shows what fits you.</span></div></li>' +
+      '<li><div><b>Star projects, then put up to 3 in order.</b> <span class="muted">That is your path.</span></div></li>' +
+      '<li><div><b>Write your doubts and ask.</b> <span class="muted">Carlos and the other labs answer during the clinic.</span></div></li>' +
+      '<li><div><b>Download your guide.</b></div></li>' +
       '</ol>' +
-      '<h2 class="h2">About your lab</h2><p class="muted">Optional. It stays on this phone and only goes into your PDF.</p>' +
+      '<h2 class="h2">1 \u00b7 Where your lab stands</h2><p class="muted">It stays on this phone and only goes into your guide.</p>' +
       '<label class="f" for="code">Your sticker code (e.g. L07)</label><input type="text" id="code" maxlength="4" value="' + esc(l.code) + '">' +
       '<label class="f" for="name">Lab name</label><input type="text" id="name" maxlength="80" value="' + esc(l.name) + '">' +
       '<label class="f" for="country">Country</label><input type="text" id="country" maxlength="40" value="' + esc(l.country) + '">' +
@@ -101,10 +101,10 @@
       '<div class="chips" data-group="domains">' + (D.domains || []).map(function (d) { return '<button class="chip" data-v="' + esc(d.id) + '" aria-pressed="' + (l.domains.indexOf(d.id) > -1) + '">' + esc(d.label) + '</button>'; }).join('') + '</div><p class="muted small">This decides which <a href="#/priorities">field priorities</a> you see in your path.</p>' +
       '<div class="f lab">What your organisation needs most (up to 3)</div>' +
       '<div class="chips" data-group="needs">' + (D.whys || []).map(function (w) { return '<button class="chip" data-v="' + esc(w.id) + '" aria-pressed="' + (l.needs.indexOf(w.id) > -1) + '">' + esc(w.label) + '</button>'; }).join('') + '</div>' +
-      '<h2 class="h2">For which strategy?</h2><p class="muted">EU projects should serve where your lab wants to go, not the other way round.</p>' +
+      '<h2 class="h2">Optional \u00b7 Where you want to go</h2><p class="muted">EU projects should serve your lab\'s plans, not the other way round.</p>' +
       '<label class="f" for="vision">Your lab in 2030, in one sentence</label><input type="text" id="vision" maxlength="160" value="' + esc(l.vision) + '">' +
       '<div class="f lab" style="margin-top:12px">Your long-term themes (up to 3)</div>' + [0, 1, 2].map(function (k) { return '<input type="text" id="theme' + k + '" maxlength="40" placeholder="Theme ' + (k + 1) + '" value="' + esc(l.themes[k] || '') + '" style="margin-bottom:8px">'; }).join('') +
-      '<div class="row" style="margin-top:18px"><a class="btn blue" href="#/cards">See the projects</a><a class="btn ghost" href="#/actions">The 2028 map</a><a class="btn ghost" href="#/priorities">Priorities in plain words</a></div>', '');
+      '<div class="row" style="margin-top:18px"><a class="btn blue" href="#/cards">2 \u00b7 See the projects</a></div><p class="muted" style="margin-top:10px">Background, when you need it: <a href="#/actions">the 2028 map</a> \u00b7 <a href="#/priorities">priorities in plain words</a></p>', '');
     ['code', 'name', 'country'].forEach(function (k) { document.getElementById(k).addEventListener('input', function (e) { S.lab[k] = k === 'code' ? e.target.value.toUpperCase() : e.target.value; save(); }); });
     chipGroup('exp', function (v) { S.lab.exp = S.lab.exp === v ? '' : v; save(); home(); });
     document.getElementById('vision').addEventListener('input', function (e) { S.lab.vision = e.target.value; save(); });
@@ -142,7 +142,7 @@
     render(
       '<div class="kicker">Buinho · 2016–2028</div><h1 class="h1">The projects</h1>' +
       '<div class="chips" data-group="src">' + [['buinho', 'Buinho projects'], ['ext', 'Other labs in Europe']].map(function (o) { return '<button class="chip" data-v="' + o[0] + '" aria-pressed="' + (F.src === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</div>' +
-      '<p class="lead">Real projects, Buinho\'s and other labs\', across sectors. Colour is the kind of action as it looks after 2027. Star the ones that speak to you: they become your path.</p>' +
+      '<p class="lead">Star 3 to 5 projects that look like your next step. Colour is the kind of action; the badge says how well it fits where you are.</p>' +
       '<div class="chips" data-group="dom">' + doms.map(function (d) { return '<button class="chip" data-v="' + esc(d) + '" aria-pressed="' + (F.dom === d) + '">' + esc(d) + '</button>'; }).join('') + '</div>' +
       '<div class="chips" data-group="fam">' + fams.map(function (f) { return '<button class="chip f-' + f + '" data-v="' + f + '" aria-pressed="' + (F.fam === f) + '">' + esc(famLabel(f)) + '</button>'; }).join('') +
       '<button class="chip" data-v="mine" aria-pressed="' + F.mine + '">★ My cards (' + S.fav.length + ')</button></div>' +
@@ -232,19 +232,11 @@
 
   /* ---------- path: built from starred cards ---------- */
   function prioHTML(i, st, p) {
-    var o = prioOpts(p), g = '', h = '<div class="f lab">Which priority does it answer? <a href="#/priorities">What are they?</a></div><div class="chips" data-prio="' + i + '">';
+    var o = prioOpts(p), g = '', h = '<div class="qn"><b>3 \u00b7 What will Europe see in it?</b> <span class="muted">Pick a priority. <a href="#/priorities">What are they?</a></span></div><div class="chips" data-prio="' + i + '">';
     o.forEach(function (x) { if (x.group !== g) { if (g) h += '</div><div class="muted small">' + esc(x.group) + '</div><div class="chips" data-prio="' + i + '">'; g = x.group; } h += '<button class="chip" data-v="' + esc(x.id) + '" aria-pressed="' + (st.prio.indexOf(x.id) > -1) + '" title="' + esc(x.name) + '">' + esc(x.short) + '</button>'; });
     h += '</div>' + (S.lab.domains.length ? '' : '<p class="muted small">Tell the app who you work with (start screen) to see the priorities of your field.</p>');
-    h += '<input type="text" data-how="' + i + '" maxlength="140" placeholder="How, in one line: who takes part, what you will show" value="' + esc(st.how) + '">';
-    h += '<div class="f lab">From the exchange</div><textarea data-peer="' + i + '" maxlength="400" placeholder="What a colleague or the clinic said about this step">' + esc(st.peer) + '</textarea>';
+    h += '<input type="text" data-how="' + i + '" maxlength="140" placeholder="In one line: who takes part, what you will show" value="' + esc(st.how) + '">';
     return h;
-  }
-  function shareText() {
-    var t = 'Road to 2028 \u00b7 ' + (S.lab.name || 'My lab') + (S.lab.country ? ' (' + S.lab.country + ')' : '') + (S.lab.code ? ' \u00b7 ' + S.lab.code : '') + '\n';
-    if (S.lab.vision) t += 'In 2030: ' + S.lab.vision + '\n';
-    steps().forEach(function (st, i) { var p = project(st.project), a = action(p.action); t += '\nStep ' + (i + 1) + ': ' + (a ? a.short + ' ' + a.name : p.today) + (st.when ? ' (' + st.when + ')' : '') + ', like ' + p.name; var pr = prioList(st); if (pr.length) t += '\n  Priorities: ' + pr.join(', '); if (st.how) t += '\n  How: ' + st.how; });
-    if (S.questions.length) t += '\n\nMy questions:\n' + S.questions.map(function (q) { return '- ' + q; }).join('\n');
-    return t + '\n\nWhat would you change? Would you join one of these steps?\nhttps://buinho-creative-hub.github.io/radar-buinho/road-to-2028/';
   }
   function stepOf(id) { for (var i = 0; i < S.path.length; i++) if (S.path[i].project === id) return i; return -1; }
   function pathView() {
@@ -253,7 +245,7 @@
     if (!favs.length) {
       render(html + '<div class="empty">Star a few projects first: they are the bricks of your path.<br><br><a class="btn blue" href="#/cards">See the projects</a></div>', 'path'); return;
     }
-    html += '<p class="lead">Put your cards in order: which step first, which next. Up to three. Use the same numbers as your stickers on the wall.</p>';
+    html += '<p class="lead">Put up to 3 cards in order, then answer 3 short questions for each step. Same numbers as your stickers on the wall.</p>';
     html += '<div class="slots">';
     for (var i = 0; i < 3; i++) {
       var st = S.path[i], p = st && project(st.project);
@@ -262,11 +254,13 @@
         html += '<div class="slot"><div class="slot-h"><span class="dot" style="background:' + famColor(f) + ';color:' + famText(f) + '"><b>' + (i + 1) + '</b>' + (S.lab.code ? '<small>' + esc(S.lab.code) + '</small>' : '') + '</span>' +
           '<div><b>' + esc(p.name) + '</b><div class="muted">' + esc(famLabel(f)) + (pl ? ' · ' + esc(pl.label) : '') + ' · ' + esc(p.domain) + '</div></div>' +
           '<button class="x" data-unstep="' + i + '" aria-label="Remove from path">×</button></div><div class="step-b">' +
-          '<div class="f lab">Why this step</div><div class="chips" data-why="' + i + '">' + (D.whys || []).map(function (w) { return '<button class="chip" data-v="' + esc(w.id) + '" aria-pressed="' + (st.why.indexOf(w.id) > -1) + '">' + esc(w.label) + '</button>'; }).join('') + '</div>' +
-          (S.lab.themes.filter(Boolean).length ? '<div class="f lab">Serves which theme</div><div class="chips" data-theme="' + i + '">' + S.lab.themes.map(function (t, k) { return t ? '<button class="chip" data-v="' + k + '" aria-pressed="' + (st.themes.indexOf(k) > -1) + '">' + esc(t) + '</button>' : ''; }).join('') + '</div>' : '') +
-          prioHTML(i, st, p) +
           '<div class="dist">' + distance(i).map(function (d) { return '<p>' + esc(d) + '</p>'; }).join('') + '</div>' +
-          '<div class="f lab">When</div><div class="chips" data-when="' + i + '">' + ['2027', '2028', 'Later'].map(function (w) { return '<button class="chip" data-v="' + w + '" aria-pressed="' + (st.when === w) + '">' + w + '</button>'; }).join('') + '</div>' +
+          '<details class="stepd"' + (!st.when || !st.why.length || !st.prio.length ? ' open' : '') + '><summary>' + (st.when && st.why.length && st.prio.length ? '\u2713 3 questions answered' : 'Answer 3 short questions') + '</summary>' +
+          '<div class="qn"><b>1 \u00b7 When?</b></div><div class="chips" data-when="' + i + '">' + ['2027', '2028', 'Later'].map(function (w) { return '<button class="chip" data-v="' + w + '" aria-pressed="' + (st.when === w) + '">' + w + '</button>'; }).join('') + '</div>' +
+          '<div class="qn"><b>2 \u00b7 What does your lab get from it?</b></div><div class="chips" data-why="' + i + '">' + (D.whys || []).map(function (w) { return '<button class="chip" data-v="' + esc(w.id) + '" aria-pressed="' + (st.why.indexOf(w.id) > -1) + '">' + esc(w.label) + '</button>'; }).join('') + '</div>' +
+          prioHTML(i, st, p) +
+          (S.lab.themes.filter(Boolean).length ? '<div class="qn">Optional \u00b7 which of your themes?</div><div class="chips" data-theme="' + i + '">' + S.lab.themes.map(function (t, k) { return t ? '<button class="chip" data-v="' + k + '" aria-pressed="' + (st.themes.indexOf(k) > -1) + '">' + esc(t) + '</button>' : ''; }).join('') + '</div>' : '') +
+          '</details>' +
           (i > 0 ? '<button class="mini" data-up="' + i + '">↑ Move up</button>' : '') + '</div></div>';
       } else {
         html += '<div class="slot empty-slot"><span class="dot ghost"><b>' + (i + 1) + '</b></span><span class="muted">Step ' + (i + 1) + ': pick a card below</span></div>';
@@ -277,13 +271,12 @@
       return '<div class="mc"><span class="bar" style="background:' + famColor(f) + '"></span><div class="mc-t"><b>' + esc(p.name) + '</b><span class="muted">' + esc(famLabel(f)) + ' · ' + esc(p.domain) + '</span></div>' +
         (k > -1 ? '<span class="inpath">Step ' + (k + 1) + '</span>' : (S.path.length < 3 ? '<button class="btn" data-addstep="' + esc(p.id) + '" style="min-height:40px;padding:0 12px">+ Step ' + (S.path.length + 1) + '</button>' : '')) + '</div>';
     }).join('') + '</div><p class="muted" style="margin-top:8px"><a href="#/cards">Star more cards</a></p>';
-    html += '<h2 class="h2">Where does your path stop?</h2><p class="muted">What would you need to know to take the next step? Take these questions to the next clinics.</p>' +
-      '<div class="stack">' + S.questions.map(function (q, i) { var an = answerFor(q); return '<div class="q"><span>' + esc(q) + (an.length ? '<span class="qa">→ Answered in your guide: ' + esc(an.map(function (a) { return a.topic; }).join(' · ')) + '</span>' : '<span class="qa">→ No ready answer: take it to the clinic. Your guide says where to ask.</span>') + '</span><button aria-label="Remove question" data-dq="' + i + '">×</button></div>'; }).join('') + '</div>' +
-      '<label class="f" for="nq">New question</label><textarea id="nq" maxlength="300"></textarea>' +
-      '<div class="row" style="margin-top:10px"><button class="btn" id="addq">Add question</button></div>' +
-      (D.questionPrompts && D.questionPrompts.length ? '<p class="muted" style="margin-top:14px">Stuck? Questions other labs often have:</p><div class="chips" data-group="qp">' + D.questionPrompts.map(function (q) { return '<button class="chip" data-v="' + esc(q) + '">' + esc(q) + '</button>'; }).join('') + '</div>' : '') +
-      '<h2 class="h2">Swap with a neighbour</h2><p class="muted">Send your path to a colleague or to the clinic desk. Their answer goes into \u201cFrom the exchange\u201d under each step, and into your PDF.</p>' +
-      '<div class="row"><button class="btn ghost" id="share">Share my path</button></div><p class="muted" id="sharemsg" role="status" style="white-space:pre-wrap"></p>' +
+    html += '<h2 class="h2">Your doubts</h2><p class="muted">Write what you do not know yet. Ask Carlos or another lab during the clinic, and note the answer: it goes into your guide.</p>' +
+      '<div class="stack">' + S.questions.map(function (q, i) { var an = answerFor(q); return '<div class="qcard"><div class="q"><span>' + esc(q) + '<span class="qa">' + (an.length ? '\u2192 Your guide answers part of it: ' + esc(an.map(function (a) { return a.topic; }).join(' \u00b7 ')) : '\u2192 Ask it today') + '</span></span><button aria-label="Remove question" data-dq="' + i + '">\u00d7</button></div>' +
+        '<input type="text" data-told="' + i + '" maxlength="300" placeholder="Answer from today, and who gave it" value="' + esc(S.told[q] || '') + '"></div>'; }).join('') + '</div>' +
+      '<label class="f" for="nq">New doubt</label><textarea id="nq" maxlength="300"></textarea>' +
+      '<div class="row" style="margin-top:10px"><button class="btn" id="addq">Add</button></div>' +
+      (D.questionPrompts && D.questionPrompts.length ? '<p class="muted" style="margin-top:14px">Doubts other labs often have:</p><div class="chips" data-group="qp">' + D.questionPrompts.map(function (q) { return '<button class="chip" data-v="' + esc(q) + '">' + esc(q) + '</button>'; }).join('') + '</div>' : '') +
       '<hr><a class="btn blue" href="#/guide">Make my guide</a>';
     render(html, 'path', true);
     app.querySelectorAll('[data-addstep]').forEach(function (b) { b.addEventListener('click', function () { S.path.push({ project: b.dataset.addstep, why: [], when: '', themes: [], prio: [], how: '', peer: '' }); save(); pathView(); }); });
@@ -293,10 +286,9 @@
     app.querySelectorAll('[data-theme]').forEach(function (box) { box.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; var st = S.path[+box.dataset.theme], v = +b.dataset.v, k = st.themes.indexOf(v); if (k > -1) st.themes.splice(k, 1); else st.themes.push(v); b.setAttribute('aria-pressed', k < 0); save(); }); });
     app.querySelectorAll('[data-prio]').forEach(function (box) { box.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; var st = S.path[+box.dataset.prio], v = b.dataset.v, k = st.prio.indexOf(v); if (k > -1) st.prio.splice(k, 1); else st.prio.push(v); b.setAttribute('aria-pressed', k < 0); save(); }); });
     app.querySelectorAll('[data-how]').forEach(function (el) { el.addEventListener('input', function () { S.path[+el.dataset.how].how = el.value; save(); }); });
-    app.querySelectorAll('[data-peer]').forEach(function (el) { el.addEventListener('input', function () { S.path[+el.dataset.peer].peer = el.value; save(); }); });
-    var sh = document.getElementById('share'); if (sh) sh.addEventListener('click', function () { var t = shareText(), m = document.getElementById('sharemsg'); if (navigator.share) navigator.share({ title: 'My road to 2028', text: t }).catch(function () {}); else if (navigator.clipboard) navigator.clipboard.writeText(t).then(function () { m.textContent = 'Copied. Paste it in a message to a colleague or to the clinic.'; }, function () { m.textContent = t; }); else m.textContent = t; });
     app.querySelectorAll('[data-when]').forEach(function (box) { box.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; var st = S.path[+box.dataset.when]; st.when = st.when === b.dataset.v ? '' : b.dataset.v; box.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', x.dataset.v === st.when); }); save(); }); });
-    app.querySelectorAll('[data-dq]').forEach(function (b) { b.addEventListener('click', function () { S.questions.splice(+b.dataset.dq, 1); save(); pathView(); }); });
+    app.querySelectorAll('[data-told]').forEach(function (el) { el.addEventListener('input', function () { var q = S.questions[+el.dataset.told]; if (el.value.trim()) S.told[q] = el.value; else delete S.told[q]; save(); }); });
+    app.querySelectorAll('[data-dq]').forEach(function (b) { b.addEventListener('click', function () { delete S.told[S.questions[+b.dataset.dq]]; S.questions.splice(+b.dataset.dq, 1); save(); pathView(); }); });
     document.getElementById('addq').addEventListener('click', function () { var t = document.getElementById('nq').value.trim(); if (t) { S.questions.push(t); save(); pathView(); } });
     chipGroup('qp', function (v) { if (S.questions.indexOf(v) < 0) { S.questions.push(v); save(); pathView(); } });
   }
@@ -357,10 +349,10 @@
     var st = steps(), R = readings();
     render(
       '<div class="kicker">Your take-away</div><h1 class="h1">My guide</h1>' +
-      '<p class="lead">A PDF made from your choices: your path read against Buinho\'s strategy, practical advice for each step, your year of deadlines, the long-term questions behind every application, and your own questions.</p>' +
+      '<p class="lead">Made from your choices. It is not a summary of today: it is a map to come back to when you prepare your next applications.</p>' +
       (st.length ? '<div class="stack">' + st.map(function (s, i) { var p = project(s.project), f = pfam(p); return '<div class="aitem"><span class="sw fam-' + f + '">' + (i + 1) + '</span><span class="tx"><b>' + esc(p.name) + '</b><span>' + esc(famLabel(f) + (s.when ? ' · ' + s.when : '') + (s.why.length ? ' · ' + whyLabels(s.why).join(', ') : '')) + '</span></span></div>'; }).join('') + '</div>'
         : '<div class="empty">No path yet. <a href="#/path">Put your starred cards in order first.</a></div>') +
-      (S.questions.length ? '<h2 class="h2">Your questions, answered</h2><div class="stack">' + S.questions.map(function (q) { var an = answerFor(q); return '<div class="qcard"><div class="q"><span>' + esc(q) + '</span></div>' + (an.length ? an.map(function (a) { var pl = pathLink(a); return '<div class="ans"><div class="lab">' + esc(a.topic) + '</div><p>' + esc(a.a) + '</p>' + (a.next ? '<p class="muted">' + esc(a.next) + '</p>' : '') + (pl ? '<p><b>' + esc(pl) + '</b></p>' : '') + '<p>' + a.links.map(function (l) { return link(l.url, l.label); }).join(' · ') + '</p></div>'; }).join('') : '<div class="ans"><p>No ready answer in this guide. Take it to the next clinics, or ask your National Agency or Creative Desk (links in your PDF). That is exactly what the clinics are for.</p></div>') + '</div>'; }).join('') + '</div>' : '') +
+      (S.questions.length ? '<h2 class="h2">Your questions, answered</h2><div class="stack">' + S.questions.map(function (q) { var an = answerFor(q); return '<div class="qcard"><div class="q"><span>' + esc(q) + '</span></div>' + (S.told[q] ? '<div class="ans"><div class="lab">Answered today</div><p>' + esc(S.told[q]) + '</p></div>' : '') + (an.length ? an.map(function (a) { var pl = pathLink(a); return '<div class="ans"><div class="lab">' + esc(a.topic) + '</div><p>' + esc(a.a) + '</p>' + (a.next ? '<p class="muted">' + esc(a.next) + '</p>' : '') + (pl ? '<p><b>' + esc(pl) + '</b></p>' : '') + '<p>' + a.links.map(function (l) { return link(l.url, l.label); }).join(' · ') + '</p></div>'; }).join('') : '<div class="ans"><p>No ready answer in this guide. Take it to the next clinics, or ask your National Agency or Creative Desk (links in your PDF). That is exactly what the clinics are for.</p></div>') + '</div>'; }).join('') + '</div>' : '') +
       (st.length ? '<h2 class="h2">Priorities your path answers</h2><div class="stack">' + st.map(function (s, i) { var pr = prioList(s); return '<div class="advice"><b>Step ' + (i + 1) + ':</b> ' + (pr.length ? esc(pr.join(' \u00b7 ')) + (s.how ? '<br><span class="muted">' + esc(s.how) + '</span>' : '') : '<span class="muted">No priority chosen yet. <a href="#/path">Which one would an expert see in it?</a></span>') + '</div>'; }).join('') + '</div>' : '') +
       (R.length ? '<h2 class="h2">What your path says</h2><div class="stack">' + R.map(function (t) { return '<div class="advice">' + esc(t) + '</div>'; }).join('') + '</div>' : '') +
       ((D.strategy && D.strategy.references) ? '<h2 class="h2">Official references</h2><p class="muted">The documents and tools behind this guide. Always read the current version.</p>' + D.strategy.references.map(function (g) { return '<h3 class="h3">' + esc(g.group) + '</h3><ul class="links">' + g.items.map(function (l) { return '<li><a href="' + esc(l.url) + '" target="_blank" rel="noopener">' + esc(l.label) + '</a></li>'; }).join('') + '</ul>'; }).join('') : '') +
@@ -476,7 +468,7 @@
       if (ev) { var prep = (ev.m + 8) % 12 + 1; body.push('Next move: talk to partners from ' + MONTHS.at(prep - 1) + '; the deadline was in ' + MONTHS.at(ev.m - 1) + ' in the 2026 calls (check the 2027 call).'); }
       box('Step ' + (i + 1) + ' \u00b7 ' + famLabel(pfam(p)), body, { rule: famColor(pfam(p)) === SUN ? INK : famColor(pfam(p)), bg: WALL, size: 9.8 });
     });
-    if (S.questions.length) { var qs = S.questions.slice(0, 3).map(function (q) { var an = answerFor(q); return q + (an.length ? '  \u2192 answered: ' + an.map(function (a) { return a.topic; }).join(', ') : '  \u2192 take it to the clinics'); }); box('Your questions (answers on the next pages)', qs, { rule: SUN === SUN ? INK : INK, bg: '#fff8d6', bullets: true, size: 9.8 }); }
+    if (S.questions.length) { var qs = S.questions.slice(0, 3).map(function (q) { var an = answerFor(q); return q + (S.told[q] ? '  \u2192 answered today' : '') + (an.length ? '  \u2192 in this guide: ' + an.map(function (a) { return a.topic; }).join(', ') : '  \u2192 take it to the clinics'); }); box('Your questions (answers on the next pages)', qs, { rule: SUN === SUN ? INK : INK, bg: '#fff8d6', bullets: true, size: 9.8 }); }
 
     /* ===== 2. path at a glance: map against 2028 pillars ===== */
     doc.addPage(); page++; band(INK, 'Your path at a glance', 'Where your steps sit after 2027', 'Erasmus+ pillars and AgoraEU, according to the proposals for 2028–2034');
@@ -540,13 +532,14 @@
       var L = lines(q, 11.5, true, CW - 12), h = L.length * lh(11.5) + 9; need(h + 40);
       fill(NOTE); doc.rect(M, y - 4, CW, h, 'F'); font(true, 11.5); color(INK); L.forEach(function (ln, k) { doc.text(ln, M + 6, y + 2 + k * lh(11.5)); }); y += h + 3;
       var an = answerFor(q);
+      if (S.told[q]) box('Answered today', S.told[q], { rule: INK, bg: '#fff8d6', size: 10.5 });
       if (an.length) an.forEach(function (a) {
         var body = [a.a]; if (a.next) body.push(a.next); var pl = pathLink(a); if (pl) body.push(pl);
         box(a.topic, body, { rule: SUN === SUN ? INK : INK, bg: '#ffffff', size: 10 });
         a.links.forEach(function (l) { linkLine(l, M + 6, CW - 6); });
       });
-      else box('No ready answer in this guide', ['That is what the clinics are for: bring this question to the next sessions of the seminar, to a lab that has done it, or to your National Agency or Creative Europe Desk.'], { rule: RED, bg: WALL, size: 10 });
-      notes(3); y += 2;
+      else if (!S.told[q]) box('No ready answer in this guide', ['That is what the clinics are for: bring this question to the next sessions of the seminar, to a lab that has done it, or to your National Agency or Creative Europe Desk.'], { rule: RED, bg: WALL, size: 10 });
+      if (!S.told[q]) notes(3); y += 2;
     });
     else text('(No questions written in the app. Write them in "My path" and download the guide again.)', 10, false, G5, 4);
     if (D.whereToAsk && D.whereToAsk.length) { y += 2; label('Where to look for answers'); D.whereToAsk.forEach(function (l) { linkLine(l); }); }
@@ -564,7 +557,6 @@
       var dd = distance(i); if (dd.length) box('Distance from where you are', dd, { rule: BLUE, bg: WALL, size: 10 });
       var th = (s.themes || []).map(function (k) { return S.lab.themes[k]; }).filter(Boolean); if (S.lab.themes.filter(Boolean).length) box('Serves your themes', th.length ? th.join(' \u00b7 ') : 'None of your themes yet. Is this step worth it, or does it need a different angle?', { rule: th.length ? INK : RED, bg: '#ffffff', size: 10 });
       var prf = prioList(s, true); box('Priorities this step answers', prf.length ? prf.concat(s.how ? ['How: ' + s.how] : []) : ['No priority chosen yet. Which one would an expert see in this step, and what would you show for it?'], { rule: prf.length ? BLUE : RED, bg: '#ffffff', size: 10, bullets: !!prf.length });
-      if (s.peer) box('From the exchange', s.peer, { rule: SUN === SUN ? INK : INK, bg: '#fff8d6', size: 10 }); else notes(2, 'NOTES FROM THE EXCHANGE');
       if (SP.advice) box('If this is your step: practical advice', SP.advice, { rule: RED, bg: WALL, bullets: true, size: 10.5 });
       if (a) {
         box('After 2027', a.future, { rule: INK, bg: '#ffffff' });
