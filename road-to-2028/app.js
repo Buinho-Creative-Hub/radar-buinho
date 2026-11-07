@@ -8,7 +8,7 @@
   /* ---------- state ---------- */
   function blank() { return { lab: { code: '', name: '', country: '', exp: '', domains: [], needs: [], vision: '', themes: ['', '', ''], cap: {}, targets: [] }, fav: [], path: [], questions: [], told: {}, road: { ms: [], ready: {}, review: '', init: false } }; }
   var S = load() || blank();
-  (function () { if (!S.told) S.told = {}; if (S.lab && !S.lab.targets) S.lab.targets = S.lab.target ? [S.lab.target] : []; if (!S.road) S.road = blank().road; var b = blank().lab; Object.keys(b).forEach(function (k) { if (S.lab[k] == null) S.lab[k] = b[k]; }); S.path.forEach(function (st) { if (!st.themes) st.themes = []; if (!st.prio) st.prio = []; if (st.how == null) st.how = ''; if (st.peer == null) st.peer = ''; }); })();
+  (function () { if (!S.told) S.told = {}; if (S.lab && !S.lab.targets) S.lab.targets = S.lab.target ? [S.lab.target] : []; if (!S.road) S.road = blank().road; var b = blank().lab; Object.keys(b).forEach(function (k) { if (S.lab[k] == null) S.lab[k] = b[k]; }); S.path.forEach(function (st) { if (!st.themes) st.themes = []; if (!st.prio) st.prio = []; if (!st.prio.length && !st.prioSet) { var pp = byId((window.VULCA || {}).projects, st.project); if (pp && pp.prio) st.prio = pp.prio.slice(); } if (st.how == null) st.how = ''; if (st.peer == null) st.peer = ''; }); })();
   function load() { try { var s = JSON.parse(localStorage.getItem(KEY)); return s && s.fav ? s : null; } catch (e) { return null; } }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 
@@ -303,7 +303,7 @@
     app.querySelectorAll('[data-up]').forEach(function (b) { b.addEventListener('click', function () { var i = +b.dataset.up, t = S.path[i - 1]; S.path[i - 1] = S.path[i]; S.path[i] = t; S.road.ms.forEach(function (m) { m.steps = m.steps.map(function (x) { return x === i ? i - 1 : x === i - 1 ? i : x; }); }); var r0 = S.road.ready[i - 1]; S.road.ready[i - 1] = S.road.ready[i]; S.road.ready[i] = r0; save(); pathView(); }); });
     app.querySelectorAll('[data-why]').forEach(function (box) { box.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; var st = S.path[+box.dataset.why], v = b.dataset.v, k = st.why.indexOf(v); if (k > -1) st.why.splice(k, 1); else st.why.push(v); b.setAttribute('aria-pressed', k < 0); save(); }); });
     app.querySelectorAll('[data-theme]').forEach(function (box) { box.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; var st = S.path[+box.dataset.theme], v = +b.dataset.v, k = st.themes.indexOf(v); if (k > -1) st.themes.splice(k, 1); else st.themes.push(v); b.setAttribute('aria-pressed', k < 0); save(); }); });
-    app.querySelectorAll('[data-prio]').forEach(function (box) { box.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; var st = S.path[+box.dataset.prio], v = b.dataset.v, k = st.prio.indexOf(v); if (k > -1) st.prio.splice(k, 1); else st.prio.push(v); b.setAttribute('aria-pressed', k < 0); save(); }); });
+    app.querySelectorAll('[data-prio]').forEach(function (box) { box.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; var st = S.path[+box.dataset.prio]; st.prioSet = true; var v = b.dataset.v, k = st.prio.indexOf(v); if (k > -1) st.prio.splice(k, 1); else st.prio.push(v); b.setAttribute('aria-pressed', k < 0); save(); }); });
     app.querySelectorAll('[data-how]').forEach(function (el) { el.addEventListener('input', function () { S.path[+el.dataset.how].how = el.value; save(); }); });
     app.querySelectorAll('[data-when]').forEach(function (box) { box.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; var st = S.path[+box.dataset.when]; st.when = st.when === b.dataset.v ? '' : b.dataset.v; box.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', x.dataset.v === st.when); }); save(); }); });
     app.querySelectorAll('[data-told]').forEach(function (el) { el.addEventListener('input', function () { var q = S.questions[+el.dataset.told]; if (el.value.trim()) S.told[q] = el.value; else delete S.told[q]; save(); }); });
@@ -455,7 +455,7 @@
       y += h + 2;
     }
     function rows(pairs, size) {
-      size = size || 9.5; var kw = 34;
+      size = size || 9.5; var kw = 42;
       pairs.forEach(function (r) { if (!r[1]) return; var L = lines(r[1], size, false, CW - kw); need(L.length * lh(size) + 2); font(true, 8); color(G5); doc.text(r[0].toUpperCase(), M, y); font(false, size); color(INK); L.forEach(function (ln, k) { doc.text(ln, M + kw, y + k * lh(size)); }); y += L.length * lh(size) - lh(size) + 2; stroke(G2); doc.setLineWidth(0.2); doc.line(M, y, M + CW, y); y += 4.6; });
     }
 
@@ -582,16 +582,16 @@
       newPage(); y = 0; band(BLUE, 'What Europe reads in your path', 'The priorities your path speaks to', 'Horizontal priorities for every action, specific ones for each field');
       text(PR.intro, 10, false, G7, 3);
       box('How they are used', PR.rules, { rule: BLUE, bg: WALL, bullets: true, size: 9.5 });
-      label('Which step answers which horizontal priority');
+      label('Which reference project answers which horizontal priority');
       var hc = (CW - 50) / PR.horizontal.length; font(true, 8.5); color(INK); PR.horizontal.forEach(function (h, j) { doc.text(h.short, M + 50 + j * hc, y); }); y += 7;
-      st.forEach(function (s, i) { need(10); font(true, 9.5); color(INK); doc.text('Reference ' + (i + 1), M, y); font(false, 8); color(G5); doc.text(doc.splitTextToSize(ps[i].name, 44)[0], M, y + 4); PR.horizontal.forEach(function (h, j) { var on = (s.prio || []).indexOf(h.id) > -1, ex = (ps[i].prio || []).indexOf(h.id) > -1, cx = M + 50 + j * hc + 4; if (on) { fill(BLUE); doc.circle(cx, y - 1, 2.6, 'F'); } else { stroke(G2); doc.setLineWidth(0.4); doc.circle(cx, y - 1, 2.6, 'S'); } if (ex) { stroke(INK); doc.setLineWidth(0.5); doc.circle(cx, y - 1, 4, 'S'); } }); y += 11; });
+      st.forEach(function (s, i) { need(10); font(true, 9.5); color(INK); doc.text(doc.splitTextToSize(ps[i].name, 46)[0], M, y); font(false, 8); color(G5); doc.text('Reference ' + (i + 1), M, y + 4); PR.horizontal.forEach(function (h, j) { var on = (s.prio || []).indexOf(h.id) > -1, ex = (ps[i].prio || []).indexOf(h.id) > -1, cx = M + 50 + j * hc + 4; if (on) { fill(BLUE); doc.circle(cx, y - 1, 2.6, 'F'); } else { stroke(G2); doc.setLineWidth(0.4); doc.circle(cx, y - 1, 2.6, 'S'); } if (ex) { stroke(INK); doc.setLineWidth(0.5); doc.circle(cx, y - 1, 4, 'S'); } }); y += 11; });
       if (ps.some(function (p) { return p.prio && p.prio.length; })) { fill(BLUE); doc.circle(M + 2, y - 4, 1.6, 'F'); font(false, 7.5); color(G5); doc.text('your choice', M + 5, y - 3); stroke(INK); doc.setLineWidth(0.4); doc.circle(M + 30, y - 4, 2.4, 'S'); doc.text('chosen in the example project\u2019s real application', M + 34, y - 3); y += 3; }
-      var other = []; st.forEach(function (s, i) { var x = (s.prio || []).filter(function (id) { return id.indexOf('h-') !== 0; }).map(prioInfo).filter(Boolean).map(function (z) { return z.name; }); if (x.length) other.push('Reference ' + (i + 1) + ': ' + x.join('; ')); if (s.how) other.push('Reference ' + (i + 1) + ', how: ' + s.how); });
+      var other = []; st.forEach(function (s, i) { var x = (s.prio || []).filter(function (id) { return id.indexOf('h-') !== 0; }).map(prioInfo).filter(Boolean).map(function (z) { return z.name; }); if (x.length) other.push(ps[i].name + ': ' + x.join('; ')); if (s.how) other.push(ps[i].name + ', how: ' + s.how); });
       if (other.length) box('Field priorities and how', other, { rule: INK, bg: WALL, size: 9.5 });
       var unused = PR.horizontal.filter(function (h) { return !st.some(function (s) { return (s.prio || []).indexOf(h.id) > -1; }); }).map(function (h) { return h.short; });
       var none = st.filter(function (s) { return !(s.prio || []).length; }).length, pn = [];
-      if (none) pn.push(none + ' step(s) without a priority. Funded projects usually answer several: look at the example card, then choose the ones you can really show.');
-      if (!st.some(function (s) { return (s.prio || []).indexOf('h-inc') > -1; })) pn.push('No step marks Inclusion. In practice almost every funded project addresses it, and experts look for it: name who is missing today and which barrier you lower.');
+      if (none) pn.push('Without a priority yet: ' + st.map(function (s, i) { return (s.prio || []).length ? null : ps[i].name; }).filter(Boolean).join(', ') + '. Funded projects usually answer several: choose the ones you can really show.');
+      if (!st.some(function (s) { return (s.prio || []).indexOf('h-inc') > -1; })) pn.push('None of your reference projects marks Inclusion yet. In practice almost every funded project addresses it, and experts look for it: name who is missing today and which barrier you lower.');
       else pn.push('Inclusion is in almost every funded project, so experts expect it. What makes it count is naming who takes part and which barrier you lower.');
       if (unused.length && unused.length < PR.horizontal.length) pn.push('Not in your path yet: ' + unused.join(', ') + '. You do not need all four; but is one of them already part of how your lab works?');
       if (!none && st.length) pn.push('Every step has a priority. Now check that each one shows in the activities, the public and the results, not only in the text.');
