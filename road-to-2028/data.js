@@ -6,15 +6,15 @@ var module = {};
 /* Static content authored for the clinic (English). Merged into site/data.js by build.js. */
 module.exports = {
   pillars: [
-    { id: 'p1', label: 'Pillar I', name: 'Learning opportunities for all', programme: 'Erasmus+ 2028–2034 (proposal)', today: 'Today: Erasmus+ Key Action 1 (learning mobility) and the European Solidarity Corps (volunteering).' },
-    { id: 'p2', label: 'Pillar II', name: 'Capacity building support', programme: 'Erasmus+ 2028–2034 (proposal)', today: 'Today: Erasmus+ Key Actions 2 and 3 (cooperation between organisations, policy support).' },
-    { id: 'agora', label: 'AgoraEU', name: 'Culture, MEDIA+ and CERV+', programme: 'AgoraEU 2028–2034 (proposal)', today: 'Today: Creative Europe and the CERV programme (citizens, equality, rights and values).' }
+    { id: 'p1', label: 'Pillar I', name: 'Learning opportunities for all', programme: 'Erasmus+ 2028\u20132034 (proposal)', today: 'Today: Erasmus+ Key Action 1 (learning mobility) and the European Solidarity Corps (volunteering).' },
+    { id: 'p2', label: 'Pillar II', name: 'Capacity building support', programme: 'Erasmus+ 2028\u20132034 (proposal)', today: 'Today: Erasmus+ Key Actions 2 and 3 (cooperation between organisations, policy support).' },
+    { id: 'agora', label: 'AgoraEU', name: 'Culture, MEDIA+ and CERV+', programme: 'AgoraEU 2028\u20132034 (proposal)', today: 'Today: Creative Europe and the CERV programme (citizens, equality, rights and values).' }
   ],
-  familyLabels: { mobility: 'Mobility', volunteering: 'Volunteering', cooperation: 'Cooperation', culture: 'Culture' },
+  familyLabels: { mobility: 'Mobility', volunteering: 'Volunteering', cooperation: 'Cooperation', culture: 'Culture', citizens: 'Citizens' },
   partnerCriteria: [
     { label: 'Complementarity', text: 'What does each partner bring that the others do not? A method, a public, a sector, a city.' },
     { label: 'Trust', text: 'Partners you have already worked with, or who answer and deliver on time. Most of our projects started from a previous one.' },
-    { label: 'Financial capacity', text: 'Who can receive, advance and co-finance money? Above €60,000 the EU can check the applicant’s accounts (public bodies are exempt).' },
+    { label: 'Financial capacity', text: 'Who can receive, advance and co-finance money? Above \u20ac60,000 the EU can check the applicant\u2019s accounts (public bodies are exempt).' },
     { label: 'Sector', text: 'The field you apply in (schools, adults, youth, vocational, culture) decides the agency and who can credibly coordinate.' },
     { label: 'Size', text: 'How many partners and countries the action asks for, and how many you can really manage.' }
   ],
@@ -244,7 +244,15 @@ module.exports = [
     firstStep: 'Not the easiest first step as coordinator: co-financing, a demanding application, strong competition. A good path is to join a consortium as partner first, or to build partners through Erasmus+.',
     builds: 'International artistic partnerships; co-creation, residencies and audience development; experience with direct EU management; visibility in the cultural sector.',
     links: [{ label: 'Creative Europe: European cooperation projects', url: 'https://culture.ec.europa.eu/creative-europe/creative-europe-culture-strand/european-cooperation-projects' }, { label: 'Call fiche 2026 (PDF)', url: 'https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/crea/wp-call/2026/call-fiche_crea-cult-2026-coop_en.pdf' }, { label: 'Creative Europe projects database', url: 'https://culture.ec.europa.eu/creative-europe/projects/search/?page=1&sort=&domain=ce2021&view=list&map=false' }],
-    sources: ['Call CREA-CULT-2026-COOP'] }
+    sources: ['Call CREA-CULT-2026-COOP'] },
+  { id: 'cerv', pillar: 'agora', future: 'In the 2028 proposal: AgoraEU, CERV+ strand. AgoraEU merges Creative Europe and the CERV programme into three strands: Culture, MEDIA+ and CERV+.', short: 'CERV', family: 'citizens', programme: 'CERV \u00b7 Citizens, Equality, Rights and Values', name: 'Citizens\u2019 engagement and town-twinning',
+    purpose: 'Projects that bring citizens and municipalities together around European values and participation, among them town-twinning and networks of towns, where local authorities and civil society organisations work together.',
+    where: 'EU Funding & Tenders Portal (calls managed by EACEA).',
+    deadlines: 'In the 2026 call, Town-Twinning (CERV-2026-CITIZENS-TOWN-TT) closed on 23 September.' + NOTE,
+    firstStep: 'A route for labs with a strong local role: start from your municipality and its twin towns.',
+    builds: 'A formal working relationship with your municipality; civic participation activities; links between towns across Europe.',
+    links: [{ label: 'CERV programme overview', url: 'https://commission.europa.eu/funding-tenders/find-funding/eu-funding-programmes/citizens-equality-rights-and-values-programme/citizens-equality-rights-and-values-programme-overview_en' }, { label: 'Town-Twinning 2026 call', url: 'https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/CERV-2026-CITIZENS-TOWN-TT' }],
+    sources: ['CERV programme overview; call CERV-2026-CITIZENS-TOWN-TT'] }
 ];
 
 var A = module.exports;
@@ -358,7 +366,8 @@ module.exports = {
     esc: [{ m: 2, t: 'deadline', l: 'Volunteering projects' }, { m: 10, t: 'deadline', l: 'Quality Label (by 29 Oct for February)' }],
     ka210: [{ m: 3, t: 'deadline', l: 'Small-scale partnerships' }, { m: 10, t: 'optional', l: 'Second round, if your agency opens it' }, { m: 7, t: 'result', l: 'Results usually in summer' }],
     ka220: [{ m: 3, t: 'deadline', l: 'Cooperation partnerships' }, { m: 10, t: 'optional', l: 'Second round, if your agency opens it' }, { m: 7, t: 'result', l: 'Results usually in summer' }],
-    crea: [{ m: 5, t: 'deadline', l: 'Creative Europe cooperation' }, { m: 11, t: 'result', l: 'Results' }]
+    crea: [{ m: 5, t: 'deadline', l: 'Creative Europe cooperation' }, { m: 11, t: 'result', l: 'Results' }],
+    cerv: [{ m: 9, t: 'deadline', l: 'CERV Town-Twinning (23 Sept in 2026)' }]
   },
 
   /* rules for "Reading your path". Each rule: id + text; selection logic in app.js */
@@ -485,5 +494,138 @@ module.exports = {
 
 var T = module.exports;
 
-window.VULCA = Object.assign({}, S, { projects: P, actions: A, post2027: X, strategy: T });
+/* ===== answers.en.js ===== */
+/* Answers to the questions labs write (English). Matched by keywords in app.js (answerFor).
+   Facts only from content already verified for this app (Programme Guide 2026, ESC Guide 2026,
+   CREA-CULT-2026-COOP, F&T financial capacity page, post-2027 sources) or Buinho's stated practice
+   (marked "At Buinho"). Keywords: lowercase, no accents, EN/ES/PT/FR/IT stems. */
+var PG = { label: 'Erasmus+ Programme Guide 2026', url: 'https://erasmus-plus.ec.europa.eu/document/erasmus-programme-guide-2026' };
+var NA = { label: 'Find your Erasmus+ National Agency', url: 'https://erasmus-plus.ec.europa.eu/contacts/national-agencies' };
+var RP = { label: 'Erasmus+ Project Results Platform', url: 'https://erasmus-plus.ec.europa.eu/projects' };
+var OT = { label: 'SALTO-YOUTH Otlas partner finding', url: 'https://www.salto-youth.net/tools/otlas-partner-finding/' };
+var EP = { label: 'EPALE Partner Search (adult learning)', url: 'https://epale.ec.europa.eu/en/content/partner-search' };
+var GE = { label: 'Guide for Experts on Quality Assessment 2026', url: 'https://www.leargas.ie/resource/2026-erasmus-guide-for-experts-on-quality-assessment/' };
+var FC = { label: 'Financial capacity assessment (EU Funding & Tenders)', url: 'https://webgate.ec.europa.eu/funding-tenders-opportunities/display/OM/Financial+capacity+assessment' };
+var CED = { label: 'Creative Europe Desks', url: 'https://culture.ec.europa.eu/resources/creative-europe-desks' };
+var CEC = { label: 'Creative Europe cooperation projects', url: 'https://culture.ec.europa.eu/creative-europe/creative-europe-culture-strand/european-cooperation-projects' };
+var CME = { label: 'Culture Moves Europe', url: 'https://culture.ec.europa.eu/creative-europe/creative-europe-culture-strand/culture-moves-europe' };
+var CERV = { label: 'CERV programme overview', url: 'https://commission.europa.eu/funding-tenders/find-funding/eu-funding-programmes/citizens-equality-rights-and-values-programme/citizens-equality-rights-and-values-programme-overview_en' };
+var QL = { label: 'European Solidarity Corps Quality Label', url: 'https://youth.europa.eu/solidarity/organisations/quality-label_en' };
+var OEIL = { label: 'European Parliament: Erasmus+ 2028–2034 procedure', url: 'https://oeil.europarl.europa.eu/oeil/en/procedure-file?reference=2025/0222(COD)' };
+var KA210 = { label: 'Programme Guide: small-scale partnerships', url: 'https://erasmus-plus.ec.europa.eu/programme-guide/part-b/key-action-2/small-scale-partnerships' };
+var KA220 = { label: 'Programme Guide: cooperation partnerships', url: 'https://erasmus-plus.ec.europa.eu/programme-guide/part-b/key-action-2/cooperation-partnerships' };
+var ACC = { label: 'Programme Guide: Erasmus accreditation', url: 'https://erasmus-plus.ec.europa.eu/programme-guide/part-b/key-action-1/erasmus-accreditation-vet-schools-adult-education' };
+
+module.exports = [
+  { id: 'newcomer', topic: 'Starting without experience',
+    kw: ['without previous', 'no previous', 'without experience', 'previous projects', 'partners without', 'never', 'first time', 'first project', 'no experience', 'newcomer', 'beginner', 'start', 'nunca', 'primer', 'primeira', 'primeiro', 'sin experiencia', 'sem experiencia', 'debutant', 'jamais', 'mai', 'senza esperienza', 'join as partner', 'join a project'],
+    a: 'Yes. You do not need previous Erasmus+ experience to be a partner, and small-scale partnerships (KA210) are explicitly aimed at newcomers and grassroots organisations. The cheapest first steps are a short mobility of your own (job shadowing, a course, a youth worker training) or a partner role in someone else’s project, where you lead one clear part of the work.',
+    next: 'Before you say yes as partner, ask the coordinator which part you lead, what money comes to you and what stays in your lab afterwards.',
+    links: [KA210, OT, EP] },
+  { id: 'coordinator', topic: 'Finding a reliable coordinator or partner',
+    kw: ['coordinator', 'reliable', 'trust', 'find partner', 'finding partner', 'partners abroad', 'partner search', 'coordinador', 'coordenador', 'socio', 'socios', 'parceiro', 'parceiros', 'confianza', 'confianca', 'coordinateur', 'partenaire', 'coordinatore', 'partner affidabile', 'consortium', 'consorcio'],
+    a: 'Look for track record you can check: search the organisation’s name on the Erasmus+ Project Results Platform and see which projects it ran, with whom, and whether results are published or flagged as good practice. Most reliable partnerships start from people you already met: earlier projects, networks you are active in, partners of your partners, or seminars like this one. A short mobility or a job shadowing is a low-cost way to test how a partner works.',
+    next: 'At Buinho, a new partner usually enters next to a trusted one, and we look at complementarity, trust, financial capacity and sector before writing anything.',
+    links: [RP, OT, EP] },
+  { id: 'agency', topic: 'Which agency, which field',
+    kw: ['national agency', 'which agency', 'agency', 'where to apply', 'where do we apply', 'agencia', 'agencia nacional', 'agence', 'agenzia', 'field', 'sector', 'eacea', 'portal'],
+    a: 'Erasmus+ mobility and partnerships are submitted to the National Agency of the applicant’s country, in one field: school education, adult education, vocational training or youth. The field decides the agency desk, the priorities and who can credibly coordinate. Creative Europe is different: you apply to EACEA through the EU Funding & Tenders Portal, and your Creative Europe Desk gives free advice.',
+    next: 'If you work with several publics, choose the field where your target group and results really sit, and check it with your National Agency before writing.',
+    links: [NA, CED, PG] },
+  { id: 'time', topic: 'Workload and staff time',
+    kw: ['time', 'staff time', 'how much work', 'workload', 'hours', 'capacity', 'small team', 'tiempo', 'tempo', 'horas', 'equipo pequeno', 'equipa pequena', 'temps', 'charge de travail', 'carico di lavoro', 'burnout', 'too much'],
+    a: 'There is no official figure. At Buinho, each application takes weeks of writing and months of partner talks, and running projects need reporting at the same time as new applications. Small-scale partnerships are lighter (two partners, a simple lump sum), but the work is still real: plan who writes, who manages and who reports.',
+    next: 'Count your running projects and the deadlines you want to meet in the same year. At Buinho we learned that fewer, better applications do better than many at once.',
+    links: [KA210, PG] },
+  { id: 'accreditation', topic: 'Accreditation or a project first',
+    kw: ['accreditation', 'accredited', 'acreditacion', 'acreditacao', 'accreditation erasmus', 'accreditamento', 'ka120', 'ka121', 'ka150', 'ka151', 'erasmus plan', 'every year'],
+    a: 'An accreditation is a membership card for regular mobility: you submit an Erasmus Plan and then request mobility funding every year with a simplified application. Previous Erasmus+ experience is not required, but you need at least two years of experience in the field. For most labs it makes sense after one or two short-term projects. Accreditations from the 2026 call are formally valid until 31 December 2027, and what happens to them after 2027 is not yet decided.',
+    next: 'If you work with schools, an accreditation can also let you coordinate a local consortium; only the coordinator needs it.',
+    links: [ACC, PG] },
+  { id: 'youth2028', topic: 'Youth projects after 2027',
+    kw: ['youth projects', 'youth after', 'youth', 'young people', 'juventud', 'juventude', 'jovenes', 'jovens', 'jeunesse', 'jeunes', 'giovani', 'youth exchange', 'youth worker', 'ka152', 'ka153', 'ka105', 'solidarity corps', 'volunteer'],
+    a: 'In the Commission’s proposal for 2028–2034, youth mobility sits in Pillar I, Learning opportunities for all, together with volunteering: the European Solidarity Corps moves inside Erasmus+. The Council’s partial position (May 2026) keeps youth exchanges and youth worker mobility; the European Parliament (22 October 2026) asks for a fixed 15% share for youth and volunteering. None of this is law yet.',
+    next: 'Today’s youth exchanges need only 2 organisations from different countries and have two rounds a year (February and 1 October in 2026): a good way to build a track record before 2028.',
+    links: [OEIL, PG] },
+  { id: 'money', topic: 'Money, cash flow and co-financing',
+    kw: ['adelantar', 'adiantar', 'avancer', 'anticipare', 'when do they pay', 'cuando pagan', 'quando pagam', 'money', 'budget', 'cash', 'cash flow', 'co-financ', 'cofinanc', 'pay', 'payment', 'advance', 'prefinanc', 'grant', 'lump sum', 'euros', 'dinero', 'dinheiro', 'financiacion', 'financiamento', 'pago', 'pagamento', 'argent', 'soldi', 'finanziamento', 'tesoreria', 'tesouraria'],
+    a: 'Erasmus+ partnerships use lump sums: €30,000 or €60,000 for small-scale partnerships, €120,000, €250,000 or €400,000 for cooperation partnerships. Mobility uses unit costs per participant (organisational support, travel by distance, individual support, inclusion support). Creative Europe small-scale cooperation pays at most 80% of the costs, up to €200,000: you need your own funds for the rest. Grants come in instalments, with the last part after the final report, so plan cash for the months in between.',
+    next: 'Ask yourself: can we advance costs for months, and who in the partnership receives and shares the money?',
+    links: [PG, CEC] },
+  { id: 'fincap', topic: 'Financial capacity check',
+    kw: ['financial capacity', 'accounts', 'balance sheet', 'check our accounts', 'capacidad financiera', 'capacidade financeira', 'contas', 'cuentas', 'capacite financiere', 'capacita finanziaria', '60,000', '60000', '60k'],
+    a: 'For grants above €60,000, the EU can check the financial capacity of the applicant (public bodies are exempt), usually with the last two years of accounts. At €60,000 or below there is no check, which is one reason small-scale partnerships are a good first step. The EU Funding & Tenders Portal explains the rules and offers a self-check.',
+    next: 'If you plan to coordinate a larger project, prepare your accounts early.',
+    links: [FC] },
+  { id: 'deadlines', topic: 'Deadlines and the yearly calendar',
+    kw: ['deadline', 'when', 'calendar', 'date', 'dates', 'call', 'round', 'plazo', 'prazo', 'fecha', 'data', 'cuando', 'quando', 'date limite', 'scadenza', 'timeline', '2027 call'],
+    a: 'In the 2026 calls: short-term mobility 19 February; youth exchanges and youth workers 12 February and 1 October; Solidarity Corps projects 18 February (Quality Label by 29 October to apply in February); small-scale and cooperation partnerships 5 March, with an optional 1 October round where the agency opens it; Creative Europe cooperation 5 May; accreditations 29 September. The 2027 calls, the last of this programme, had not been published on 7 November 2026.',
+    next: 'Talk to partners about three months before each deadline. Your guide has a calendar page for the actions on your path.',
+    links: [PG] },
+  { id: 'partnersnum', topic: 'How many partners',
+    kw: ['how many partners', 'number of partners', 'minimum', 'countries', 'cuantos socios', 'quantos parceiros', 'combien de partenaires', 'quanti partner', 'two partners', 'three partners', 'consortium size'],
+    a: 'Minimums in the 2026 rules: small-scale partnerships, 2 organisations from 2 countries; cooperation partnerships, 3 from 3; youth exchanges, 2 organisations from different countries; Creative Europe small scale, 3 organisations from 3 countries (medium scale, 5 from 5). Short-term mobility is applied for by one organisation alone, with hosts abroad.',
+    next: 'Bigger is not better: choose partners who each bring something the others lack, and as many as you can really manage.',
+    links: [KA210, KA220, CEC] },
+  { id: 'eligible', topic: 'Who can apply',
+    kw: ['eligible', 'eligibility', 'can we apply', 'company', 'business', 'informal group', 'association', 'ngo', 'elegible', 'elegivel', 'elegibilidade', 'empresa', 'asociacion', 'associacao', 'entreprise', 'impresa', 'legal entity', 'registered'],
+    a: 'Small-scale partnerships are open to any public or private organisation. Youth exchanges also accept informal groups of young people. Cooperation partnerships and Creative Europe need a coordinator legally established for at least two years. Creative Europe is for organisations active in the cultural and creative sectors.',
+    next: 'Choose carefully which of your organisations applies: the track record stays with its registration number, not with the people.',
+    links: [PG, CEC] },
+  { id: 'caps', topic: 'Limits per organisation and per round',
+    kw: ['how many applications', 'limit', 'cap', 'same round', 'several applications', 'more than one', 'limite', 'varias candidaturas', 'varias solicitudes', 'plusieurs', 'piu candidature', 'ineligible', 'inelegible', 'inelegivel'],
+    a: 'In small-scale partnerships an organisation can apply once per deadline as applicant and take part in up to five applications as applicant or partner. In the 2026 Creative Europe call an organisation could coordinate one application and take part in three at most. Check the caps every year before you commit to partners.',
+    next: 'At Buinho, two applications were lost to paperwork, including a rule about the same group of organisations in one round. Map eligibility before writing.',
+    links: [KA210, CEC] },
+  { id: 'register', topic: 'Registration and paperwork',
+    kw: ['oid', 'pic', 'register', 'registration', 'signature', 'declaration', 'paperwork', 'documents', 'registo', 'registro', 'firma', 'assinatura', 'documentos', 'inscription', 'firma digitale', 'participant register'],
+    a: 'Erasmus+ applications managed by National Agencies use an Organisation ID (OID); Creative Europe uses a PIC in the EU Participant Register. Keep the data up to date, know who signs the declarations, and have every partner confirm in writing.',
+    next: 'Your guide includes a practical checklist with the small things that sink good projects.',
+    links: [PG] },
+  { id: 'criteria', topic: 'How applications are scored',
+    kw: ['evaluat', 'score', 'points', 'criteria', 'assess', 'quality', 'rejected', 'rejection', 'resubmit', 'evaluacion', 'avaliacao', 'puntos', 'pontos', 'criterios', 'rechaz', 'rejeit', 'evaluation', 'valutazione', 'experts', 'win', 'approved'],
+    a: 'Evaluators score each application against the award criteria in the Programme Guide; the Guide for Experts on Quality Assessment explains how they read each criterion. Read them before writing. If you are rejected, read the comments criterion by criterion and say clearly what changed when you resubmit: at Buinho a project rejected with 73 points was approved the next round.',
+    next: 'Ask a lab that has been funded to read your draft against the criteria.',
+    links: [GE, PG] },
+  { id: 'art', topic: 'Artistic work and Creative Europe',
+    kw: ['art', 'artist', 'artistic', 'culture', 'creative europe', 'residency', 'residencies', 'exhibition', 'arte', 'artista', 'cultura', 'europa creativa', 'europa criativa', 'residencia', 'artiste', 'europe creative', 'artistico', 'agoraeu', 'agora eu'],
+    a: 'Erasmus+ funds learning, not artistic production. For artistic work, Creative Europe cooperation projects (AgoraEU – Culture after 2027, according to the proposal) fund co-creation, residencies, artist mobility and audiences, with co-financing. Culture Moves Europe funds the mobility of individual artists and cultural professionals. In Creative Europe, inclusion works best as the angle of the artistic innovation, not as the product.',
+    next: 'A good path is to join a Creative Europe consortium as partner first; your Creative Europe Desk gives free advice.',
+    links: [CEC, CME, CED] },
+  { id: 'municipality', topic: 'Municipalities and citizenship (CERV)',
+    kw: ['municipality', 'city council', 'town', 'local authority', 'citizens', 'citizenship', 'cerv', 'twinning', 'democracy', 'municipio', 'ayuntamiento', 'camara', 'ciudadania', 'cidadania', 'commune', 'mairie', 'comune', 'local government'],
+    a: 'The CERV programme (citizens, equality, rights and values) funds, among other strands, town-twinning and networks of towns, where municipalities and civil society work together. In the 2026 call, Town-Twinning closed on 23 September. After 2027 the Commission proposes to merge CERV into AgoraEU as the CERV+ strand.',
+    next: 'Bring your municipality and schools in as partners or supporters: local anchoring makes European projects credible.',
+    links: [CERV] },
+  { id: 'volunteers', topic: 'Hosting volunteers',
+    kw: ['volunteer', 'volunteering', 'quality label', 'esc', 'solidarity', 'voluntario', 'voluntariado', 'benevole', 'volontari', 'corps'],
+    a: 'To host European Solidarity Corps volunteers you first need a Quality Label: free, open to newcomers, submitted at any time (by 29 October to apply for a grant in the next February round). You can start as a host with an experienced lead organisation; only organisations with a lead Quality Label apply for project funding. The Label itself carries no money.',
+    next: 'Give volunteers a real project, not only tasks. After 2027 the Commission proposes to integrate the Corps into Erasmus+.',
+    links: [QL] },
+  { id: 'mobilitycosts', topic: 'What mobility pays for',
+    kw: ['mobility', 'job shadowing', 'course', 'travel', 'trip', 'training abroad', 'teachers', 'movilidad', 'mobilidade', 'viaje', 'viagem', 'formacion', 'formacao', 'mobilite', 'mobilita', 'ka122', 'ka1', 'green travel'],
+    a: 'Short-term mobility (KA122) lets one organisation send staff, and in some fields learners, for job shadowing (2–60 days), courses (2–10 days), or invite experts. It pays unit costs per participant: organisational support, travel by distance, daily support, course fees and inclusion support, for up to 30 participants. Applications go to your National Agency in February.',
+    next: 'Sending a colleague to a fablab abroad for job shadowing is one of the simplest first steps.',
+    links: [PG, NA] },
+  { id: 'after2027', topic: 'What changes after 2027',
+    kw: ['2028', 'after 2027', 'new programme', 'next programme', 'mff', 'future', 'change', 'pillar', 'pillars', 'nuevo programa', 'novo programa', 'futuro', 'despues', 'depois', 'apres 2027', 'dopo il 2027', 'framework'],
+    a: 'For 2028–2034 there are proposals and negotiating positions, not law. The Commission proposes one Erasmus+ in two pillars (learning mobility and volunteering; capacity building, merging today’s Key Actions 2 and 3) and AgoraEU merging Creative Europe and CERV. Budgets depend on the EU long-term budget: the Commission proposed €40.8 billion for Erasmus+, the Parliament asks for €47.39 billion.',
+    next: 'Use the 2027 calls, the last under known rules, to build what carries over: a record as coordinator, tested partners and documented results.',
+    links: [OEIL] },
+  { id: 'inspiration', topic: 'Finding similar projects',
+    kw: ['similar', 'examples', 'inspiration', 'other fablabs', 'other labs', 'good practice', 'best practice', 'ejemplos', 'exemplos', 'boas praticas', 'buenas practicas', 'exemples', 'esempi', 'results platform', 'database'],
+    a: 'The Erasmus+ Project Results Platform lets you search funded projects by keyword, country, action and year, and filter good practices. Search for words like makerspace, fablab, repair or digital fabrication, then look at who coordinated, how many partners and what results they published. Your guide includes search links for your field.',
+    next: 'Contact the coordinators of projects close to yours: many are happy to share what worked.',
+    links: [RP] },
+  { id: 'rolechoice', topic: 'Partner or coordinator',
+    kw: ['partner or coordinator', 'lead', 'leading', 'coordinate', 'coordinating', 'be the coordinator', 'liderar', 'coordinar', 'coordenar', 'coordonner', 'coordinare', 'applicant'],
+    a: 'As partner you learn a programme at lower cost and risk; as coordinator you carry the money, the reporting and the relationship with the agency, and you build the record that counts most for the future. Coordinators of cooperation partnerships and Creative Europe projects must be established for at least two years, and above €60,000 their financial capacity can be checked.',
+    next: 'At Buinho we alternate: partner in a new programme first, coordinator once we know its evaluation grid.',
+    links: [PG, FC] }
+];
+
+var Q = module.exports;
+
+P = P.concat([]);
+window.VULCA = Object.assign({}, S, { projects: P, actions: A, post2027: X, strategy: T, answers: Q });
 })();
