@@ -233,6 +233,7 @@
   /* ---------- path: built from starred cards ---------- */
   function prioHTML(i, st, p) {
     var o = prioOpts(p), g = '', h = '<div class="qn"><b>3 \u00b7 What will Europe see in it?</b> <span class="muted">Pick a priority. <a href="#/priorities">What are they?</a></span></div><div class="chips" data-prio="' + i + '">';
+    if (p && p.formPrio && p.formPrio.length) h += '<p class="muted small">In ' + esc(p.name) + '\u2019s real application: ' + esc(p.formPrio.join(' \u00b7 ')) + '.' + (p.prio && p.prio.length ? ' Already marked below: keep what fits your step.' : '') + '</p>';
     o.forEach(function (x) { if (x.group !== g) { if (g) h += '</div><div class="muted small">' + esc(x.group) + '</div><div class="chips" data-prio="' + i + '">'; g = x.group; } h += '<button class="chip" data-v="' + esc(x.id) + '" aria-pressed="' + (st.prio.indexOf(x.id) > -1) + '" title="' + esc(x.name) + '">' + esc(x.short) + '</button>'; });
     h += '</div>' + (S.lab.domains.length ? '' : '<p class="muted small">Tell the app who you work with (start screen) to see the priorities of your field.</p>');
     h += '<input type="text" data-how="' + i + '" maxlength="140" placeholder="In one line: who takes part, what you will show" value="' + esc(st.how) + '">';
@@ -279,7 +280,7 @@
       (D.questionPrompts && D.questionPrompts.length ? '<p class="muted" style="margin-top:14px">Doubts other labs often have:</p><div class="chips" data-group="qp">' + D.questionPrompts.map(function (q) { return '<button class="chip" data-v="' + esc(q) + '">' + esc(q) + '</button>'; }).join('') + '</div>' : '') +
       '<hr><a class="btn blue" href="#/guide">Make my guide</a>';
     render(html, 'path', true);
-    app.querySelectorAll('[data-addstep]').forEach(function (b) { b.addEventListener('click', function () { S.path.push({ project: b.dataset.addstep, why: [], when: '', themes: [], prio: [], how: '', peer: '' }); save(); pathView(); }); });
+    app.querySelectorAll('[data-addstep]').forEach(function (b) { b.addEventListener('click', function () { var pp = project(b.dataset.addstep); S.path.push({ project: b.dataset.addstep, why: [], when: '', themes: [], prio: (pp && pp.prio ? pp.prio.slice() : []), how: '', peer: '' }); save(); pathView(); }); });
     app.querySelectorAll('[data-unstep]').forEach(function (b) { b.addEventListener('click', function () { S.path.splice(+b.dataset.unstep, 1); save(); pathView(); }); });
     app.querySelectorAll('[data-up]').forEach(function (b) { b.addEventListener('click', function () { var i = +b.dataset.up, t = S.path[i - 1]; S.path[i - 1] = S.path[i]; S.path[i] = t; save(); pathView(); }); });
     app.querySelectorAll('[data-why]').forEach(function (box) { box.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; var st = S.path[+box.dataset.why], v = b.dataset.v, k = st.why.indexOf(v); if (k > -1) st.why.splice(k, 1); else st.why.push(v); b.setAttribute('aria-pressed', k < 0); save(); }); });
@@ -500,12 +501,15 @@
       box('How they are used', PR.rules, { rule: BLUE, bg: WALL, bullets: true, size: 9.5 });
       label('Which step answers which horizontal priority');
       var hc = (CW - 50) / PR.horizontal.length; font(true, 8.5); color(INK); PR.horizontal.forEach(function (h, j) { doc.text(h.short, M + 50 + j * hc, y); }); y += 7;
-      st.forEach(function (s, i) { need(10); font(true, 9.5); color(INK); doc.text('Step ' + (i + 1), M, y); font(false, 8); color(G5); doc.text(doc.splitTextToSize(ps[i].name, 44)[0], M, y + 4); PR.horizontal.forEach(function (h, j) { var on = (s.prio || []).indexOf(h.id) > -1, cx = M + 50 + j * hc + 4; if (on) { fill(BLUE); doc.circle(cx, y - 1, 2.6, 'F'); } else { stroke(G2); doc.setLineWidth(0.4); doc.circle(cx, y - 1, 2.6, 'S'); } }); y += 11; });
+      st.forEach(function (s, i) { need(10); font(true, 9.5); color(INK); doc.text('Step ' + (i + 1), M, y); font(false, 8); color(G5); doc.text(doc.splitTextToSize(ps[i].name, 44)[0], M, y + 4); PR.horizontal.forEach(function (h, j) { var on = (s.prio || []).indexOf(h.id) > -1, ex = (ps[i].prio || []).indexOf(h.id) > -1, cx = M + 50 + j * hc + 4; if (on) { fill(BLUE); doc.circle(cx, y - 1, 2.6, 'F'); } else { stroke(G2); doc.setLineWidth(0.4); doc.circle(cx, y - 1, 2.6, 'S'); } if (ex) { stroke(INK); doc.setLineWidth(0.5); doc.circle(cx, y - 1, 4, 'S'); } }); y += 11; });
+      if (ps.some(function (p) { return p.prio && p.prio.length; })) { fill(BLUE); doc.circle(M + 2, y - 4, 1.6, 'F'); font(false, 7.5); color(G5); doc.text('your choice', M + 5, y - 3); stroke(INK); doc.setLineWidth(0.4); doc.circle(M + 30, y - 4, 2.4, 'S'); doc.text('chosen in the example project\u2019s real application', M + 34, y - 3); y += 3; }
       var other = []; st.forEach(function (s, i) { var x = (s.prio || []).filter(function (id) { return id.indexOf('h-') !== 0; }).map(prioInfo).filter(Boolean).map(function (z) { return z.name; }); if (x.length) other.push('Step ' + (i + 1) + ': ' + x.join('; ')); if (s.how) other.push('Step ' + (i + 1) + ', how: ' + s.how); });
       if (other.length) box('Field priorities and how', other, { rule: INK, bg: WALL, size: 9.5 });
       var unused = PR.horizontal.filter(function (h) { return !st.some(function (s) { return (s.prio || []).indexOf(h.id) > -1; }); }).map(function (h) { return h.short; });
       var none = st.filter(function (s) { return !(s.prio || []).length; }).length, pn = [];
-      if (none) pn.push(none + ' step(s) without a priority. An expert will look for one: which is the honest one?');
+      if (none) pn.push(none + ' step(s) without a priority. Funded projects usually answer several: look at the example card, then choose the ones you can really show.');
+      if (!st.some(function (s) { return (s.prio || []).indexOf('h-inc') > -1; })) pn.push('No step marks Inclusion. In practice almost every funded project addresses it, and experts look for it: name who is missing today and which barrier you lower.');
+      else pn.push('Inclusion is in almost every funded project, so experts expect it. What makes it count is naming who takes part and which barrier you lower.');
       if (unused.length && unused.length < PR.horizontal.length) pn.push('Not in your path yet: ' + unused.join(', ') + '. You do not need all four; but is one of them already part of how your lab works?');
       if (!none && st.length) pn.push('Every step has a priority. Now check that each one shows in the activities, the public and the results, not only in the text.');
       if (pn.length) box('What this says', pn, { rule: RED, bg: WALL, size: 10 });
@@ -556,6 +560,7 @@
       if (p.lesson) box('Lesson', p.lesson, { rule: RED, bg: '#ffffff' });
       var dd = distance(i); if (dd.length) box('Distance from where you are', dd, { rule: BLUE, bg: WALL, size: 10 });
       var th = (s.themes || []).map(function (k) { return S.lab.themes[k]; }).filter(Boolean); if (S.lab.themes.filter(Boolean).length) box('Serves your themes', th.length ? th.join(' \u00b7 ') : 'None of your themes yet. Is this step worth it, or does it need a different angle?', { rule: th.length ? INK : RED, bg: '#ffffff', size: 10 });
+      if (p.formPrio && p.formPrio.length) box('Priorities in ' + p.name + '\u2019s real application', p.formPrio, { rule: G2, bg: WALL, size: 9.5 });
       var prf = prioList(s, true); box('Priorities this step answers', prf.length ? prf.concat(s.how ? ['How: ' + s.how] : []) : ['No priority chosen yet. Which one would an expert see in this step, and what would you show for it?'], { rule: prf.length ? BLUE : RED, bg: '#ffffff', size: 10, bullets: !!prf.length });
       if (SP.advice) box('If this is your step: practical advice', SP.advice, { rule: RED, bg: WALL, bullets: true, size: 10.5 });
       if (a) {

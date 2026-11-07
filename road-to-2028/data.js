@@ -72,18 +72,18 @@ var S = module.exports;
    Source: Drive + buinho-os typology (projects.json, 7 Nov 2026) and Carlos's notes. Budgets: EU grant only. */
 module.exports = [
   /* ---------- YOUTH ---------- */
-  { id: 'youth-sensing', name: 'Youth Sensing', today: 'Erasmus+ KA105 (now KA152)', action: 'youth', domain: 'Youth', years: '2020–21', role: 'Coordinator',
+  { id: 'youth-sensing', prio: [], formPrio: ["Topics (the 2019 form had no priority field): Civic engagement / responsible citizenship · ICT, new technologies, digital competences · Access for disadvantaged"], name: 'Youth Sensing', today: 'Erasmus+ KA105 (now KA152)', action: 'youth', domain: 'Youth', years: '2020–21', role: 'Coordinator',
     objective: 'Bring citizen sensing (low-cost sensors, citizen science) into youth work, so young people measure and discuss the environmental problems of their territory.',
     did: '42 participants, 35 of them young people with fewer opportunities, built noise, air and water sensors. Postponed by the pandemic, it took place in summer 2021.',
     needed: 'Partners we already knew from earlier exchanges, the Making Sense method, and our own experience with IoT.',
     left: 'The first Erasmus+ youth exchange on citizen sensing. The method went into schools and youth worker trainings and is the root of Sentir Europa, Invisible Cartographies and Sensing Belonging.',
     partnership: { size: 'Partners from 7 countries', countries: ['IT', 'MT', 'GR', 'TR', 'PL', 'CZ'], roles: 'Each partner sent a group of young people and leaders; Buinho hosted, coordinated and brought the sensing method.', money: 'Unit costs per participant (€41,689 planned). Under €60,000, so no financial capacity check.' } },
-  { id: 'sentir-europa', name: 'Sentir Europa', today: 'Erasmus+ KA210-YOU', action: 'ka210', domain: 'Youth', years: '2026–27', role: 'Coordinator',
+  { id: 'sentir-europa', prio: ['h-inc', 'h-dem', 's-youth-1'], formPrio: ["Main: Inclusion and diversity · also: Common values, civic engagement, preparedness and participation · Youth: increasing quality, innovation and recognition of youth work"], name: 'Sentir Europa', today: 'Erasmus+ KA210-YOU', action: 'ka210', domain: 'Youth', years: '2026–27', role: 'Coordinator',
     objective: 'About 70 rural young people from Alentejo and Extremadura monitor their environment with sensors and compare their realities.',
     did: 'Starting now: weather stations built by the young people, three open starter kits, cross-border mobilities and an Iberian Fablab Meeting.',
     needed: 'A partner already tested in our youth exchanges, and a resubmission: the first version was rejected with 73 points, the second approved.',
     partnership: { size: '2 organisations', countries: ['ES'], roles: 'FabLab Mérida brings its network of young people in Extremadura and its know-how in mesh sensor networks; Buinho coordinates and brings the citizen sensing method.', money: 'Lump sum of €60,000, received by the coordinator and shared. At €60,000 or below there is no financial capacity check.' } },
-  { id: 'esc', name: 'European volunteers', today: 'European Solidarity Corps', action: 'esc', domain: 'Youth', years: '2021–now', role: 'Host & coordinator',
+  { id: 'esc', prio: ['h-inc', 'h-env', 'h-dig', 'h-dem'], formPrio: ["Volunteering project 2026, per activity: Inclusion and diversity · Environmental protection, sustainable development and climate action · Digital transition · Participation in democratic life"], name: 'European volunteers', today: 'European Solidarity Corps', action: 'esc', domain: 'Youth', years: '2021–now', role: 'Host & coordinator',
     objective: 'Host European volunteers in the daily life of the fablab, the residencies, the educational activities and the village.',
     did: 'First in the community recycling centre (Precious Plastic Alentejo, 2021–23); since 2022 a volunteering project every year.',
     needed: 'The Quality Label (2019, renewed for 2022–27) and the capacity to host people in Messejana.',
@@ -97,13 +97,13 @@ module.exports = [
     needed: 'The accreditation (2020 call) and the trust of the school directors. For several schools it was their first Erasmus+.',
     left: 'A mobility project every year since 2022 without competing for it; teachers bring new practices home.',
     partnership: { size: 'National consortium: 7 school clusters + 1 teacher training centre', countries: ['PT'], roles: 'The schools bring teachers and their own priorities; Buinho, an NGO, coordinates, manages the grant and opens its European network. The mobility plan is decided with the directors every year.', money: 'Yearly grant (€48,894 for 2026–27), without competing each year.' } },
-  { id: 'sensing-belonging', name: 'Sensing Belonging', today: 'Erasmus+ KA210-SCH', action: 'ka210', domain: 'Schools', years: '2026–27', role: 'Partner (Zingarelho)',
+  { id: 'sensing-belonging', prio: ['h-inc', 's-schools-1', 's-schools-3'], formPrio: ["Main: Inclusion and diversity · also: Promoting wellbeing at school · STEM and STEAM education, and fostering girls’ interest in STEM"], name: 'Sensing Belonging', today: 'Erasmus+ KA210-SCH', action: 'ka210', domain: 'Schools', years: '2026–27', role: 'Partner (Zingarelho)',
     objective: 'Pupils measure how school feels (light, noise, crowds) and design with their teachers spaces where everyone can be well.',
     did: 'Starting now: sensory maps and prototypes in Lahnstein and Aljustrel, a pilot sensor network, teacher training and an online resource centre.',
     needed: 'A strong school coordinator, applying through the German agency.',
     lesson: 'Track record lives in the organisation (its registration number), not in the people. The same team had very different success rates applying through two different organisations.',
     partnership: { size: '2 organisations', countries: ['DE'], roles: 'A German secondary school coordinates and brings pupils, teachers and credibility in the school sector; Zingarelho brings sensing and inclusive technology.', money: 'Small-scale lump sum, shared between the two.' } },
-  { id: 'i-can-touch-it', name: 'I Can Touch It', today: 'Erasmus+ KA220-SCH', action: 'ka220', domain: 'Schools', years: '2025–27', role: 'Partner',
+  { id: 'i-can-touch-it', prio: ['s-schools-0'], formPrio: ["Main: Tackling learning disadvantage, early school leaving and low proficiency in basic skills · also: Development of key competences · topic: Special needs"], name: 'I Can Touch It', today: 'Erasmus+ KA220-SCH', action: 'ka220', domain: 'Schools', years: '2025–27', role: 'Partner',
     objective: '3D-printed tactile resources so that blind and low-vision students learn science by touch.',
     did: 'We train teachers in 3D modelling and printing, develop code-generated tactile models and keep the website and the open repository.',
     needed: 'An invitation from the coordinator, who wrote the application, and our skills in digital fabrication.',
@@ -111,13 +111,13 @@ module.exports = [
     partnership: { size: 'Partners from 4 countries', countries: ['SI', 'RS', 'MK'], roles: 'Centres and schools for blind and low-vision students bring the pedagogy and the users; Buinho is the digital fabrication partner.', money: 'Cooperation lump sum. Above €60,000 the coordinator’s financial capacity can be checked (public bodies are exempt).' } },
 
   /* ---------- ADULTS ---------- */
-  { id: 'werepair', name: 'WeRepair', today: 'Erasmus+ KA210-ADU', action: 'ka210', domain: 'Adults', years: '2021–23', role: 'Coordinator',
+  { id: 'werepair', prio: ['h-env', 'h-inc', 's-adults-2'], formPrio: ["Main: Environment and fight against climate change · also: Inclusion and diversity · Adults: creating upskilling pathways, improving accessibility and take-up of adult education"], name: 'WeRepair', today: 'Erasmus+ KA210-ADU', action: 'ka210', domain: 'Adults', years: '2021–23', role: 'Coordinator',
     objective: 'Take Repair Cafés from the city to the countryside, with older people as volunteers.',
     did: 'Older people in Messejana trained in repair and became the volunteers of the “Buinho +65 Repair Café”; 12 makers circulated between Messejana, Manzat and Cuenca.',
     needed: 'Two rural makerspaces with the same profile, and the Vulca network as associated partner.',
     left: 'A 16-minute documentary and a guide to run Repair Cafés. It started our repair line: RECA, RE-POWER and WeRepair for Youth came after it.',
     partnership: { size: '3 organisations + Vulca as associated partner', countries: ['FR', 'ES'], roles: 'Three rural makerspaces with the same profile (Mountain Makers, FabLab Cuenca, Buinho) testing the same idea in three villages; the Vulca network joined as associated partner.', money: 'Lump sum of €60,000 shared by three. No financial capacity check at this level.' } },
-  { id: 'reca', name: 'Rural Eco-Clubs for Adults', today: 'Erasmus+ KA210-ADU', action: 'ka210', domain: 'Adults', years: '2024–25', role: 'Partner', goodPractice: true,
+  { id: 'reca', prio: ['h-env', 'h-inc', 's-adults-2'], formPrio: ["Main: Environment and fight against climate change · also: Inclusion and diversity · Adults: creating upskilling pathways, improving accessibility and take-up of adult education"], name: 'Rural Eco-Clubs for Adults', today: 'Erasmus+ KA210-ADU', action: 'ka210', domain: 'Adults', years: '2024–25', role: 'Partner', goodPractice: true,
     objective: 'Create rural eco-clubs for adults (repair, biodiversity, digital tools) and train the educators who run them.',
     did: 'We took repair to the villages with a mobile repair lab: 12 Repair Cafés and almost 100 appliances repaired in Portugal.',
     needed: 'Co-writing the application with the coordinator, and a partner we already knew from WeRepair.',
@@ -125,13 +125,13 @@ module.exports = [
     partnership: { size: '3 organisations', countries: ['DE', 'ES'], roles: 'A German organisation coordinates and wrote most of the application; Buinho brings repair and leads quality and monitoring.', money: 'Small-scale lump sum, shared by three.' } },
 
   /* ---------- CULTURE ---------- */
-  { id: 'invisible-cartographies', name: 'Invisible Cartographies', today: 'Creative Europe · cooperation, small scale', action: 'crea', domain: 'Culture', years: '2026–27', role: 'Partner',
+  { id: 'invisible-cartographies', prio: [], formPrio: ["Creative Europe 2025: no priority list in the form; the project answers the call’s objective Innovation"], name: 'Invisible Cartographies', today: 'Creative Europe · cooperation, small scale', action: 'crea', domain: 'Culture', years: '2026–27', role: 'Partner',
     objective: 'Cross art, citizen sensing and inclusive learning to map what cannot be seen in the spaces we live in.',
     did: 'We lead the art and citizen sensing strand and communication: sensor nodes, micro:bit extensions, a website in four languages and artist residencies with local pupils.',
     needed: 'The citizen sensing method from Youth Sensing, and a first contact with the Creative Europe sector through work on another cooperation project.',
     left: 'Our first approved Creative Europe project (86/100), the credential that came before ESPECTROS.',
     partnership: { size: '3 organisations', countries: ['RS', 'ES'], roles: 'A school in Belgrade for blind and partially sighted pupils coordinates and brings inclusive education; FabLab Cuenca is the third partner; Buinho brings art, sensing and communication.', money: 'EU grant of €200,000, at most 80% of the budget: partners co-finance the rest. Every partner is validated in the EU Participant Register.' } },
-  { id: 'espectros', name: 'ESPECTROS', today: 'Creative Europe · cooperation, small scale', action: 'crea', domain: 'Culture', years: '2027–28', role: 'Coordinator',
+  { id: 'espectros', prio: [], formPrio: ["Creative Europe 2026: no priority list in the form; the project answers the call’s objective Innovation"], name: 'ESPECTROS', today: 'Creative Europe · cooperation, small scale', action: 'crea', domain: 'Culture', years: '2027–28', role: 'Coordinator',
     objective: 'Neurodivergent artists as authors of artistic research on the blind spots of AI, and from that, a method and recommendations for the cultural sector.',
     did: 'Preparing the grant: four production residencies, three exhibitions, a catalogue, an open toolkit, a policy brief and a final meeting at re:publica in Berlin.',
     needed: 'A partner who brought the idea, a third partner with artistic depth, the record of Invisible Cartographies and a financial capacity check of the association.',
@@ -522,7 +522,7 @@ var PFC = { label: 'Programme Guide 2026: sector priorities (partnerships)', url
 module.exports = [
   { id: 'priorities', topic: 'Priorities: horizontal and per field',
     kw: ['priority', 'priorities', 'prioridad', 'prioridade', 'priorite', 'priorita', 'horizontal', 'transversal', 'transversais', 'sectoral', 'sector specific', 'inclusion', 'inclusao', 'green', 'digital', 'democratic', 'what do they want', 'what the eu wants', 'score', 'scoring'],
-    a: 'Erasmus+ has four horizontal priorities that apply to every action: inclusion and diversity; digital transformation; environment and fight against climate change; common values, civic engagement, preparedness and participation. Each field (schools, VET, adults, youth) adds its own specific priorities, and a partnership must address at least one, horizontal or of the field it affects most. Creative Europe cooperation projects choose one or two of their own (audience, social inclusion, sustainability, digital, international).',
+    a: 'Erasmus+ has four horizontal priorities that apply to every action: inclusion and diversity; digital transformation; environment and fight against climate change; common values, civic engagement, preparedness and participation. Each field (schools, VET, adults, youth) adds its own specific priorities, and a partnership must address at least one, horizontal or of the field it affects most. Creative Europe cooperation projects choose an objective of the call and show how they address the EU overarching priorities (greening, inclusion and gender equality, digital, international relations). In the KA210/KA220 form you pick one main priority and up to two more.',
     next: 'Pick few and make them real: experts read whether the activities, the public and the results actually answer the priority. Your guide has a page on the priorities your path speaks to.',
     links: [PGP, PFC] },
   { id: 'newcomer', topic: 'Starting without experience',
@@ -658,8 +658,8 @@ module.exports = {
   intro: 'Every European programme says what it wants to change. Erasmus+ calls these priorities: four horizontal (transversal) ones that apply to every action, and specific ones for each field. Experts score your application partly on how well it answers them. They are not a box to tick at the end: they are the language in which your idea is read.',
   rules: [
     'The four horizontal priorities apply to all Erasmus+ actions, from a short mobility to a large partnership, and to the Solidarity Corps.',
-    'A partnership must address at least one priority: a horizontal one, a specific one of the field it affects most, or both. Choose few and answer them well.',
-    'Creative Europe cooperation projects choose one or two of their own priorities, and must also show how they address the EU overarching ones (greening, inclusion and gender equality, digital).',
+    'A partnership must address at least one priority: a horizontal one, a specific one of the field it affects most, or both. In the form (KA210, KA220) you select the most relevant priority and up to two more, plus up to three topics. Funded projects usually use that room, and inclusion is in almost all of them. What counts is that each one shows in the activities, the public and the results.',
+    'Creative Europe cooperation projects (2026 call) choose one objective of the call, such as Innovation, and must show how they address the EU overarching priorities: greening, inclusion and gender equality, digital, international relations.',
     'Mobility projects and accreditations follow the Erasmus quality standards, which ask for the same four themes: inclusion, sustainability, digital and active participation.'
   ],
   horizontal: [
@@ -705,14 +705,13 @@ module.exports = {
       lab: 'If your team works with young people outside school, you are doing youth work: the youth work priority applies to you.' }
   },
   ukraineNote: 'Each field also has a priority on responding to the war in Ukraine.',
-  culture: { field: 'Creative Europe · cooperation projects', shorts: ['Audience', 'Social inclusion', 'Sustainability', 'Digital', 'International'], items: [
-      'Audience: access to culture and audience engagement, physical and digital',
-      'Social inclusion: in and through culture, for people with disabilities, minorities and marginalised groups',
-      'Sustainability: environment-friendly practices, in line with the Green Deal and the New European Bauhaus',
-      'Digital: the digital transition of the cultural and creative sectors',
-      'International: capacity to work internationally, including grassroots and micro-organisations'],
-    rule: 'Choose one or two, plus the EU overarching ones. Check the exact list in the current call.',
-    lab: 'Labs working with artists often fit Sustainability (materials, New European Bauhaus) or Digital.' },
+  culture: { field: 'Creative Europe \u00b7 cooperation projects', shorts: ['Greening', 'Inclusion and gender equality', 'Digital', 'International'], items: [
+      'EU greening efforts',
+      'Inclusion and gender equality',
+      'Digital transition',
+      'International relations'],
+    rule: 'In the 2026 call you choose one objective (Buinho\u2019s projects chose Innovation) and show how you address these overarching priorities. Earlier calls asked for one or two of a list (audience, social inclusion, sustainability, digital, international). Check the current call.',
+    lab: 'Labs working with artists often build on greening (materials, New European Bauhaus), digital, and inclusion.' },
   future: {
     title: 'And after 2027?',
     lines: [
