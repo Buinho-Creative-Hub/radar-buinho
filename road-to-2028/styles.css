@@ -47,11 +47,11 @@ hr{border:0;border-top:1px solid var(--g2);margin:22px 0}
 .chip{min-height:40px;padding:6px 14px;border:1.5px solid var(--ink);background:#fff;font-size:14px;font-weight:600;cursor:pointer;border-radius:0}
 .chip[aria-pressed="true"]{background:var(--ink);color:#fff}
 .chip.f-mobility[aria-pressed="true"]{background:var(--blue);border-color:var(--blue)}
-.chip.f-partnership[aria-pressed="true"]{background:var(--red);border-color:var(--red);color:var(--ink)}
+.chip.f-cooperation[aria-pressed="true"]{background:var(--red);border-color:var(--red);color:var(--ink)}
 .chip.f-culture[aria-pressed="true"]{background:var(--sun);border-color:var(--sun);color:var(--ink)}
 
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
-.card{display:flex;flex-direction:column;background:#fff;border:1px solid var(--g2);text-decoration:none;color:var(--ink);min-height:300px}
+.card{position:relative;display:flex;flex-direction:column;background:#fff;border:1px solid var(--g2);text-decoration:none;color:var(--ink);min-height:300px}
 .card .blk{padding:14px 16px;display:flex;flex-direction:column;gap:4px;min-height:132px}
 .card .prog{display:flex;justify-content:space-between;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase}
 .card .code{font-size:44px;font-weight:700;line-height:.95;letter-spacing:-.02em;margin-top:auto}
@@ -61,7 +61,7 @@ hr{border:0;border-top:1px solid var(--g2);margin:22px 0}
 .card .obj{font-size:14px;color:var(--g7);margin:0}
 .card .meta{margin-top:auto;display:flex;justify-content:space-between;font-size:13px;font-weight:600;border-top:1px solid var(--g2);padding-top:8px}
 .fam-mobility{background:var(--blue);color:#fff}
-.fam-partnership{background:var(--red);color:var(--ink)}
+.fam-cooperation{background:var(--red);color:var(--ink)}
 .fam-culture{background:var(--sun);color:var(--ink)}
 .fam-volunteering{background:var(--ink);color:#fff}
 .fam-national{background:#d9d9d9;color:var(--ink)}
@@ -98,3 +98,34 @@ label.f{display:block;font-weight:600;margin:12px 0 6px}
 .empty{padding:22px;border:1px dashed var(--g5);text-align:center;color:var(--g5)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 @media (min-width:700px){.h1{font-size:46px}.hero{padding:34px 30px}}
+
+.card>a{display:flex;flex-direction:column;flex:1;text-decoration:none;color:inherit}
+.card .prog{min-height:14px}
+.card .code{font-size:34px}
+.card .today{font-size:12px;color:var(--g5)}
+.card .meta span:nth-child(2){color:var(--g5);font-weight:400;text-align:center;padding:0 6px}
+.card.is-fav{outline:3px solid var(--ink)}
+.fav{position:absolute;top:8px;right:8px;z-index:2;width:44px;height:44px;border:0;border-radius:50%;background:rgba(255,255,255,.92);color:var(--ink);font-size:24px;line-height:1;cursor:pointer}
+.fav[aria-pressed="true"]{background:var(--ink);color:var(--sun)}
+.partner{background:#fff;border:1px solid var(--g2);border-left:4px solid var(--ink);padding:14px 16px;margin:18px 0}
+.pgrid{display:grid;gap:12px}
+.pgrid .k{font-weight:700;font-size:14px}
+.pillar{margin:22px 0 8px}
+.pil-h{border-top:2px solid var(--ink);padding-top:10px;margin-bottom:10px}
+.pil-h h2{font-size:24px;margin:2px 0 4px}
+.crit{display:grid;gap:10px}
+.crit>div{background:#fff;border:1px solid var(--g2);padding:12px 14px}
+.crit p{margin:4px 0 0;font-size:15px;color:var(--g7)}
+.slots{display:flex;flex-direction:column;gap:10px;margin:0 0 6px}
+.slot{background:#fff;border:1px solid var(--g2)}
+.slot-h{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--g2)}
+.slot-h>div{flex:1}
+.empty-slot{display:flex;align-items:center;gap:12px;padding:12px 14px;border-style:dashed}
+.dot.ghost{background:transparent;color:var(--g5);border:2px dashed var(--g5)}
+.x{border:0;background:transparent;font-size:24px;min-width:44px;min-height:44px;cursor:pointer}
+.mini{border:1.5px solid var(--ink);background:#fff;min-height:40px;padding:0 12px;font-weight:600;cursor:pointer}
+.mycards{display:flex;flex-direction:column;gap:8px}
+.mc{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--g2);padding:8px 10px 8px 0;min-height:56px}
+.mc .bar{align-self:stretch;width:8px}
+.mc-t{flex:1;display:flex;flex-direction:column}
+.inpath{font-weight:700;font-size:14px;padding:0 8px}
