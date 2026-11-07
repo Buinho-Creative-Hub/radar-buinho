@@ -322,7 +322,19 @@
       if (sc >= 5) scored.push([sc, a]);
     });
     scored.sort(function (x, y) { return y[0] - x[0]; });
-    return scored.slice(0, 2).map(function (x) { return x[1]; });
+    var res = scored.map(function (x) { return x[1]; });
+    if (/\b(money|grant|budget|euro|euros|fund|funding|pay|paid|receive|cost|costs|how much|dinheiro|dinero|quanto|cuanto|argent|soldi|financ)/.test(t)) {
+      var acts = []; ACT_WORDS.forEach(function (w) { if (w[0].test(t) && acts.indexOf(w[1]) < 0) acts.push(w[1]); });
+      if (!acts.length) steps().forEach(function (s) { var p = project(s.project); if (p && acts.indexOf(p.action) < 0) acts.push(p.action); });
+      var mo = acts.map(moneyAnswer).filter(Boolean);
+      if (mo.length) return mo.slice(0, 2).concat(res.filter(function (a) { return a.id === 'money' || a.id === 'fincap'; })).slice(0, 3);
+    }
+    return res.slice(0, 2);
+  }
+  var ACT_WORDS = [[/volunt|solidarity|\besc\b|pocket money|quality label/, 'esc'], [/youth exchange|youth worker|ka152|ka153|intercambio/, 'youth'], [/accredit|acredit|ka120|ka121/, 'ka1'], [/\bka1\b|ka122|mobility|mobilidade|movilidad|job shadow|course|curso/, 'ka122'], [/ka210|small.scale|pequena escala|pequena parceria/, 'ka210'], [/ka220|cooperation partnership|parceria de coopera/, 'ka220'], [/creative europe|europa criativa|europa creativa|crea\b|culture/, 'crea'], [/cerv|town.twinning|geminac|hermanamiento/, 'cerv']];
+  function moneyAnswer(act) {
+    var m = (D.money || {})[act], a = action(act); if (!m) return null;
+    return { id: 'm-' + act, topic: 'What your lab would receive: ' + (a ? a.short + ' \u00b7 ' + a.name : act), a: m.model, lines: m.lines, next: m.note, links: [{ label: 'Official rules (2026)', url: m.url }] };
   }
   var ANS_ACT = { accreditation: ['ka1', 'youth-acc'], youth2028: ['youth', 'esc'], volunteers: ['esc'], art: ['crea'], mobilitycosts: ['ka122', 'ka1'], fincap: ['ka220', 'crea'], rolechoice: ['ka220', 'crea'], partnersnum: ['ka210', 'ka220', 'crea'], caps: ['ka210', 'crea'], newcomer: ['ka210', 'ka122', 'youth'] };
   function pathLink(a) {
@@ -365,7 +377,7 @@
       '<p class="lead">Made from your choices. It is not a summary of today: it is a map to come back to when you prepare your next applications.</p>' +
       (st.length ? '<div class="stack">' + st.map(function (s, i) { var p = project(s.project), f = pfam(p); return '<div class="aitem"><span class="sw fam-' + f + '">' + (i + 1) + '</span><span class="tx"><b>' + esc(p.name) + '</b><span>' + esc(famLabel(f) + (s.when ? ' · ' + s.when : '') + (s.why.length ? ' · ' + whyLabels(s.why).join(', ') : '')) + '</span></span></div>'; }).join('') + '</div>'
         : '<div class="empty">No path yet. <a href="#/path">Put your starred cards in order first.</a></div>') +
-      (S.questions.length ? '<h2 class="h2">Your questions, answered</h2><div class="stack">' + S.questions.map(function (q) { var an = answerFor(q); return '<div class="qcard"><div class="q"><span>' + esc(q) + '</span></div>' + (S.told[q] ? '<div class="ans"><div class="lab">Answered today</div><p>' + esc(S.told[q]) + '</p></div>' : '') + (an.length ? an.map(function (a) { var pl = pathLink(a); return '<div class="ans"><div class="lab">' + esc(a.topic) + '</div><p>' + esc(a.a) + '</p>' + (a.next ? '<p class="muted">' + esc(a.next) + '</p>' : '') + (pl ? '<p><b>' + esc(pl) + '</b></p>' : '') + '<p>' + a.links.map(function (l) { return link(l.url, l.label); }).join(' · ') + '</p></div>'; }).join('') : '<div class="ans"><p>No ready answer in this guide. Take it to the next clinics, or ask your National Agency or Creative Desk (links in your PDF). That is exactly what the clinics are for.</p></div>') + '</div>'; }).join('') + '</div>' : '') +
+      (S.questions.length ? '<h2 class="h2">Your questions, answered</h2><div class="stack">' + S.questions.map(function (q) { var an = answerFor(q); return '<div class="qcard"><div class="q"><span>' + esc(q) + '</span></div>' + (S.told[q] ? '<div class="ans"><div class="lab">Answered today</div><p>' + esc(S.told[q]) + '</p></div>' : '') + (an.length ? an.map(function (a) { var pl = pathLink(a); return '<div class="ans"><div class="lab">' + esc(a.topic) + '</div><p>' + esc(a.a) + '</p>' + (a.lines ? ul(a.lines) : '') + (a.next ? '<p class="muted">' + esc(a.next) + '</p>' : '') + (pl ? '<p><b>' + esc(pl) + '</b></p>' : '') + '<p>' + a.links.map(function (l) { return link(l.url, l.label); }).join(' · ') + '</p></div>'; }).join('') : '<div class="ans"><p>No ready answer in this guide. Take it to the next clinics, or ask your National Agency or Creative Desk (links in your PDF). That is exactly what the clinics are for.</p></div>') + '</div>'; }).join('') + '</div>' : '') +
       (st.length ? '<h2 class="h2">Priorities your path answers</h2><div class="stack">' + st.map(function (s, i) { var pr = prioList(s); return '<div class="advice"><b>Reference project ' + (i + 1) + ':</b> ' + (pr.length ? esc(pr.join(' \u00b7 ')) + (s.how ? '<br><span class="muted">' + esc(s.how) + '</span>' : '') : '<span class="muted">No priority chosen yet. <a href="#/path">Which one would an expert see in it?</a></span>') + '</div>'; }).join('') + '</div>' : '') +
       (R.length ? '<h2 class="h2">What your path says</h2><div class="stack">' + R.map(function (t) { return '<div class="advice">' + esc(t) + '</div>'; }).join('') + '</div>' : '') +
       ((D.strategy && D.strategy.references) ? '<h2 class="h2">Official references</h2><p class="muted">The documents and tools behind this guide. Always read the current version.</p>' + D.strategy.references.map(function (g) { return '<h3 class="h3">' + esc(g.group) + '</h3><ul class="links">' + g.items.map(function (l) { return '<li><a href="' + esc(l.url) + '" target="_blank" rel="noopener">' + esc(l.label) + '</a></li>'; }).join('') + '</ul>'; }).join('') : '') +
@@ -508,6 +520,7 @@
     if (th3.length) GL.push(['Say yes to a project only if it feeds: ' + th3.join(' \u00b7 ') + '.', 'Projects that do not feed what your lab is about cost the same work and leave less behind.']);
     else GL.push(['Write down the 2 or 3 things your lab is about, and test every project against them.', 'Without them, each call decides your direction for you.']);
     RM.ms.forEach(function (m) { GL.push(['Until ' + (m.by || '2028') + ', put \u201c' + capLabel(m.cap) + '\u201d first' + (m.proof ? ': ' + m.proof + '.' : '.'), (m.steps.length || m.other.length ? 'Built by ' + m.steps.map(function (i) { return 'reference project ' + (i + 1); }).concat(m.other.map(otherLabel)).join(', ') + '.' : 'Nothing builds it yet: find a step or a resource outside the EU.')]); });
+    var seenM = {}; st.forEach(function (s, i) { var a = ps[i].action, mo = (D.money || {})[a]; if (mo && !seenM[a]) { seenM[a] = 1; var ac = action(a); GL.push(['Know what a project like reference ' + (i + 1) + ' pays (' + (ac ? ac.short : a) + '): ' + mo.model, mo.lines[0] + ' Plan your budget before you write.']); } });
     var prep = []; GC.forEach(function (g, i) { if (g.lacks.length) prep.push('for a project like reference ' + (i + 1) + ', build ' + g.lacks.map(capLabel).join(' and ').toLowerCase()); });
     GL.push(['Go only when: a partner you trust is on board three months before the deadline, someone has the time to write, and you can advance the costs.', prep.length ? 'Before you go: ' + prep.join('; ') + '.' : 'Check it again for each call.']);
     if (S.lab.target === 'coordinator') GL.push(['Coordinate a small project before a large one.', 'Large partnerships and Creative Europe ask for a track record and financial capacity; a small-scale partnership builds both.']);
@@ -597,12 +610,12 @@
     newPage(); y = 0; band(SUN, 'Where your path stops', 'Your questions, answered', 'What this guide can already tell you, and where to take the rest');
     function notes(n, lb) { need(n * 7 + 6); font(true, 7.5); color(G5); doc.text(lb || 'NOTES FROM THE CLINIC', M, y); y += 2; stroke(G2); doc.setLineWidth(0.3); for (var k = 0; k < n; k++) { y += 7; doc.line(M, y, M + CW, y); } y += 7; }
     if (S.questions.length) S.questions.forEach(function (q, qi) {
-      var L = lines(q, 11.5, true, CW - 12), h = L.length * lh(11.5) + 9; need(h + 40);
+      var L = lines(q, 11.5, true, CW - 12), h = L.length * lh(11.5) + 9; need(h + 70);
       fill(NOTE); doc.rect(M, y - 4, CW, h, 'F'); font(true, 11.5); color(INK); L.forEach(function (ln, k) { doc.text(ln, M + 6, y + 2 + k * lh(11.5)); }); y += h + 3;
       var an = answerFor(q);
       if (S.told[q]) box('Answered today', S.told[q], { rule: INK, bg: '#fff8d6', size: 10.5 });
       if (an.length) an.forEach(function (a) {
-        var body = [a.a]; if (a.next) body.push(a.next); var pl = pathLink(a); if (pl) body.push(pl);
+        var body = [a.a].concat(a.lines || []); if (a.next) body.push(a.next); var pl = pathLink(a); if (pl) body.push(pl);
         box(a.topic, body, { rule: SUN === SUN ? INK : INK, bg: '#ffffff', size: 10 });
         a.links.forEach(function (l) { linkLine(l, M + 6, CW - 6); });
       });
@@ -627,6 +640,7 @@
       if (p.formPrio && p.formPrio.length) box('Priorities in the real application of ' + p.name + ', and why', p.formPrio.concat(p.prioWhy ? [p.prioWhy] : []), { rule: G2, bg: WALL, size: 9.5 });
       var gc = goCheck(i), bl = S.road.ms.filter(function (m) { return m.steps.indexOf(i) > -1; }).map(function (m) { return capLabel(m.cap) + (m.proof ? ' \u2192 ' + m.proof : ''); });
       box(gc.badge + ' \u00b7 what it builds for your lab', (bl.length ? bl : ['None of your roadmap yet.']).concat(gc.todo), { rule: gc.todo.length ? SUN : BLUE, bg: '#ffffff', size: 10 });
+      var mo = (D.money || {})[p.action]; if (mo) box('What your lab would receive (2026 rules)', [mo.model].concat(mo.lines).concat(mo.note ? [mo.note] : []), { rule: famColor(f) === SUN ? INK : famColor(f), bg: WALL, size: 9.5 });
       var prf = prioList(s, true); box('Priorities this step answers', prf.length ? prf.concat(s.how ? ['How: ' + s.how] : []) : ['No priority chosen yet. Which one would an expert see in this step, and what would you show for it?'], { rule: prf.length ? BLUE : RED, bg: '#ffffff', size: 10, bullets: !!prf.length });
       if (SP.advice) box('If this is your step: practical advice', SP.advice, { rule: RED, bg: WALL, bullets: true, size: 10.5 });
       if (a) {
