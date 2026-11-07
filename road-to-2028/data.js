@@ -36,6 +36,27 @@ module.exports = {
     { id: 'art', label: 'Produce artistic work' },
     { id: 'local', label: 'Strengthen our local role' }
   ],
+  capacities: [
+    { id: 'team', label: 'People and time', proof: 'e.g. 2 people with 10 days a year for EU work' },
+    { id: 'partners', label: 'Partners we trust abroad', proof: 'e.g. 3 partners we have delivered with' },
+    { id: 'track', label: 'Track record', proof: 'e.g. 1 small project coordinated, results online' },
+    { id: 'money', label: 'Cash flow', proof: 'e.g. we can advance 6 months of costs' },
+    { id: 'label', label: 'Labels and accreditation', proof: 'e.g. Solidarity Corps Quality Label' },
+    { id: 'local', label: 'Local roots', proof: 'e.g. the town hall and 2 schools on board' }
+  ],
+  otherRes: [
+    { id: 'national', label: 'National or regional fund' },
+    { id: 'town', label: 'Town hall' },
+    { id: 'own', label: 'Own income' },
+    { id: 'network', label: 'Network or peer lab' },
+    { id: 'foundation', label: 'Foundation' },
+    { id: 'volunteers', label: 'Volunteers' }
+  ],
+  targets: [
+    { id: 'partner', label: 'A partner in good projects' },
+    { id: 'coordinator', label: 'A coordinator' },
+    { id: 'accredited', label: 'Accredited, with projects every year' }
+  ],
   questionPrompts: [
     'Can we join a project as a partner if we never had one?',
     'How do we find a reliable coordinator?',

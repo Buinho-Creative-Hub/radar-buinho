@@ -152,3 +152,11 @@ label.f{display:block;font-weight:600;margin:12px 0 6px}
 .qn{margin:14px 0 6px;font-size:15px}
 .qcard input[data-told]{margin-top:6px}
 .sq.w{background:#fff;border:2px solid var(--ink)}
+.caprow{display:flex;justify-content:space-between;align-items:center;gap:8px;border-bottom:1px solid #d9d9d9;padding:4px 0}
+.caprow>span:first-child{font-weight:600;font-size:15px}
+.caprow .chips{margin:4px 0;flex-wrap:nowrap}
+.chip.dot{min-width:44px;padding:0;justify-content:center}
+.chip.dot.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.more summary{cursor:pointer;color:var(--g7);font-size:14px;margin:4px 0}
+.badge{display:inline-block;padding:2px 8px;font-weight:700;font-size:13px;color:#fff}
+.b-go{background:var(--blue)}.b-prepare{background:var(--sun);color:#010101}.b-wait{background:var(--red)}
