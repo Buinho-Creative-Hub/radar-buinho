@@ -487,7 +487,7 @@
     footer();
 
     /* ===== R. your roadmap ===== */
-    roadInit();
+    roadInit(); S.road.ms.forEach(function (m) { if (!m.manual) autoBuild(m); });
     var RM = S.road, GC = st.map(function (s, i) { return goCheck(i); });
     doc.addPage(); page++; band(BLUE, 'Your roadmap', 'From where you stand to your 2030', 'What your lab must build, by when, and what builds it');
     box('Where you want to be', [(S.lab.vision ? '\u201c' + S.lab.vision + '\u201d' : 'No 2030 sentence yet: what will your lab be known for, and for whom?')].concat(S.lab.targets.length ? ['Your role by 2030: ' + targetsTxt()] : []), { rule: INK, bg: WALL, size: 11 });
@@ -778,8 +778,18 @@
     if (t >= 3) return h + '<p class="muted small">Already solid. Keep it: pick another thing to build if you want to grow.</p>';
     return h + '<div class="muted small" style="margin:6px 0 4px">By the date below, you want it to be:</div><div class="chips" data-mto="' + k + '">' + [2, 3].filter(function (n) { return n > t; }).map(function (n) { return '<button class="chip" data-v="' + n + '" aria-pressed="' + (m.to === n) + '">\u2192 ' + n + ' \u00b7 ' + LV[n] + '</button>'; }).join('') + '</div>';
   }
+  /* which kinds of action build which capacity, and which resources outside the EU help */
+  var CAP_ACT = { team: ['ka122', 'ka1', 'youth', 'youth-acc', 'esc'], partners: ['ka122', 'youth', 'ka210', 'ka220', 'crea', 'cerv', 'esc'], track: ['ka210', 'ka220', 'crea', 'cerv', 'ka122', 'youth'], money: [], label: ['ka122', 'ka1', 'youth', 'youth-acc', 'ka210', 'ka220', 'crea', 'esc', 'cerv'], local: ['cerv', 'esc', 'ka210', 'youth', 'crea'] };
+  var CAP_OTHER = { team: ['volunteers'], partners: ['network'], track: [], money: ['own', 'national', 'foundation', 'town'], label: ['network'], local: ['town', 'volunteers'] };
+  var CAP_NEED = { team: 'team', partners: 'partners', track: 'track', local: 'local' };
+  function autoBuild(m) {
+    var acts = CAP_ACT[m.cap] || [], need = CAP_NEED[m.cap];
+    m.steps = []; steps().forEach(function (st, i) { var p = project(st.project); if (p && (acts.indexOf(p.action) > -1 || (need && st.why.indexOf(need) > -1))) m.steps.push(i); });
+    m.other = (CAP_OTHER[m.cap] || []).slice();
+  }
   function roadView() {
     roadInit();
+    S.road.ms.forEach(function (m) { if (!m.manual) autoBuild(m); }); save();
     var st = steps(), R = S.road, html = '<div class="kicker">' + esc(S.lab.name || 'Your lab') + '</div><h1 class="h1">My roadmap</h1>' +
       '<p class="lead">What must your lab be able to do to reach your 2030? Pick up to 3 things to build, then say what builds each one.</p>' +
       (S.lab.vision ? '<div class="advice"><b>2030:</b> ' + esc(S.lab.vision) + (S.lab.targets.length ? '<br><span class="muted">' + esc(targetsTxt()) + '</span>' : '') + '</div>' : '<p class="muted">No 2030 sentence yet. <a href="#/">Write it on the start screen.</a></p>');
@@ -789,7 +799,7 @@
         roadLevel(m, k) +
         '<div class="f lab">By when</div><div class="chips" data-mby="' + k + '">' + ['2027', '2028', '2030'].map(function (y) { return '<button class="chip" data-v="' + y + '" aria-pressed="' + (m.by === y) + '">' + y + '</button>'; }).join('') + '</div>' +
         '<div class="f lab">How you will know</div><input type="text" data-mproof="' + k + '" maxlength="80" placeholder="' + esc(c.proof || '') + '" value="' + esc(m.proof) + '">' +
-        '<div class="f lab">What builds it</div><div class="chips" data-msteps="' + k + '">' + st.map(function (s, i) { var p = project(s.project); return '<button class="chip" data-v="' + i + '" aria-pressed="' + (m.steps.indexOf(i) > -1) + '">Reference ' + (i + 1) + ' \u00b7 ' + esc(p.name) + '</button>'; }).join('') +
+        '<div class="f lab">What builds it</div><p class="muted small">' + (m.manual ? 'Your own choice. <a href="#" data-mreset="' + k + '">Go back to the suggestion</a>' : 'Suggested from your reference projects and what they give your lab. Tap to change.') + '</p><div class="chips" data-msteps="' + k + '">' + st.map(function (s, i) { var p = project(s.project); return '<button class="chip" data-v="' + i + '" aria-pressed="' + (m.steps.indexOf(i) > -1) + '">Reference ' + (i + 1) + ' \u00b7 ' + esc(p.name) + '</button>'; }).join('') +
         (D.otherRes || []).map(function (o) { return '<button class="chip" data-o="' + o.id + '" aria-pressed="' + (m.other.indexOf(o.id) > -1) + '">' + esc(o.label) + '</button>'; }).join('') + '</div>' +
         (st.length ? '' : '<p class="muted small"><a href="#/path">Put steps in your path</a> to link them here.</p>') + '</div></div>'; }).join('') + '</div>';
     if (st.length) {
@@ -805,9 +815,10 @@
     bind('[data-msel]', function (box, b) { var v = b.dataset.v, k = -1; R.ms.forEach(function (m, j) { if (m.cap === v) k = j; }); if (k > -1) R.ms.splice(k, 1); else if (R.ms.length < 3) R.ms.push({ cap: v, to: Math.min(3, (S.lab.cap[v] || 0) + 1) || 2, by: '', proof: '', steps: [], other: [], otherTxt: '' }); });
     bind('[data-mto]', function (box, b) { R.ms[+box.dataset.mto].to = +b.dataset.v; });
     bind('[data-mby]', function (box, b) { var m = R.ms[+box.dataset.mby]; m.by = m.by === b.dataset.v ? '' : b.dataset.v; });
-    bind('[data-msteps]', function (box, b) { var m = R.ms[+box.dataset.msteps]; if (b.dataset.o) { var j = m.other.indexOf(b.dataset.o); if (j > -1) m.other.splice(j, 1); else m.other.push(b.dataset.o); } else { var v = +b.dataset.v, q = m.steps.indexOf(v); if (q > -1) m.steps.splice(q, 1); else m.steps.push(v); } });
+    bind('[data-msteps]', function (box, b) { var m = R.ms[+box.dataset.msteps]; m.manual = true; if (b.dataset.o) { var j = m.other.indexOf(b.dataset.o); if (j > -1) m.other.splice(j, 1); else m.other.push(b.dataset.o); } else { var v = +b.dataset.v, q = m.steps.indexOf(v); if (q > -1) m.steps.splice(q, 1); else m.steps.push(v); } });
     bind('[data-ready]', function (box, b) { var i = +box.dataset.ready, v = b.dataset.v; R.ready[i] = R.ready[i] === v ? undefined : v; });
     bind('[data-review]', function (box, b) { R.review = R.review === b.dataset.v ? '' : b.dataset.v; });
+    app.querySelectorAll('[data-mreset]').forEach(function (a) { a.addEventListener('click', function (e) { e.preventDefault(); var m = R.ms[+a.dataset.mreset]; m.manual = false; save(); roadView(); }); });
     app.querySelectorAll('[data-mproof]').forEach(function (el) { el.addEventListener('input', function () { R.ms[+el.dataset.mproof].proof = el.value; save(); }); });
   }
 
