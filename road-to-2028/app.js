@@ -168,6 +168,7 @@
       '</div>' +
       '<div class="row" style="margin:16px 0"><button class="btn' + (fav ? ' ghost' : ' blue') + '" data-fav="' + esc(p.id) + '">' + (fav ? '★ In my cards' : '☆ Add to my cards') + '</button></div>' +
       sec('What it was for', para(p.objective)) +
+      (p.formPrio && p.formPrio.length ? sec('Priorities in the application, and why', para(p.formPrio.join(' \u00b7 ')) + para(p.prioWhy)) : '') +
       sec(p.external ? 'What they did' : 'What we did', para(p.did)) +
       (p.whyMakers ? '<div class="blockq"><div class="lab">Why it matters for a lab</div>' + para(p.whyMakers) + '</div>' : '') +
       (p.url ? sec('Official page', '<p>' + link(p.url, p.number ? 'Project ' + p.number : 'Project page') + (p.extraUrl ? ' · ' + link(p.extraUrl, 'project website') : '') + '</p>') : '') +
@@ -232,7 +233,7 @@
   /* ---------- path: built from starred cards ---------- */
   function prioHTML(i, st, p) {
     var o = prioOpts(p), g = '', h = '<div class="qn"><b>3 \u00b7 What will Europe see in it?</b> <span class="muted">Pick a priority. <a href="#/priorities">What are they?</a></span></div><div class="chips" data-prio="' + i + '">';
-    if (p && p.formPrio && p.formPrio.length) h += '<p class="muted small">In ' + esc(p.name) + '\u2019s real application: ' + esc(p.formPrio.join(' \u00b7 ')) + '.' + (p.prio && p.prio.length ? ' Already marked below: keep what fits your step.' : '') + '</p>';
+    if (p && p.formPrio && p.formPrio.length) h += '<p class="muted small">In the real application of ' + esc(p.name) + ': ' + esc(p.formPrio.join(' \u00b7 ')) + '.' + (p.prio && p.prio.length ? ' Already marked below: keep what fits your step.' : '') + (p.prioWhy ? ' <b>Why:</b> ' + esc(p.prioWhy) : '') + '</p>';
     o.forEach(function (x) { if (x.group !== g) { if (g) h += '</div><div class="muted small">' + esc(x.group) + '</div><div class="chips" data-prio="' + i + '">'; g = x.group; } h += '<button class="chip" data-v="' + esc(x.id) + '" aria-pressed="' + (st.prio.indexOf(x.id) > -1) + '" title="' + esc(x.name) + '">' + esc(x.short) + '</button>'; });
     h += '</div>' + (S.lab.domains.length ? '' : '<p class="muted small">Tell the app who you work with (start screen) to see the priorities of your field.</p>');
     h += '<input type="text" data-how="' + i + '" maxlength="140" placeholder="In one line: who takes part, what you will show" value="' + esc(st.how) + '">';
@@ -517,6 +518,7 @@
       mine.forEach(function (d) { var sc = PR.sectors[d]; box(sc.field + ' \u00b7 specific priorities (2026)', sc.items.concat([sc.lab]), { rule: BLUE, bg: '#ffffff', bullets: true, size: 9.5 }); });
       if (!mine.length) text('Tell the app who you work with (start screen) and the specific priorities of your fields appear here.', 9.5, false, G5, 3);
       if (acts0().indexOf('crea') > -1) box(PR.culture.field + ' (2026)', PR.culture.items.concat([PR.culture.rule]), { rule: famColor('culture') === SUN ? INK : famColor('culture'), bg: '#ffffff', bullets: true, size: 9.5 });
+      if (PR.buinho) box(PR.buinho.title, PR.buinho.lines.concat([PR.buinho.source]), { rule: RED, bg: '#ffffff', bullets: true, size: 9.5 });
       box(PR.future.title, PR.future.lines.concat([PR.future.status, PR.future.reading]), { rule: INK, bg: WALL, bullets: true, size: 9.5 });
       label('Official sources'); PR.links.slice(0, 6).forEach(function (l) { linkLine(l); });
     }
@@ -559,7 +561,7 @@
       if (p.lesson) box('Lesson', p.lesson, { rule: RED, bg: '#ffffff' });
       var dd = distance(i); if (dd.length) box('Distance from where you are', dd, { rule: BLUE, bg: WALL, size: 10 });
       var th = (s.themes || []).map(function (k) { return S.lab.themes[k]; }).filter(Boolean); if (S.lab.themes.filter(Boolean).length) box('Feeds what your lab is about', th.length ? th.join(' \u00b7 ') : 'Nothing marked yet. Is this step worth it, or does it need a different angle?', { rule: th.length ? INK : RED, bg: '#ffffff', size: 10 });
-      if (p.formPrio && p.formPrio.length) box('Priorities in ' + p.name + '\u2019s real application', p.formPrio, { rule: G2, bg: WALL, size: 9.5 });
+      if (p.formPrio && p.formPrio.length) box('Priorities in the real application of ' + p.name + ', and why', p.formPrio.concat(p.prioWhy ? [p.prioWhy] : []), { rule: G2, bg: WALL, size: 9.5 });
       var prf = prioList(s, true); box('Priorities this step answers', prf.length ? prf.concat(s.how ? ['How: ' + s.how] : []) : ['No priority chosen yet. Which one would an expert see in this step, and what would you show for it?'], { rule: prf.length ? BLUE : RED, bg: '#ffffff', size: 10, bullets: !!prf.length });
       if (SP.advice) box('If this is your step: practical advice', SP.advice, { rule: RED, bg: WALL, bullets: true, size: 10.5 });
       if (a) {
@@ -671,6 +673,7 @@
       '<h2 class="h2">Specific priorities ' + (mine.length ? 'of your fields' : 'per field') + '</h2>' + keys.map(function (d) { var sc = PR.sectors[d]; return sec(sc.field, ul(sc.items) + '<p class="muted">' + esc(sc.lab) + '</p>'); }).join('') + '<p class="muted small">' + esc(PR.ukraineNote) + '</p>' +
       sec(PR.culture.field, ul(PR.culture.items) + '<p class="muted">' + esc(PR.culture.rule) + ' ' + esc(PR.culture.lab) + '</p>') +
       '<h2 class="h2">' + esc(PR.future.title) + '</h2>' + ul(PR.future.lines) + '<p class="muted">' + esc(PR.future.status) + '</p><div class="advice">' + esc(PR.future.reading) + '</div>' +
+      (PR.buinho ? '<h2 class="h2">' + esc(PR.buinho.title) + '</h2><p class="muted small">' + esc(PR.buinho.source) + '</p>' + ul(PR.buinho.lines) : '') +
       sec('Before you choose', ul(PR.reflect)) +
       sec('Sources', PR.links.map(function (l) { return '<div>' + link(l.url, l.label) + '</div>'; }).join('')) +
       '<div class="row" style="margin-top:16px"><a class="btn blue" href="#/path">Back to my path</a></div>', 'actions');
