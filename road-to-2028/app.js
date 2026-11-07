@@ -219,13 +219,42 @@
   /* ---------- guide / PDF ---------- */
   function steps() { return S.path.filter(function (s) { return project(s.project); }); }
   function whyLabels(ids) { return (ids || []).map(function (id) { var w = byId(D.whys || [], id); return w ? w.label : id; }); }
+  var PROG = { ka122: 'erasmus', ka1: 'erasmus', youth: 'erasmus', 'youth-acc': 'erasmus', ka210: 'erasmus', ka220: 'erasmus', esc: 'esc', crea: 'crea' };
+
+  /* personalised reading of the path: returns texts in priority order */
+  function readings() {
+    var T = (D.strategy || {}).readings || {}, out = [], st = steps();
+    if (!st.length) return out;
+    var ps = st.map(function (s) { return project(s.project); });
+    var fams = ps.map(pfam), acts = ps.map(function (p) { return p.action; });
+    var progs = {}; acts.forEach(function (a) { if (PROG[a]) progs[PROG[a]] = 1; });
+    var whys = {}; st.forEach(function (s) { s.why.forEach(function (w) { whys[w] = 1; }); });
+    var years = {}; st.forEach(function (s) { if (s.when) years[s.when] = (years[s.when] || 0) + 1; });
+    function add(k) { if (T[k] && out.indexOf(T[k]) < 0) out.push(T[k]); }
+    if (S.lab.exp === 'none' && (fams[0] === 'cooperation' || fams[0] === 'culture')) add('startPartner');
+    if (fams[0] === 'mobility' && fams.slice(1).some(function (f) { return f === 'cooperation' || f === 'culture'; })) add('mobilityFirst');
+    if (fams.filter(function (f) { return f === 'cooperation'; }).length > 1) add('coopAfterCoop');
+    if (Object.keys(progs).length > 1) add('manyProgrammes'); else if (st.length > 1) add('onlyOneProgramme');
+    if (acts.indexOf('crea') > -1) add('culture');
+    if (acts.indexOf('ka1') > -1 || acts.indexOf('youth-acc') > -1) add('accreditation');
+    if (acts.indexOf('ka220') > -1) add('ka220');
+    if (acts.indexOf('ka210') > -1) add('ka210');
+    if (acts.indexOf('esc') > -1) add('esc');
+    if (Object.keys(years).some(function (y) { return years[y] > 1; })) add('sameYear');
+    if (years['2028'] || years.Later) add('in2028');
+    [['partners', 'whyPartners'], ['team', 'whyTeam'], ['track', 'whyTrack'], ['test', 'whyTest'], ['local', 'whyLocal'], ['art', 'whyArt']].forEach(function (w) { if (whys[w[0]]) add(w[1]); });
+    return out;
+  }
+
   function guide() {
-    var st = steps();
+    var st = steps(), R = readings();
     render(
       '<div class="kicker">Your take-away</div><h1 class="h1">My guide</h1>' +
-      '<p class="lead">A PDF made from your choices: your path, how each step looks after 2027, the partnership and money behind it, your questions and where to look next.</p>' +
+      '<p class="lead">A PDF made from your choices: your path read against Buinho\'s strategy, practical advice for each step, your year of deadlines, the long-term questions behind every application, and your own questions.</p>' +
       (st.length ? '<div class="stack">' + st.map(function (s, i) { var p = project(s.project), f = pfam(p); return '<div class="aitem"><span class="sw fam-' + f + '">' + (i + 1) + '</span><span class="tx"><b>' + esc(p.name) + '</b><span>' + esc(famLabel(f) + (s.when ? ' · ' + s.when : '') + (s.why.length ? ' · ' + whyLabels(s.why).join(', ') : '')) + '</span></span></div>'; }).join('') + '</div>'
         : '<div class="empty">No path yet. <a href="#/path">Put your starred cards in order first.</a></div>') +
+      (R.length ? '<h2 class="h2">What your path says</h2><div class="stack">' + R.map(function (t) { return '<div class="advice">' + esc(t) + '</div>'; }).join('') + '</div>' : '') +
+      ((D.strategy && D.strategy.references) ? '<h2 class="h2">Official references</h2><p class="muted">The documents and tools behind this guide. Always read the current version.</p>' + D.strategy.references.map(function (g) { return '<h3 class="h3">' + esc(g.group) + '</h3><ul class="links">' + g.items.map(function (l) { return '<li><a href="' + esc(l.url) + '" target="_blank" rel="noopener">' + esc(l.label) + '</a></li>'; }).join('') + '</ul>'; }).join('') : '') +
       '<p class="muted" style="margin-top:14px">' + S.fav.length + ' starred card(s) · ' + S.questions.length + ' question(s)</p>' +
       '<div class="row" style="margin-top:16px"><button class="btn blue" id="pdf"' + (st.length ? '' : ' disabled') + '>Download my guide (PDF)</button></div>' +
       '<p class="muted" id="pdfmsg" role="status"></p>' +
@@ -258,88 +287,195 @@
 
   function buildPDF(fonts) {
     var J = window.jspdf.jsPDF; var doc = new J({ unit: 'mm', format: 'a4' });
-    var R = 'helvetica', B = 'helvetica';
+    var R = 'helvetica', B = 'helvetica', T = D.strategy || {};
     if (fonts) { doc.addFileToVFS('Asap-Regular.ttf', fonts[0]); doc.addFont('Asap-Regular.ttf', 'Asap', 'normal'); doc.addFileToVFS('Asap-Bold.ttf', fonts[1]); doc.addFont('Asap-Bold.ttf', 'Asap', 'bold'); R = B = 'Asap'; }
-    var W = 210, M = 18, CW = W - 2 * M, y = 0;
+    var W = 210, H = 297, M = 18, CW = W - 2 * M, y = 0, page = 1;
+    var BLUE = '#2364ff', RED = '#ff5050', SUN = '#ffc850', INK = '#010101', G7 = '#2b2b2b', G5 = '#595959', G2 = '#d9d9d9', WALL = '#fafafa', NOTE = '#ffe066';
     function rgb(h) { return [parseInt(h.substr(1, 2), 16), parseInt(h.substr(3, 2), 16), parseInt(h.substr(5, 2), 16)]; }
     function fill(h) { doc.setFillColor.apply(doc, rgb(h)); }
+    function stroke(h) { doc.setDrawColor.apply(doc, rgb(h)); }
     function color(h) { doc.setTextColor.apply(doc, rgb(h)); }
     function font(bold, size) { doc.setFont(bold ? B : R, bold ? 'bold' : 'normal'); doc.setFontSize(size); }
-    function need(h) { if (y + h > 282) { footer(); doc.addPage(); y = 20; } }
-    function text(t, size, bold, col, gap) { if (!t) return; font(bold, size); color(col || '#010101'); doc.splitTextToSize(String(t), CW).forEach(function (ln) { need(size * 0.45); doc.text(ln, M, y); y += size * 0.43; }); y += gap == null ? 2 : gap; }
-    function label(t) { need(10); font(true, 7.5); color('#595959'); doc.text(String(t).toUpperCase(), M, y); y += 4.2; }
-    function linkLine(l) { font(false, 9.5); color('#2364ff'); doc.splitTextToSize(l.label + ' — ' + l.url, CW).forEach(function (ln) { need(5); doc.textWithLink(ln, M, y, { url: l.url }); y += 4.3; }); y += 1; }
-    function band(hex, kicker, title, sub) { fill(hex); doc.rect(0, 0, W, 40, 'F'); var tc = (hex === '#2364ff' || hex === '#010101') ? '#ffffff' : '#010101'; color(tc); font(true, 9); doc.text(kicker.toUpperCase(), M, 14); font(true, 22); doc.text(doc.splitTextToSize(title, CW)[0], M, 26); if (sub) { font(false, 11); doc.text(doc.splitTextToSize(sub, CW)[0], M, 34); } y = 52; }
-    function footer() { font(false, 7.5); color('#595959'); doc.text('Road to 2028 · EU funding clinic · Vulca 2026 · Buinho Creative Hub, Messejana · buinho.pt', M, 290); }
+    function lh(size) { return size * 0.42; }
+    function lines(t, size, bold, w) { font(bold, size); return doc.splitTextToSize(String(t || ''), w); }
+    function footer() { font(false, 7.5); color(G5); doc.text('Road to 2028 · EU funding clinic · Vulca 2026 · Buinho Creative Hub, Messejana · buinho.pt', M, 290); doc.text(String(page), W - M, 290, { align: 'right' }); }
+    function newPage() { footer(); doc.addPage(); page++; y = 20; }
+    function need(h) { if (y + h > 280) newPage(); }
+    function text(t, size, bold, col, gap, x, w) { if (!t) return; x = x || M; w = w || CW; var L = lines(t, size, bold, w); color(col || INK); L.forEach(function (ln) { need(lh(size) + 1); font(bold, size); color(col || INK); doc.text(ln, x, y); y += lh(size); }); y += gap == null ? 2 : gap; }
+    function label(t, col) { need(9); font(true, 7.5); color(col || G5); doc.text(String(t).toUpperCase(), M, y); y += 4.4; }
+    function linkLine(l, x, w) { x = x || M; w = w || CW; font(false, 9); color(BLUE); doc.splitTextToSize(l.label + ' — ' + l.url, w).forEach(function (ln) { need(5); doc.textWithLink(ln, x, y, { url: l.url }); y += 4.1; }); y += 1; }
+    function band(hex, kicker, title, sub) {
+      fill(hex); doc.rect(0, 0, W, 44, 'F'); var tc = (hex === BLUE || hex === INK) ? '#ffffff' : INK; color(tc);
+      font(true, 8.5); doc.text(kicker.toUpperCase(), M, 15); font(true, 23); doc.text(doc.splitTextToSize(title, CW)[0], M, 28);
+      if (sub) { font(false, 10.5); doc.text(doc.splitTextToSize(sub, CW)[0], M, 37); } y = 56;
+    }
+    /* a box with a coloured left rule; measures its own height; moves to a new page if needed */
+    function box(title, body, opt) {
+      opt = opt || {}; var rule = opt.rule || RED, bg = opt.bg || '#ffffff', pad = 4, x = M, w = CW, tw = w - 2 * pad - 2;
+      var items = Array.isArray(body) ? body : [body];
+      var bl = items.map(function (b) { return lines((opt.bullets ? '• ' : '') + b, opt.size || 10, false, tw); });
+      var h = pad + (title ? lh(9) + 3 : 0) + bl.reduce(function (s, L) { return s + L.length * lh(opt.size || 10) + 1.6; }, 0) + pad - 1;
+      need(h + 3);
+      fill(bg); doc.rect(x, y - 3.5, w, h, 'F'); fill(rule); doc.rect(x, y - 3.5, 1.6, h, 'F');
+      var yy = y + pad - 3.5 + 3;
+      if (title) { font(true, 8); color(opt.titleColor || G5); doc.text(title.toUpperCase(), x + pad + 2, yy); yy += lh(9) + 3; }
+      bl.forEach(function (L) { font(false, opt.size || 10); color(INK); L.forEach(function (ln) { doc.text(ln, x + pad + 2, yy); yy += lh(opt.size || 10); }); yy += 1.6; });
+      y += h + 2;
+    }
+    function rows(pairs, size) {
+      size = size || 9.5; var kw = 34;
+      pairs.forEach(function (r) { if (!r[1]) return; var L = lines(r[1], size, false, CW - kw); need(L.length * lh(size) + 2); font(true, 8); color(G5); doc.text(r[0].toUpperCase(), M, y); font(false, size); color(INK); L.forEach(function (ln, k) { doc.text(ln, M + kw, y + k * lh(size)); }); y += L.length * lh(size) - lh(size) + 2; stroke(G2); doc.setLineWidth(0.2); doc.line(M, y, M + CW, y); y += 4.6; });
+    }
 
-    // cover
-    fill('#2364ff'); doc.rect(0, 0, W, 96, 'F');
-    if (fonts && fonts[2]) { try { doc.addImage('data:image/png;base64,' + fonts[2], 'PNG', W - M - 40, 10, 40, 10); } catch (e) {} }
-    color('#ffffff'); font(true, 9); doc.text('EU FUNDING POLICY CLINIC · VULCA 2026 · CUENCA', M, 18);
-    font(true, 30); doc.text('Your lab\'s road to 2028', M, 44);
-    font(false, 12); doc.text(doc.splitTextToSize((S.lab.name || 'Your lab') + (S.lab.country ? ' · ' + S.lab.country : '') + (S.lab.code ? ' · ' + S.lab.code : ''), CW), M, 74);
-    font(false, 9); doc.text(new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }), M, 86);
-    y = 110;
-    text('This guide comes from the choices you made during the clinic: the Buinho projects you starred, the order you put them in and the questions you still have. It is a starting point, not a recommendation. Rules and amounts refer to the 2021–2027 programmes; what comes after 2027 is still a proposal.', 11, false, '#2b2b2b', 6);
-    label('Your path');
-    steps().forEach(function (s, i) {
-      var p = project(s.project), f = pfam(p), pl = ppil(p); need(18);
-      fill(famColor(f)); doc.circle(M + 6, y + 3, 6, 'F');
-      color(famText(f)); font(true, 12); doc.text(String(i + 1), M + 6, y + 5, { align: 'center' });
-      color('#010101'); font(true, 13); doc.text(famLabel(f) + ' — like ' + p.name, M + 16, y + 2);
-      font(false, 9.5); color('#2b2b2b'); var sub = [pl ? pl.label + ' · ' + pl.name : '', s.when, whyLabels(s.why).join(', ')].filter(Boolean).join(' · ');
-      if (sub) doc.text(doc.splitTextToSize(sub, CW - 16)[0], M + 16, y + 7);
-      y += 16;
+    var st = steps(), ps = st.map(function (s) { return project(s.project); });
+
+    /* ===== 1. cover with path diagram ===== */
+    fill(BLUE); doc.rect(0, 0, W, H, 'F');
+    if (fonts && fonts[2]) { try { doc.addImage('data:image/png;base64,' + fonts[2], 'PNG', W - M - 44, 14, 44, 11); } catch (e) {} }
+    color('#ffffff'); font(true, 9); doc.text('EU FUNDING POLICY CLINIC · VULCA SEMINAR 2026 · CUENCA', M, 20);
+    font(true, 40); doc.text('Your lab\'s', M, 62); doc.text('road to 2028', M, 78);
+    font(false, 14); doc.text(doc.splitTextToSize((S.lab.name || 'Your lab') + (S.lab.country ? ' · ' + S.lab.country : '') + (S.lab.code ? ' · ' + S.lab.code : ''), CW), M, 96);
+    font(false, 10); doc.text(new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }), M, 104);
+    /* path diagram */
+    var n = Math.max(st.length, 1), gx0 = M + 14, gx1 = W - M - 14, gy = 168, stepW = n > 1 ? (gx1 - gx0) / (n - 1) : 0;
+    doc.setLineWidth(1.2); stroke('#ffffff');
+    if (n > 1) doc.line(gx0, gy, gx1, gy);
+    st.forEach(function (s, i) {
+      var p = ps[i], f = pfam(p), pl = ppil(p), cx = n > 1 ? gx0 + i * stepW : (gx0 + gx1) / 2;
+      fill('#ffffff'); doc.circle(cx, gy, 13, 'F'); fill(famColor(f)); doc.circle(cx, gy, 11, 'F');
+      color(famText(f)); font(true, 18); doc.text(String(i + 1), cx, gy + 2.4, { align: 'center' });
+      color('#ffffff'); font(true, 12); doc.text(doc.splitTextToSize(famLabel(f), 52), cx, gy + 22, { align: 'center' });
+      font(false, 9.5); doc.text(doc.splitTextToSize('like ' + p.name, 52), cx, gy + 28, { align: 'center' });
+      font(false, 8.5); doc.text(doc.splitTextToSize((pl ? pl.label : '') + (s.when ? ' · ' + s.when : ''), 52), cx, gy + 38, { align: 'center' });
     });
-    y += 2;
-    if (S.lab.exp && D.expNotes) text(D.expNotes[S.lab.exp], 10.5, false, '#2b2b2b', 4);
+    font(false, 10.5); color('#ffffff');
+    doc.text(doc.splitTextToSize('This guide reads the path you sketched during the clinic against eleven years of Buinho\'s European projects. It is a starting point, not a recommendation: rules and amounts refer to the 2021–2027 programmes, and what comes after 2027 is still a proposal.', CW), M, 232);
+    footer();
 
-    // one page per step
-    steps().forEach(function (s, i) {
-      var p = project(s.project), a = action(p.action), f = pfam(p), pl = ppil(p), P = p.partnership || {};
-      footer(); doc.addPage(); band(famColor(f), 'Step ' + (i + 1) + (pl ? ' · ' + pl.label + ' · ' + pl.name : ''), famLabel(f) + ' — like ' + p.name, 'Today: ' + p.today);
-      label('The Buinho example'); text(p.objective, 10.5, false, '#010101', 2); text(p.did, 10, false, '#2b2b2b', 3);
-      label('What it took'); text(p.needed, 10.5, false, '#010101', 3);
-      if (p.left) { label('What it left'); text(p.left, 10.5, false, '#010101', 3); }
-      label('The partnership'); text('Partners: ' + P.size + (list(P.countries).length ? ' (' + P.countries.join(', ') + ')' : ''), 10.5, true, '#010101', 1); text('Who brings what: ' + P.roles, 10.5, false, '#010101', 1); text('Money: ' + P.money, 10.5, false, '#010101', 3);
-      if (p.lesson) { label('Lesson'); text(p.lesson, 10.5, false, '#010101', 3); }
+    /* ===== 2. path at a glance: map against 2028 pillars ===== */
+    doc.addPage(); page++; band(INK, 'Your path at a glance', 'Where your steps sit after 2027', 'Erasmus+ pillars and AgoraEU, according to the proposals for 2028–2034');
+    var cols = D.pillars || [], cw3 = (CW - 8) / 3;
+    cols.forEach(function (pl, k) {
+      var x = M + k * (cw3 + 4); fill(WALL); doc.rect(x, y, cw3, 112, 'F');
+      font(true, 11); color(INK); doc.text(pl.label, x + 4, y + 8); font(false, 8.5); color(G5); doc.text(doc.splitTextToSize(pl.name, cw3 - 8), x + 4, y + 13);
+      font(false, 7.5); doc.text(doc.splitTextToSize(pl.today, cw3 - 8), x + 4, y + 22);
+    });
+    var colY = cols.map(function () { return y + 40; });
+    st.forEach(function (s, i) {
+      var p = ps[i], a = action(p.action), k = Math.max(0, cols.map(function (c) { return c.id; }).indexOf(a ? a.pillar : '')), x = M + k * (cw3 + 4) + 4, f = pfam(p), yy = colY[k];
+      fill(famColor(f)); doc.rect(x, yy, cw3 - 8, 20, 'F'); color(famText(f));
+      font(true, 14); doc.text(String(i + 1), x + 4, yy + 8); font(true, 9.5); doc.text(doc.splitTextToSize(famLabel(f), cw3 - 22)[0], x + 12, yy + 7);
+      font(false, 8); doc.text(doc.splitTextToSize(p.name, cw3 - 18)[0], x + 12, yy + 12); doc.text(doc.splitTextToSize('Today: ' + (a ? a.short : p.today) + (s.when ? ' · ' + s.when : ''), cw3 - 18)[0], x + 12, yy + 16.5);
+      colY[k] += 24;
+    });
+    y += 120;
+    label('About your lab');
+    rows([['Experience', { none: 'Never applied to EU programmes', partner: 'Partner in EU projects before', coordinator: 'Coordinated EU projects before' }[S.lab.exp] || 'Not given'],
+      ['Works with', (S.lab.domains || []).map(function (d) { var x = byId(D.domains || [], d); return x ? x.label : d; }).join(', ') || 'Not given'],
+      ['Why these steps', st.map(function (s, i) { return (i + 1) + ': ' + (whyLabels(s.why).join(', ') || '—'); }).join('   ')]]);
+    if (S.lab.exp && D.expNotes) box('A first reading', D.expNotes[S.lab.exp], { rule: BLUE, bg: WALL });
+
+    /* ===== 3. reading your path ===== */
+    newPage(); y = 0; band(RED, 'Practical advice', 'Reading your path', 'Inferences from your steps, their order, your reasons and your timing');
+    var RD = readings();
+    RD.forEach(function (t, i) { box('Note ' + (i + 1), t, { rule: i % 2 ? BLUE : RED, bg: WALL, size: 10.5 }); });
+    if (T.buinho) { y += 2; box('How Buinho reads its own path', [T.buinho.intro, T.buinho.themes, T.buinho.base], { rule: INK, bg: '#ffffff', size: 10 }); }
+
+    /* ===== 4. one spread per step ===== */
+    st.forEach(function (s, i) {
+      var p = ps[i], a = action(p.action), f = pfam(p), pl = ppil(p), P = p.partnership || {}, SP = (T.projects || {})[p.id] || {};
+      newPage(); y = 0; band(famColor(f), 'Step ' + (i + 1) + (pl ? ' · ' + pl.label + ' · ' + pl.name : '') + (s.when ? ' · ' + s.when : ''), famLabel(f) + ' — like ' + p.name, 'Today: ' + p.today + ' · Buinho was ' + p.role.toLowerCase() + ' · ' + p.years);
+      label('The Buinho example'); text(p.objective, 11, true, INK, 2); text(p.did, 10, false, G7, 3);
+      if (SP.place) box('Where it sits in our strategy', [SP.place, SP.connects], { rule: famColor(f) === SUN ? INK : famColor(f), bg: WALL });
+      label('The partnership');
+      rows([['Partners', P.size + (list(P.countries).length ? ' (' + P.countries.join(', ') + ')' : '')], ['Who brings what', P.roles], ['Money', P.money], ['What it took', p.needed], ['What it left', p.left]]);
+      if (p.lesson) box('Lesson', p.lesson, { rule: RED, bg: '#ffffff' });
+      if (SP.advice) box('If this is your step: practical advice', SP.advice, { rule: RED, bg: WALL, bullets: true, size: 10.5 });
       if (a) {
-        label('After 2027'); text(a.future, 10.5, false, '#010101', 3);
-        label('How this kind of action works today (' + a.short + ')');
-        [['For', a.purpose], ['Who can apply', a.who], ['Partners', a.partners], ['Money', a.funding], ['Deadlines', a.deadlines], ['As a first step?', a.firstStep]].forEach(function (r) { if (r[1]) text(r[0] + ': ' + r[1], 10, false, '#2b2b2b', 1.5); });
-        y += 2; if (a.links && a.links.length) { label('Links'); a.links.forEach(linkLine); }
+        box('After 2027', a.future, { rule: INK, bg: '#ffffff' });
+        label('How this kind of action works today · ' + a.short + ' · ' + a.name);
+        rows([['For', a.purpose], ['Who can apply', a.who], ['Partners', a.partners], ['Duration', a.duration], ['Money', a.funding], ['Where', a.where], ['Deadlines', a.deadlines], ['First step?', a.firstStep], ['It builds', a.builds]], 9);
+        if (a.links && a.links.length) { label('Official links'); a.links.forEach(function (l) { linkLine(l); }); }
         var dom = (S.lab.domains || []).map(function (d) { return byId(D.domains || [], d); }).filter(Boolean);
         if (a.searchUrl && dom.length) { label('Find similar projects in your field'); dom.forEach(function (d) { linkLine({ label: d.label, url: a.searchUrl(d) }); }); }
       }
     });
 
-    // partners
-    if (D.partnerCriteria && D.partnerCriteria.length) {
-      footer(); doc.addPage(); band('#ff5050', 'Before you write anything together', 'Choosing partners', '');
-      D.partnerCriteria.forEach(function (c) { text(c.label, 12, true, '#010101', 1); text(c.text, 10.5, false, '#2b2b2b', 4); });
-      var other = S.fav.filter(function (id) { return stepOf(id) < 0; }).map(project).filter(Boolean);
-      if (other.length) { y += 2; label('Other cards you starred'); other.forEach(function (p) { text(p.name + ' (' + famLabel(pfam(p)) + ', ' + p.domain + ') — ' + (p.partnership ? p.partnership.size + '. ' + p.partnership.roles : p.objective), 10, false, '#2b2b2b', 2); }); }
+    /* ===== 5. your year ===== */
+    newPage(); y = 0; band(SUN, 'Annual planning', 'Your year of deadlines', 'A typical year, based on the 2026 calls, for the actions on your path');
+    var CAL = T.calendar || {}, acts = []; ps.forEach(function (p) { if (p.action && acts.indexOf(p.action) < 0) acts.push(p.action); });
+    var gx = M + 46, gw = CW - 46, mw = gw / 12, MON = 'JFMAMJJASOND';
+    font(true, 8); color(G5); for (var mi = 0; mi < 12; mi++) doc.text(MON[mi], gx + mi * mw + mw / 2, y, { align: 'center' });
+    y += 3;
+    acts.forEach(function (aid) {
+      var a = action(aid), ev = CAL[aid] || []; need(16);
+      font(true, 9); color(INK); doc.text(doc.splitTextToSize(a.short + ' · ' + a.name, 44), M, y + 5);
+      fill(WALL); doc.rect(gx, y, gw, 12, 'F'); stroke(G2); doc.setLineWidth(0.2); for (var k = 1; k < 12; k++) doc.line(gx + k * mw, y, gx + k * mw, y + 12);
+      ev.forEach(function (e) {
+        var cx = gx + (e.m - 1) * mw + mw / 2;
+        if (e.t === 'deadline') { fill(famColor(a.family) === SUN ? '#e0a800' : famColor(a.family)); for (var b = 1; b <= 3; b++) { var pm = e.m - b; if (pm >= 1) { doc.setGState && doc.setGState(new doc.GState({ opacity: 0.18 })); doc.rect(gx + (pm - 1) * mw, y, mw, 12, 'F'); doc.setGState && doc.setGState(new doc.GState({ opacity: 1 })); } } doc.circle(cx, y + 6, 2.6, 'F'); }
+        else if (e.t === 'optional') { stroke(INK); doc.setLineWidth(0.5); doc.circle(cx, y + 6, 2.4, 'S'); }
+        else { fill(INK); doc.rect(cx - 2, y + 4, 4, 4, 'F'); }
+      });
+      y += 15;
+      ev.forEach(function (e) { font(false, 8); color(G7); doc.text('· ' + MON.charAt(e.m - 1) + ' (' + ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][e.m - 1] + '): ' + e.l, gx, y); y += 3.8; });
+      y += 2;
+    });
+    y += 2; font(false, 8.5); color(G5);
+    fill(INK); doc.circle(M + 2, y - 1, 2, 'F'); doc.text('deadline', M + 6, y); stroke(INK); doc.circle(M + 32, y - 1, 2, 'S'); doc.text('optional second round', M + 36, y); fill(INK); doc.rect(M + 80, y - 3, 3.5, 3.5, 'F'); doc.text('results', M + 86, y); fill('#c9d7ff'); doc.rect(M + 106, y - 3, 6, 3.5, 'F'); doc.text('3 months to find partners and write', M + 114, y);
+    y += 8;
+    box('Planning the year', ['Talk to partners three months before each deadline; the first months of the year are the busiest.', 'Results of partnerships usually arrive in summer; Creative Europe in November. Projects start months later: plan cash for the gap.', 'The Erasmus+ Programme Guide for the next year is published in late autumn. Read it before you plan.', 'Running projects need reporting at the same time as new applications. Count both.'], { rule: SUN === SUN ? INK : INK, bg: WALL, bullets: true });
+
+    /* ===== 6. long-term dimensions ===== */
+    newPage(); y = 0; band(BLUE, 'Behind every application', 'The long-term questions', 'What we look at beyond the forms, and questions for your lab');
+    (T.dimensions || []).forEach(function (d) {
+      var bl = lines(d.buinho, 9.5, false, CW - 8), ql = d.ask.map(function (q) { return lines('→ ' + q, 9.5, true, CW - 8); });
+      var h = 9 + bl.length * lh(9.5) + 2 + ql.reduce(function (s, L) { return s + L.length * lh(9.5) + 1; }, 0) + 4;
+      need(h + 3); fill(WALL); doc.rect(M, y - 4, CW, h, 'F'); fill(BLUE); doc.rect(M, y - 4, 1.6, h, 'F');
+      var yy = y + 1; font(true, 11.5); color(INK); doc.text(d.title, M + 5, yy); yy += 6;
+      font(false, 9.5); color(G7); bl.forEach(function (ln) { doc.text(ln, M + 5, yy); yy += lh(9.5); }); yy += 2;
+      font(true, 9.5); color(INK); ql.forEach(function (L) { L.forEach(function (ln) { doc.text(ln, M + 5, yy); yy += lh(9.5); }); yy += 1; });
+      y += h + 1;
+      if (d.sources && d.sources.length) { need(16); font(true, 7.5); color(G5); doc.text('OFFICIAL SOURCES', M + 5, y + 1); y += 4.5; d.sources.forEach(function (l) { linkLine(l, M + 5, CW - 8); }); }
+      y += 3;
+    });
+
+    /* ===== 7. partners + other starred cards ===== */
+    newPage(); y = 0; band(RED, 'Before you write anything together', 'Choosing partners', 'The five things we check');
+    (D.partnerCriteria || []).forEach(function (c, k) { need(18); fill(RED); doc.circle(M + 4, y - 1, 4, 'F'); color(INK); font(true, 11); doc.text(String(k + 1), M + 4, y + 0.6, { align: 'center' }); font(true, 11.5); doc.text(c.label, M + 12, y); y += 5.5; text(c.text, 10, false, G7, 4, M + 12, CW - 12); });
+    var other = S.fav.filter(function (id) { return stepOf(id) < 0; }).map(project).filter(Boolean);
+    if (other.length) { y += 2; label('Other cards you starred: their partnerships'); other.forEach(function (p) { box(p.name + ' · ' + famLabel(pfam(p)) + ' · ' + p.domain, [p.partnership ? p.partnership.size + '. ' + p.partnership.roles : p.objective].concat(((T.projects || {})[p.id] || {}).advice ? [((T.projects || {})[p.id]).advice[0]] : []), { rule: famColor(pfam(p)) === SUN ? INK : famColor(pfam(p)), bg: WALL, size: 9.5 }); }); }
+
+    /* ===== 8. checklist ===== */
+    newPage(); y = 0; band(INK, 'Before you apply', 'A practical checklist', 'Small things that sink good projects');
+    (T.checklist || []).forEach(function (c) { var L = lines(c, 10.5, false, CW - 12); need(L.length * lh(10.5) + 5); stroke(INK); doc.setLineWidth(0.5); doc.rect(M, y - 4, 5, 5, 'S'); font(false, 10.5); color(INK); L.forEach(function (ln, k) { doc.text(ln, M + 10, y + k * lh(10.5)); }); y += L.length * lh(10.5) + 5; });
+
+    /* ===== 9. questions ===== */
+    newPage(); y = 0; band(SUN, 'Where your path stops', 'What you still need to know', 'Take these to the next clinics, to your National Agency or to a lab that has done it before');
+    if (S.questions.length) S.questions.forEach(function (q) { var L = lines(q, 11, false, CW - 12); var h = L.length * lh(11) + 9; need(h + 3); fill(NOTE); doc.rect(M, y - 4, CW, h, 'F'); font(false, 11); color(INK); L.forEach(function (ln, k) { doc.text(ln, M + 6, y + 2 + k * lh(11)); }); y += h + 3; });
+    else text('(No questions written.)', 10, false, G5, 4);
+    if (D.whereToAsk && D.whereToAsk.length) { y += 4; label('Where to look for answers'); D.whereToAsk.forEach(function (l) { linkLine(l); }); }
+
+    /* ===== 10. after 2027 ===== */
+    if (D.post2027) {
+      newPage(); y = 0; band(INK, 'After 2027', D.post2027.title, 'Proposals and negotiating positions, not law');
+      box('Status', D.post2027.status, { rule: RED, bg: WALL });
+      list(D.post2027.sections).forEach(function (s) { label(s.label); text(s.text, 10, false, INK, 3); });
+      box('How to prepare, without betting on details', D.post2027.implications, { rule: BLUE, bg: WALL, bullets: true });
+      label('Sources'); list(D.post2027.links).forEach(function (l) { linkLine(l); });
     }
 
-    // questions
-    footer(); doc.addPage(); band('#ffc850', 'Where your path stops', 'What you still need to know', '');
-    text('Take these to the next clinics of the seminar, to the National Agency of your country, or to a lab that has done it before.', 10.5, false, '#2b2b2b', 5);
-    if (S.questions.length) S.questions.forEach(function (q) { var lines = doc.splitTextToSize(q, CW - 10); var h = lines.length * 4.6 + 8; need(h + 3); fill('#ffe066'); doc.rect(M, y - 4, CW, h, 'F'); font(false, 10.5); color('#010101'); lines.forEach(function (ln, k) { doc.text(ln, M + 5, y + 1 + k * 4.6); }); y += h + 3; });
-    else text('(No questions written.)', 10, false, '#595959', 4);
-    if (D.whereToAsk && D.whereToAsk.length) { y += 4; label('Where to look for answers'); D.whereToAsk.forEach(linkLine); }
+    /* ===== 10b. official references ===== */
+    if (T.references && T.references.length) {
+      newPage(); y = 0; band(BLUE, 'Check it yourself', 'Official references', 'The documents and tools behind this guide. Rules change every year: always read the current version.');
+      T.references.forEach(function (g) { label(g.group); g.items.forEach(function (l) { linkLine(l); }); y += 2; });
+    }
 
-    // 2028
-    if (D.post2027) { footer(); doc.addPage(); band('#010101', 'After 2027', D.post2027.title, '');
-      text(D.post2027.status, 10.5, true, '#010101', 4);
-      list(D.post2027.sections).forEach(function (s) { label(s.label); text(s.text, 10.5, false, '#010101', 3); });
-      label('How to prepare'); list(D.post2027.implications).forEach(function (t) { text('— ' + t, 10.5, false, '#010101', 2); });
-      label('Sources'); list(D.post2027.links).forEach(linkLine); }
-
-    // lessons
-    if (D.lessons && D.lessons.length) { footer(); doc.addPage(); band('#2364ff', 'From Buinho\'s experience', 'What we learned on the way', '');
-      D.lessons.forEach(function (t) { text('— ' + t, 11, false, '#010101', 3); });
-      y += 4; text('Buinho Creative Hub · Rua Nova de São Brás, Messejana, Portugal · info@buinho.pt · buinho.pt', 9.5, false, '#595959', 2); }
-
+    /* ===== 11. Buinho ===== */
+    newPage(); y = 0; band(BLUE, 'From Buinho\'s experience', 'What we learned on the way', 'Eleven years of European projects from a rural fablab');
+    if (T.buinho) { (T.buinho.branches || []).forEach(function (b) { need(12); font(true, 11); color(INK); doc.text(b.name, M, y); font(false, 10); color(G7); doc.text(doc.splitTextToSize(b.text, CW - 34), M + 34, y); y += 8; }); y += 2; }
+    (D.lessons || []).forEach(function (t, k) { box('Lesson ' + (k + 1), t, { rule: k % 2 ? BLUE : RED, bg: WALL, size: 10.5 }); });
+    y += 4; text('Buinho Creative Hub · Rua Nova de São Brás, Messejana, Alentejo, Portugal · info@buinho.pt · buinho.pt', 9.5, false, G5, 2);
     footer();
     doc.save('road-to-2028' + (S.lab.code ? '-' + S.lab.code : '') + '.pdf');
   }
