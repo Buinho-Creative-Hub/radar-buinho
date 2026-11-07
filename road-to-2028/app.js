@@ -333,7 +333,7 @@
     function linkLine(l, x, w) { x = x || M; w = w || CW; font(false, 9); color(BLUE); doc.splitTextToSize(l.label + ' — ' + l.url, w).forEach(function (ln) { need(5); doc.textWithLink(ln, x, y, { url: l.url }); y += 4.1; }); y += 1; }
     function band(hex, kicker, title, sub) {
       fill(hex); doc.rect(0, 0, W, 44, 'F'); var tc = (hex === BLUE || hex === INK) ? '#ffffff' : INK; color(tc);
-      font(true, 8.5); doc.text(kicker.toUpperCase(), M, 15); font(true, 23); doc.text(doc.splitTextToSize(title, CW)[0], M, 28);
+      font(true, 8.5); doc.text(kicker.toUpperCase(), M, 15); font(true, 23); var TL = doc.splitTextToSize(title, CW); if (TL.length > 1) { font(true, 16); TL = doc.splitTextToSize(title, CW).slice(0, 2); doc.text(TL, M, TL.length > 1 ? 24 : 28); } else doc.text(TL[0], M, 28);
       if (sub) { font(false, 10.5); doc.text(doc.splitTextToSize(sub, CW)[0], M, 37); } y = 56;
     }
     /* a box with a coloured left rule; measures its own height; moves to a new page if needed */
