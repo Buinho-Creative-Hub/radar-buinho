@@ -731,7 +731,7 @@
     var st = S.path[i], p = st && project(st.project); if (!p) return null;
     var a = p.action, c = S.lab.cap, lacks = [];
     function low(k, acts) { if (acts.indexOf(a) > -1 && c[k] && c[k] < 2) lacks.push(k); }
-    low('partners', ['ka210', 'ka220', 'crea', 'youth', 'cerv']); low('track', ['ka220', 'crea', 'ka1', 'youth-acc']); low('money', ['crea', 'ka220']); low('label', ['esc']);
+    low('partners', ['ka210', 'ka220', 'crea', 'youth', 'cerv']); low('track', ['ka220', 'crea', 'ka1', 'youth-acc']); low('money', ['crea', 'ka220']); low('label', ['ka220', 'crea']);
     var hasTh = S.lab.themes.filter(Boolean).length > 0, feeds = hasTh ? (st.themes || []).length > 0 : null;
     var builds = S.road.ms.some(function (m) { return m.steps.indexOf(i) > -1; });
     var people = S.road.ready[i], x = lacks.length + (builds ? 0 : 1) + (feeds === false ? 1 : 0);

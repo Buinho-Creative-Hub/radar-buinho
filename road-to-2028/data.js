@@ -39,10 +39,10 @@ module.exports = {
   capacities: [
     { id: 'team', label: 'People and time', proof: 'e.g. 2 people with 10 days a year for EU work' },
     { id: 'partners', label: 'Partners we trust abroad', proof: 'e.g. 3 partners we have delivered with' },
-    { id: 'track', label: 'Track record', proof: 'e.g. 1 small project coordinated, results online' },
-    { id: 'money', label: 'Cash flow', proof: 'e.g. we can advance 6 months of costs' },
-    { id: 'label', label: 'Labels and accreditation', proof: 'e.g. Solidarity Corps Quality Label' },
-    { id: 'local', label: 'Local roots', proof: 'e.g. the town hall and 2 schools on board' }
+    { id: 'track', label: 'Project management experience', proof: 'e.g. 1 small project managed from start to final report' },
+    { id: 'money', label: 'Financial capability', proof: 'e.g. we can advance 6 months of costs and co-finance' },
+    { id: 'label', label: 'International projects experience', proof: 'e.g. 2 international projects as partner' },
+    { id: 'local', label: 'Work with local communities', proof: 'e.g. the town hall, 2 schools and a seniors group on board' }
   ],
   otherRes: [
     { id: 'national', label: 'National or regional fund' },
