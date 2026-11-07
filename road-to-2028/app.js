@@ -492,9 +492,9 @@
     doc.addPage(); page++; band(BLUE, 'Your roadmap', 'From where you stand to your 2030', 'What your lab must build, by when, and what builds it');
     box('Where you want to be', [(S.lab.vision ? '\u201c' + S.lab.vision + '\u201d' : 'No 2030 sentence yet: what will your lab be known for, and for whom?')].concat(S.lab.targets.length ? ['Your role by 2030: ' + targetsTxt()] : []), { rule: INK, bg: WALL, size: 11 });
     label('Where you stand today');
-    var capList = D.capacities || [], cw2 = CW / 3;
-    capList.forEach(function (c, k) { var cx = M + (k % 3) * cw2, cy = y + Math.floor(k / 3) * 9, v = S.lab.cap[c.id] || 0; font(false, 8.5); color(INK); doc.text(c.label, cx, cy); for (var n = 1; n <= 3; n++) { if (n <= v) { fill(BLUE); doc.circle(cx + cw2 - 20 + n * 4.5, cy - 1.2, 1.5, 'F'); } else { stroke(G2); doc.setLineWidth(0.4); doc.circle(cx + cw2 - 20 + n * 4.5, cy - 1.2, 1.5, 'S'); } } });
-    y += 22;
+    var capList = D.capacities || [], cw2 = CW / 2;
+    capList.forEach(function (c, k) { var cx = M + (k % 2) * cw2, cy = y + Math.floor(k / 2) * 7, v = S.lab.cap[c.id] || 0; font(false, 8.5); color(INK); doc.text(c.label, cx, cy); for (var n = 1; n <= 3; n++) { if (n <= v) { fill(BLUE); doc.circle(cx + cw2 - 20 + n * 4.5, cy - 1.2, 1.5, 'F'); } else { stroke(G2); doc.setLineWidth(0.4); doc.circle(cx + cw2 - 20 + n * 4.5, cy - 1.2, 1.5, 'S'); } } });
+    y += 24;
     /* timeline grid */
     var COLS = ['2027', '2028', '2029\u20132034'], gx = M + 44, gw = (CW - 44) / 3, colOf = function (w) { return w === '2027' || !w ? 0 : w === '2028' ? 1 : 2; };
     need(40); font(true, 8.5); color(INK); COLS.forEach(function (c, j) { fill(j === 1 ? '#eef3ff' : WALL); doc.rect(gx + j * gw, y - 4, gw - 2, 6, 'F'); color(INK); doc.text(c, gx + j * gw + 2, y); });
@@ -502,7 +502,7 @@
     function disc(cx, cy, i, r) { var f = pfam(ps[i]); fill(famColor(f)); doc.circle(cx, cy, r, 'F'); color(famText(f)); font(true, r > 3 ? 9 : 7); doc.text(String(i + 1), cx, cy + (r > 3 ? 1.2 : 0.9), { align: 'center' }); }
     font(true, 8.5); color(INK); doc.text('Reference projects', M, y + 1);
     var used = [0, 0, 0]; st.forEach(function (s, i) { var j = colOf(s.when), cx = gx + j * gw + 6 + used[j] * 22; used[j]++; disc(cx, y, i, 4); font(true, 7); color(G5); doc.text(GC[i].todo.length ? 'build first' : 'ready', cx + 5.5, y + 1.2); });
-    y += 12;
+    y += 6; font(false, 7.5); color(G5); doc.text(doc.splitTextToSize(st.map(function (s, i) { return (i + 1) + ' = ' + ps[i].name; }).join('   \u00b7   '), CW)[0] || '', M, y); y += 8;
     RM.ms.forEach(function (m) {
       need(22); stroke(G2); doc.setLineWidth(0.2); doc.line(M, y - 6, M + CW, y - 6);
       font(true, 8.5); color(INK); doc.text(doc.splitTextToSize(capLabel(m.cap), 40), M, y); font(false, 7.5); color(G5); doc.text('today ' + (S.lab.cap[m.cap] ? LV[S.lab.cap[m.cap]] : '?') + ' \u2192 ' + LV[m.to], M, y + 8);
@@ -517,8 +517,9 @@
     GC.forEach(function (g, i) { if (!g.builds) warn.push('Reference project ' + (i + 1) + ' builds none of your roadmap: a good project, but what does it leave behind?'); });
     if (warn.length) box('What this says', warn.slice(0, 3), { rule: RED, bg: WALL, size: 9.5 });
     var TH = S.lab.themes.map(function (t, k) { return [t, k]; }).filter(function (x) { return x[0]; });
-    if (TH.length && st.length) { label('Which step feeds what your lab is about'); var tw2 = (CW - 50) / TH.length; font(true, 8); color(INK); TH.forEach(function (x, j) { doc.text(doc.splitTextToSize(x[0], tw2 - 4)[0], M + 50 + j * tw2, y); }); y += 6;
-      st.forEach(function (s, i) { need(8); font(true, 8.5); color(INK); doc.text('Reference ' + (i + 1), M, y); TH.forEach(function (x, j) { var on = (s.themes || []).indexOf(x[1]) > -1, cx = M + 50 + j * tw2 + 4; if (on) { fill(INK); doc.circle(cx, y - 1, 2.2, 'F'); } else { stroke(G2); doc.setLineWidth(0.4); doc.circle(cx, y - 1, 2.2, 'S'); } }); y += 7; }); }
+    if (TH.length && st.length && st.some(function (s) { return (s.themes || []).length; })) { label('Which reference project feeds what your lab is about'); var tw2 = (CW - 62) / TH.length; font(true, 8); color(INK); TH.forEach(function (x, j) { doc.text(doc.splitTextToSize(x[0], tw2 - 4)[0], M + 62 + j * tw2, y); }); y += 6;
+      st.forEach(function (s, i) { need(8); font(true, 8.5); color(INK); doc.text(doc.splitTextToSize((i + 1) + ' \u00b7 ' + ps[i].name, 58)[0], M, y); TH.forEach(function (x, j) { var on = (s.themes || []).indexOf(x[1]) > -1, cx = M + 62 + j * tw2 + 4; if (on) { fill(INK); doc.circle(cx, y - 1, 2.2, 'F'); } else { stroke(G2); doc.setLineWidth(0.4); doc.circle(cx, y - 1, 2.2, 'S'); } }); y += 7; }); }
+    else if (TH.length && st.length) text('You have not yet said which of your reference projects feeds what your lab is about (' + TH.map(function (x) { return x[0]; }).join(', ') + '). In \u201cMy path\u201d, the last question of each reference does that.', 9.5, false, G5, 3);
 
     /* ===== G. your guidelines (the deliverable) ===== */
     newPage(); y = 0; band(INK, 'Your guidelines', 'Rules for your next initiatives', 'Drawn from your position, your 2030 and your roadmap');
