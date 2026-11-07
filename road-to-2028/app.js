@@ -487,7 +487,7 @@
     y += 12;
     RM.ms.forEach(function (m) {
       need(22); stroke(G2); doc.setLineWidth(0.2); doc.line(M, y - 6, M + CW, y - 6);
-      font(true, 8.5); color(INK); doc.text(doc.splitTextToSize(capLabel(m.cap), 40), M, y); font(false, 7.5); color(G5); doc.text((S.lab.cap[m.cap] || '?') + ' \u2192 ' + m.to + ' of 3', M, y + 8);
+      font(true, 8.5); color(INK); doc.text(doc.splitTextToSize(capLabel(m.cap), 40), M, y); font(false, 7.5); color(G5); doc.text('today ' + (S.lab.cap[m.cap] ? LV[S.lab.cap[m.cap]] : '?') + ' \u2192 ' + LV[m.to], M, y + 8);
       var j = colOf(m.by === '2030' ? 'Later' : m.by), bx = gx + j * gw, txt = doc.splitTextToSize(m.proof || 'How will you know?', gw - 6).slice(0, 3);
       fill(m.proof ? '#ffffff' : '#fff1f1'); stroke(INK); doc.setLineWidth(0.4); doc.rect(bx, y - 3.5, gw - 2, 4 + txt.length * 3.4, 'FD'); font(false, 7.5); color(INK); txt.forEach(function (ln, k) { doc.text(ln, bx + 2, y + k * 3.4); });
       if (m.by) { font(true, 6.5); color(G5); doc.text('by ' + m.by, bx + gw - 3, y - 4.5, { align: 'right' }); }
@@ -738,15 +738,23 @@
     var badge = people === false || x >= 2 ? 'Wait' : x === 1 ? 'Prepare' : 'Go';
     return { feeds: feeds, builds: builds, lacks: lacks, people: people, badge: badge };
   }
+  var LV = ['', 'little', 'some', 'solid'];
+  function roadLevel(m, k) {
+    var t = S.lab.cap[m.cap] || 0, h = '<div class="f lab">From where you are to where you want to be</div>';
+    if (!t) return h + '<p class="muted small">You did not rate this on the start screen. <a href="#/">Rate it there first</a>, then come back.</p>';
+    h += '<div class="fromto"><span class="ft-now">Today: ' + t + ' \u00b7 ' + LV[t] + '</span><span class="muted small">you said this on the start screen</span></div>';
+    if (t >= 3) return h + '<p class="muted small">Already solid. Keep it: pick another thing to build if you want to grow.</p>';
+    return h + '<div class="muted small" style="margin:6px 0 4px">By the date below, you want it to be:</div><div class="chips" data-mto="' + k + '">' + [2, 3].filter(function (n) { return n > t; }).map(function (n) { return '<button class="chip" data-v="' + n + '" aria-pressed="' + (m.to === n) + '">\u2192 ' + n + ' \u00b7 ' + LV[n] + '</button>'; }).join('') + '</div>';
+  }
   function roadView() {
     roadInit();
     var st = steps(), R = S.road, html = '<div class="kicker">' + esc(S.lab.name || 'Your lab') + '</div><h1 class="h1">My roadmap</h1>' +
       '<p class="lead">What must your lab be able to do to reach your 2030? Pick up to 3 things to build, then say what builds each one.</p>' +
       (S.lab.vision ? '<div class="advice"><b>2030:</b> ' + esc(S.lab.vision) + (S.lab.target ? '<br><span class="muted">' + esc((byId(D.targets, S.lab.target) || {}).label) + '</span>' : '') + '</div>' : '<p class="muted">No 2030 sentence yet. <a href="#/">Write it on the start screen.</a></p>');
-    html += '<div class="qn"><b>1 \u00b7 What to build</b> <span class="muted">(up to 3; today\'s level in brackets)</span></div><div class="chips" data-msel>' + (D.capacities || []).map(function (c) { var on = R.ms.some(function (m) { return m.cap === c.id; }); return '<button class="chip" data-v="' + c.id + '" aria-pressed="' + on + '">' + esc(c.label) + ' (' + (S.lab.cap[c.id] || '?') + ')</button>'; }).join('') + '</div>';
+    html += '<div class="qn"><b>1 \u00b7 What to build</b> <span class="muted">(up to 3)</span></div><div class="chips" data-msel>' + (D.capacities || []).map(function (c) { var on = R.ms.some(function (m) { return m.cap === c.id; }); return '<button class="chip" data-v="' + c.id + '" aria-pressed="' + on + '">' + esc(c.label) + ' <span class="muted">\u00b7 today ' + (S.lab.cap[c.id] ? LV[S.lab.cap[c.id]] : 'not rated') + '</span></button>'; }).join('') + '</div>';
     html += '<div class="stack">' + R.ms.map(function (m, k) { var c = capOf(m.cap) || {};
       return '<div class="slot"><div class="step-b"><div class="qn"><b>' + esc(c.label) + '</b></div>' +
-        '<div class="f lab">Level you want to reach</div><p class="muted small">Same scale as on the start screen. Today you are at ' + (S.lab.cap[m.cap] || '?') + '.</p><div class="chips" data-mto="' + k + '">' + [[1, 'little'], [2, 'some'], [3, 'solid']].map(function (n) { return '<button class="chip" data-v="' + n[0] + '" aria-pressed="' + (m.to === n[0]) + '">' + n[0] + ' \u00b7 ' + n[1] + '</button>'; }).join('') + '</div>' +
+        roadLevel(m, k) +
         '<div class="f lab">By when</div><div class="chips" data-mby="' + k + '">' + ['2027', '2028', '2030'].map(function (y) { return '<button class="chip" data-v="' + y + '" aria-pressed="' + (m.by === y) + '">' + y + '</button>'; }).join('') + '</div>' +
         '<div class="f lab">How you will know</div><input type="text" data-mproof="' + k + '" maxlength="80" placeholder="' + esc(c.proof || '') + '" value="' + esc(m.proof) + '">' +
         '<div class="f lab">What builds it</div><div class="chips" data-msteps="' + k + '">' + st.map(function (s, i) { var p = project(s.project); return '<button class="chip" data-v="' + i + '" aria-pressed="' + (m.steps.indexOf(i) > -1) + '">Step ' + (i + 1) + ' \u00b7 ' + esc(famLabel(pfam(p))) + '</button>'; }).join('') +

@@ -162,3 +162,6 @@ label.f{display:block;font-weight:600;margin:12px 0 6px}
 .b-go{background:var(--blue)}.b-prepare{background:var(--sun);color:#010101}.b-wait{background:var(--red)}
 .chip.dot,.chip.dot[aria-pressed="true"]{background:#fff;color:var(--ink);border:2px solid var(--ink)}
 .chip.dot.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.fromto{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:4px 0}
+.ft-now{background:#eef3ff;border:2px solid var(--blue);padding:6px 10px;font-weight:700}
+.chip[aria-pressed="true"] .muted{color:#d0d0d0}
