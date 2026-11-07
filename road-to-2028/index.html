@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Road to 2028 · EU funding clinic · Vulca 2026</title>
+<meta name="description" content="Explore Buinho's European projects, sketch your lab's path and download a personalised guide.">
+<meta name="theme-color" content="#2364ff">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Asap:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="top">
+  <a href="#/" class="brand" aria-label="Home">
+    <img src="logo.svg" alt="Buinho" class="logo" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
+    <span class="logo-fallback">BUINHO</span>
+  </a>
+  <span class="event">Vulca 2026 · Cuenca</span>
+</header>
+<main id="app" tabindex="-1"></main>
+<nav class="tabs" aria-label="Sections">
+  <a href="#/cards" data-tab="cards"><span class="sq b"></span>Projects</a>
+  <a href="#/actions" data-tab="actions"><span class="sq r"></span>Actions</a>
+  <a href="#/path" data-tab="path"><span class="sq y"></span>My path</a>
+  <a href="#/guide" data-tab="guide"><span class="sq k"></span>My guide</a>
+</nav>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js" crossorigin="anonymous" defer></script>
+<script src="data.js" defer></script>
+<script src="app.js" defer></script>
+</body>
+</html>
