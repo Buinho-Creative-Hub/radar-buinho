@@ -92,7 +92,6 @@
       '<li><div><b>Download your guide.</b></div></li>' +
       '</ol>' +
       '<h2 class="h2">1 \u00b7 Where your lab stands</h2><p class="muted">It stays on this phone and only goes into your guide.</p>' +
-      '<label class="f" for="code">Your sticker code (e.g. L07)</label><input type="text" id="code" maxlength="4" value="' + esc(l.code) + '">' +
       '<label class="f" for="name">Lab name</label><input type="text" id="name" maxlength="80" value="' + esc(l.name) + '">' +
       '<label class="f" for="country">Country</label><input type="text" id="country" maxlength="40" value="' + esc(l.country) + '">' +
       '<div class="f lab" style="margin-top:16px">Experience with EU projects</div>' +
@@ -103,9 +102,9 @@
       '<div class="chips" data-group="needs">' + (D.whys || []).map(function (w) { return '<button class="chip" data-v="' + esc(w.id) + '" aria-pressed="' + (l.needs.indexOf(w.id) > -1) + '">' + esc(w.label) + '</button>'; }).join('') + '</div>' +
       '<h2 class="h2">Optional \u00b7 Where you want to go</h2><p class="muted">EU projects should serve your lab\'s plans, not the other way round.</p>' +
       '<label class="f" for="vision">Your lab in 2030, in one sentence</label><input type="text" id="vision" maxlength="160" value="' + esc(l.vision) + '">' +
-      '<div class="f lab" style="margin-top:12px">Your long-term themes (up to 3)</div>' + [0, 1, 2].map(function (k) { return '<input type="text" id="theme' + k + '" maxlength="40" placeholder="Theme ' + (k + 1) + '" value="' + esc(l.themes[k] || '') + '" style="margin-bottom:8px">'; }).join('') +
-      '<div class="row" style="margin-top:18px"><a class="btn blue" href="#/cards">2 \u00b7 See the projects</a></div><p class="muted" style="margin-top:10px">Background, when you need it: <a href="#/actions">the 2028 map</a> \u00b7 <a href="#/priorities">priorities in plain words</a></p>', '');
-    ['code', 'name', 'country'].forEach(function (k) { document.getElementById(k).addEventListener('input', function (e) { S.lab[k] = k === 'code' ? e.target.value.toUpperCase() : e.target.value; save(); }); });
+      '<div class="f lab" style="margin-top:12px">What your lab is about (up to 3)</div><p class="muted small">The few things you keep working on, project after project, whatever the funding. Each EU project should feed at least one.</p>' + [0, 1, 2].map(function (k) { return '<input type="text" id="theme' + k + '" maxlength="40" placeholder="' + ['e.g. Repair', 'e.g. Citizen science', 'e.g. Young people and technology'][k] + '" value="' + esc(l.themes[k] || '') + '" style="margin-bottom:8px">'; }).join('') +
+      '<div class="row" style="margin-top:18px"><a class="btn blue" href="#/cards">2 \u00b7 See the projects</a></div><p class="muted" style="margin-top:10px">Background, when you need it: <a href="#/actions">the 2028 map</a> \u00b7 <a href="#/priorities">priorities in plain words</a></p>', 'home');
+    ['name', 'country'].forEach(function (k) { document.getElementById(k).addEventListener('input', function (e) { S.lab[k] = e.target.value; save(); }); });
     chipGroup('exp', function (v) { S.lab.exp = S.lab.exp === v ? '' : v; save(); home(); });
     document.getElementById('vision').addEventListener('input', function (e) { S.lab.vision = e.target.value; save(); });
     [0, 1, 2].forEach(function (k) { document.getElementById('theme' + k).addEventListener('input', function (e) { S.lab.themes[k] = e.target.value; save(); }); });
@@ -242,17 +241,17 @@
   function stepOf(id) { for (var i = 0; i < S.path.length; i++) if (S.path[i].project === id) return i; return -1; }
   function pathView() {
     var favs = S.fav.map(project).filter(Boolean);
-    var html = '<div class="kicker">Your lab' + (S.lab.code ? ' · ' + esc(S.lab.code) : '') + '</div><h1 class="h1">My path</h1>';
+    var html = '<div class="kicker">' + esc(S.lab.name || 'Your lab') + '</div><h1 class="h1">My path</h1>';
     if (!favs.length) {
       render(html + '<div class="empty">Star a few projects first: they are the bricks of your path.<br><br><a class="btn blue" href="#/cards">See the projects</a></div>', 'path'); return;
     }
-    html += '<p class="lead">Put up to 3 cards in order, then answer 3 short questions for each step. Same numbers as your stickers on the wall.</p>';
+    html += '<p class="lead">Put up to 3 cards in order, then answer 3 short questions for each step.</p>';
     html += '<div class="slots">';
     for (var i = 0; i < 3; i++) {
       var st = S.path[i], p = st && project(st.project);
       if (p) {
         var f = pfam(p), pl = ppil(p);
-        html += '<div class="slot"><div class="slot-h"><span class="dot" style="background:' + famColor(f) + ';color:' + famText(f) + '"><b>' + (i + 1) + '</b>' + (S.lab.code ? '<small>' + esc(S.lab.code) + '</small>' : '') + '</span>' +
+        html += '<div class="slot"><div class="slot-h"><span class="dot" style="background:' + famColor(f) + ';color:' + famText(f) + '"><b>' + (i + 1) + '</b>' + '' + '</span>' +
           '<div><b>' + esc(p.name) + '</b><div class="muted">' + esc(famLabel(f)) + (pl ? ' · ' + esc(pl.label) : '') + ' · ' + esc(p.domain) + '</div></div>' +
           '<button class="x" data-unstep="' + i + '" aria-label="Remove from path">×</button></div><div class="step-b">' +
           '<div class="dist">' + distance(i).map(function (d) { return '<p>' + esc(d) + '</p>'; }).join('') + '</div>' +
@@ -260,7 +259,7 @@
           '<div class="qn"><b>1 \u00b7 When?</b></div><div class="chips" data-when="' + i + '">' + ['2027', '2028', 'Later'].map(function (w) { return '<button class="chip" data-v="' + w + '" aria-pressed="' + (st.when === w) + '">' + w + '</button>'; }).join('') + '</div>' +
           '<div class="qn"><b>2 \u00b7 What does your lab get from it?</b></div><div class="chips" data-why="' + i + '">' + (D.whys || []).map(function (w) { return '<button class="chip" data-v="' + esc(w.id) + '" aria-pressed="' + (st.why.indexOf(w.id) > -1) + '">' + esc(w.label) + '</button>'; }).join('') + '</div>' +
           prioHTML(i, st, p) +
-          (S.lab.themes.filter(Boolean).length ? '<div class="qn">Optional \u00b7 which of your themes?</div><div class="chips" data-theme="' + i + '">' + S.lab.themes.map(function (t, k) { return t ? '<button class="chip" data-v="' + k + '" aria-pressed="' + (st.themes.indexOf(k) > -1) + '">' + esc(t) + '</button>' : ''; }).join('') + '</div>' : '') +
+          (S.lab.themes.filter(Boolean).length ? '<div class="qn">Optional \u00b7 which part of what your lab is about does it feed?</div><div class="chips" data-theme="' + i + '">' + S.lab.themes.map(function (t, k) { return t ? '<button class="chip" data-v="' + k + '" aria-pressed="' + (st.themes.indexOf(k) > -1) + '">' + esc(t) + '</button>' : ''; }).join('') + '</div>' : '') +
           '</details>' +
           (i > 0 ? '<button class="mini" data-up="' + i + '">↑ Move up</button>' : '') + '</div></div>';
       } else {
@@ -436,7 +435,7 @@
     if (fonts && fonts[2]) { try { doc.addImage('data:image/png;base64,' + fonts[2], 'PNG', W - M - 44, 14, 44, 11); } catch (e) {} }
     color('#ffffff'); font(true, 9); doc.text('EU FUNDING POLICY CLINIC · VULCA SEMINAR 2026 · CUENCA', M, 20);
     font(true, 40); doc.text('Your lab\'s', M, 62); doc.text('road to 2028', M, 78);
-    font(false, 14); doc.text(doc.splitTextToSize((S.lab.name || 'Your lab') + (S.lab.country ? ' · ' + S.lab.country : '') + (S.lab.code ? ' · ' + S.lab.code : ''), CW), M, 96);
+    font(false, 14); doc.text(doc.splitTextToSize((S.lab.name || 'Your lab') + (S.lab.country ? ' · ' + S.lab.country : '') + '', CW), M, 96);
     font(false, 10); doc.text(new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }), M, 104);
     if (S.lab.vision) { font(true, 12); doc.text(doc.splitTextToSize('\u201c' + S.lab.vision + '\u201d', CW), M, 118); }
     /* path diagram */
@@ -459,7 +458,7 @@
     var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     doc.addPage(); page++; band(BLUE, 'Your plan on one page', 'Where you stand, where you go next', 'The rest of this guide explains each line');
     var stageTxt = { none: 'Never applied to EU programmes', partner: 'Partner in EU projects before', coordinator: 'Coordinated EU projects before' }[S.lab.exp] || 'Not given';
-    rows([['Where you stand', stageTxt], ['What you need', (S.lab.needs || []).map(function (n) { var w = byId(D.whys || [], n); return w ? w.label : n; }).join(', ') || 'Not given'], ['Your lab in 2030', S.lab.vision || 'Not written yet: it is the question this guide ends with'], ['Your themes', S.lab.themes.filter(Boolean).join(' \u00b7 ') || 'Not written yet']]);
+    rows([['Where you stand', stageTxt], ['What you need', (S.lab.needs || []).map(function (n) { var w = byId(D.whys || [], n); return w ? w.label : n; }).join(', ') || 'Not given'], ['Your lab in 2030', S.lab.vision || 'Not written yet: it is the question this guide ends with'], ['What your lab is about', S.lab.themes.filter(Boolean).join(' \u00b7 ') || 'Not written yet']]);
     st.forEach(function (s, i) {
       var p = ps[i], a = action(p.action), f = fit(p), ev = ((T.calendar || {})[p.action] || []).filter(function (e) { return e.t === 'deadline'; })[0];
       var body = [(a ? a.short + ' \u00b7 ' + a.name : p.today) + (s.when ? ' \u00b7 ' + s.when : '') + (f.level ? ' \u00b7 ' + FIT_LABEL[f.level] : ''),
@@ -559,7 +558,7 @@
       rows([['Partners', P.size + (list(P.countries).length ? ' (' + P.countries.join(', ') + ')' : '')], ['Who brings what', P.roles], ['Money', P.money], ['What it took', p.needed], ['What it left', p.left]]);
       if (p.lesson) box('Lesson', p.lesson, { rule: RED, bg: '#ffffff' });
       var dd = distance(i); if (dd.length) box('Distance from where you are', dd, { rule: BLUE, bg: WALL, size: 10 });
-      var th = (s.themes || []).map(function (k) { return S.lab.themes[k]; }).filter(Boolean); if (S.lab.themes.filter(Boolean).length) box('Serves your themes', th.length ? th.join(' \u00b7 ') : 'None of your themes yet. Is this step worth it, or does it need a different angle?', { rule: th.length ? INK : RED, bg: '#ffffff', size: 10 });
+      var th = (s.themes || []).map(function (k) { return S.lab.themes[k]; }).filter(Boolean); if (S.lab.themes.filter(Boolean).length) box('Feeds what your lab is about', th.length ? th.join(' \u00b7 ') : 'Nothing marked yet. Is this step worth it, or does it need a different angle?', { rule: th.length ? INK : RED, bg: '#ffffff', size: 10 });
       if (p.formPrio && p.formPrio.length) box('Priorities in ' + p.name + '\u2019s real application', p.formPrio, { rule: G2, bg: WALL, size: 9.5 });
       var prf = prioList(s, true); box('Priorities this step answers', prf.length ? prf.concat(s.how ? ['How: ' + s.how] : []) : ['No priority chosen yet. Which one would an expert see in this step, and what would you show for it?'], { rule: prf.length ? BLUE : RED, bg: '#ffffff', size: 10, bullets: !!prf.length });
       if (SP.advice) box('If this is your step: practical advice', SP.advice, { rule: RED, bg: WALL, bullets: true, size: 10.5 });
@@ -578,13 +577,13 @@
     box('Your lab in 2030', S.lab.vision || 'Not written yet. Try one sentence: what will your lab be known for, and for whom?', { rule: S.lab.vision ? INK : RED, bg: WALL, size: 11 });
     var TH = S.lab.themes.map(function (t, k) { return [t, k]; }).filter(function (x) { return x[0]; });
     if (TH.length) {
-      label('Which step serves which theme');
+      label('Which step feeds what your lab is about');
       var cw = (CW - 50) / TH.length; font(true, 8.5); color(INK); TH.forEach(function (x, j) { doc.text(doc.splitTextToSize(x[0], cw - 4), M + 50 + j * cw, y); }); y += 8;
       st.forEach(function (s, i) { need(10); font(true, 9.5); color(INK); doc.text('Step ' + (i + 1), M, y); font(false, 8); color(G5); doc.text(doc.splitTextToSize(ps[i].name, 34)[0], M, y + 4); TH.forEach(function (x, j) { var on = (s.themes || []).indexOf(x[1]) > -1, cx = M + 50 + j * cw + 4; if (on) { fill(INK); doc.circle(cx, y - 1, 2.6, 'F'); } else { stroke(G2); doc.setLineWidth(0.4); doc.circle(cx, y - 1, 2.6, 'S'); } }); y += 11; });
       var orphanSteps = st.filter(function (s) { return !(s.themes || []).length; }).length, orphanThemes = TH.filter(function (x) { return !st.some(function (s) { return (s.themes || []).indexOf(x[1]) > -1; }); }).map(function (x) { return x[0]; });
-      var notes2 = []; if (orphanSteps) notes2.push(orphanSteps + ' step(s) serve none of your themes: projects that do not build your themes cost the same and leave less.'); if (orphanThemes.length) notes2.push('No step yet for: ' + orphanThemes.join(', ') + '. Which programme could carry it?'); if (!notes2.length) notes2.push('Every step serves a theme and every theme has a step: keep it that way when partners propose new ideas.');
+      var notes2 = []; if (orphanSteps) notes2.push(orphanSteps + ' step(s) feed none of what your lab is about: such projects cost the same work and leave less behind.'); if (orphanThemes.length) notes2.push('No step yet for: ' + orphanThemes.join(', ') + '. Which programme could carry it?'); if (!notes2.length) notes2.push('Every step feeds what your lab is about, and each part has a step: keep it that way when partners propose new ideas.');
       box('What this says', notes2, { rule: RED, bg: WALL, size: 10 });
-    } else box('Your themes', 'Not written yet. At Buinho we keep a few long-term themes and adapt each project to what each programme expects, not the other way round.', { rule: RED, bg: WALL, size: 10 });
+    } else box('What your lab is about', 'Not written yet. At Buinho we keep a few lines of work (repair, citizen sensing, biomaterials…) and adapt each project to what each programme expects, not the other way round.', { rule: RED, bg: WALL, size: 10 });
     box('Questions to take home', ['Which of your steps would you do even without EU money?', 'What should your lab be able to show in 2028, whatever the new rules?', 'Who in your team carries this strategy, and how much time can they give it?'], { rule: BLUE, bg: '#ffffff', bullets: true, size: 10.5 });
 
     /* ===== reference part ===== */
@@ -660,7 +659,7 @@
     (D.lessons || []).forEach(function (t, k) { box('Lesson ' + (k + 1), t, { rule: k % 2 ? BLUE : RED, bg: WALL, size: 10.5 }); });
     y += 4; text('Buinho Creative Hub · Rua Nova de São Brás, Messejana, Alentejo, Portugal · info@buinho.pt · buinho.pt', 9.5, false, G5, 2);
     footer();
-    doc.save('road-to-2028' + (S.lab.code ? '-' + S.lab.code : '') + '.pdf');
+    doc.save('road-to-2028' + (S.lab.name ? '-' + S.lab.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 30) : '') + '.pdf');
   }
 
   /* ---------- priorities ---------- */
