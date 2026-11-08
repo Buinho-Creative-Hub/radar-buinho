@@ -307,6 +307,7 @@
     });
     scored.sort(function (x, y) { return y[0] - x[0]; });
     var res = scored.map(function (x) { return x[1]; });
+    if (/ka1.{0,12}ka2|ka2.{0,12}ka1|mobility or partnership/.test(t)) return [byId(D.answers, 'ka1ka2')].concat(res.filter(function (a) { return a.id !== 'ka1ka2'; })).slice(0, 1);
     if (/advance|adiant|adelant|prefinanc|pre-financ|cash|when .*pa(y|id)|quando pag|cuando pag|tesour|tesor/.test(t)) { var mA = byId(D.answers, 'money'); res = [mA].concat(res.filter(function (a) { return a !== mA; })); return res.slice(0, 2); }
     if (/\b(money|grant|budget|euro|euros|fund|funding|pay|paid|receive|cost|costs|how much|dinheiro|dinero|quanto|cuanto|argent|soldi|financ)/.test(t)) {
       var acts = []; ACT_WORDS.forEach(function (w) { if (w[0].test(t) && acts.indexOf(w[1]) < 0) acts.push(w[1]); });
@@ -493,12 +494,14 @@
     if (S.lab.targets.length) { font(false, 11); doc.text(doc.splitTextToSize('By 2030: ' + targetsTxt(), CW), M, cy + 6); }
     font(false, 9); doc.text(new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }), M, 140);
     y = 166; label('Inside');
-    ['1 · Where you stand, and what it means', '2 · Your roadmap to 2030', '3 · Your guidelines', '4 · Your reference projects, and the answers to your doubts', (S.questions.length ? '5 · Your questions, answered' : null), 'Your year of deadlines, with links to the calls', 'Before you apply: a checklist from our experience'].filter(Boolean).forEach(function (t) { text(t, 11.5, false, INK, 1.5); });
+    var HAS_C = !!(AI && ((AI.cuenca || []).length || AI.message)), HAS_W = !!(AI && (AI.writing || []).length), SN = 0, sec = function () { return ++SN + ' · '; };
+    var SEC = { stand: 1, plan: 2, cuenca: HAS_C ? 3 : 0 }; SEC.proj = HAS_C ? 4 : 3; SEC.q = S.questions.length ? SEC.proj + 1 : 0; SEC.w = HAS_W ? (SEC.q || SEC.proj) + 1 : 0;
+    [SEC.stand + ' · Where you stand', SEC.plan + ' · Your plan to 2028, your roadmap to 2030, and the rules for the road', SEC.cuenca ? SEC.cuenca + ' · Here in Cuenca: learn from the labs around you' : null, SEC.proj + ' · Your reference projects, and the answers to your doubts', SEC.q ? SEC.q + ' · Your questions, answered' : null, SEC.w ? SEC.w + ' · Writing your first application' : null, 'Your year of deadlines, with links to the calls', 'Before you apply: a checklist from our experience'].filter(Boolean).forEach(function (t) { text(t, 11.5, false, INK, 1.5); });
     y += 4; text('Made with the Road to 2028 app by Buinho Creative Hub (Messejana, Portugal), from what you entered. Rules and amounts are those of the 2026 calls: always check the current call.', 9, false, G5, 2);
 
     /* ===== 1. where you stand ===== */
-    newPage(); y = 0; band(BLUE, '1 · Where you stand', 'What your position means', 'Your answers on the start screen, read with our experience');
-    var EN = (D.expNotes || {})[S.lab.exp]; if (EN) box('Your experience with EU projects', EN, { rule: INK, bg: WALL, size: 10 });
+    newPage(); y = 0; band(BLUE, SEC.stand + ' · Where you stand', 'What your position means', 'Your answers on the start screen, read with our experience');
+    var EN = (D.expNotes || {})[S.lab.exp]; if (AI && AI.diagnosis) box('Our reading of your position', AI.diagnosis, { rule: INK, bg: WALL, size: 10 }); else if (EN) box('Your experience with EU projects', EN, { rule: INK, bg: WALL, size: 10 });
     label('What you have today, and what to do about it');
     CAPS.forEach(function (c) {
       var v = capLevel(c.id), adv = v ? (CA[c.id] || [])[v - 1] : 'Not rated on the start screen.', L = lines(adv, 9.5, false, CW - 58);
@@ -511,8 +514,13 @@
     }
 
     /* ===== 2. roadmap ===== */
-    newPage(); y = 0; band(BLUE, '2 · Your roadmap', 'From where you stand to your 2030', 'What your lab must build, by when, and what builds it');
-    if (S.lab.vision) box('Where you want to be', ['“' + S.lab.vision + '”'].concat(S.lab.targets.length ? ['Your role by 2030: ' + targetsTxt()] : []), { rule: INK, bg: WALL, size: 10.5 });
+    newPage(); y = 0; band(BLUE, SEC.plan + ' · Your plan', 'From now to 2028, step by step', 'Your next moves, what your lab must build by 2030, and the rules for the road');
+    if (AI && (AI.plan || []).length) {
+      label('Your next moves');
+      AI.plan.forEach(function (r) { var W1 = 26, L1 = lines(r[1], 10, true, CW - W1 - 2), L2 = r[2] ? lines(r[2], 9, false, CW - W1 - 2) : []; need(L1.length * lh(10) + L2.length * lh(9) + 5); font(true, 9); color(RED); doc.text(doc.splitTextToSize(r[0], W1 - 2), M, y); font(true, 10); color(INK); L1.forEach(function (ln, k) { doc.text(ln, M + W1, y + k * lh(10)); }); y += L1.length * lh(10); font(false, 9); color(G5); L2.forEach(function (ln, k) { doc.text(ln, M + W1, y + k * lh(9)); }); y += L2.length * lh(9) + 1.5; stroke(G2); doc.setLineWidth(0.2); doc.line(M, y, M + CW, y); y += 4.5; });
+      y += 3;
+    }
+    need(60); label('Your roadmap to 2030' + (S.lab.vision ? ': “' + trim(S.lab.vision, 70) + '”' : '')); y += 3;
     var gx = M + 44, gw = (CW - 44) / 3, colOf = function (w) { return w === '2027' || !w ? 0 : w === '2028' ? 1 : 2; };
     need(40); font(true, 8.5); ['2027', '2028', '2029–2034'].forEach(function (c, j) { fill(j === 1 ? '#eef3ff' : WALL); doc.rect(gx + j * gw, y - 4, gw - 2, 6, 'F'); color(INK); doc.text(c, gx + j * gw + 2, y); });
     font(false, 6.8); color(G5); ['last calls under today’s rules', 'new Erasmus+ with the Solidarity Corps', 'the new programmes run'].forEach(function (t, j) { doc.text(t, gx + j * gw + 2, y + 4.5); }); y += 11;
@@ -528,45 +536,48 @@
       var j = colOf(mby === '2030' ? 'Later' : mby), bx = gx + j * gw, txt = doc.splitTextToSize(ptxt, gw - 6).slice(0, 4);
       fill('#ffffff'); stroke(INK); doc.setLineWidth(0.4); doc.rect(bx, y - 3.5, gw - 2, 4 + txt.length * 3.4, 'FD'); font(false, 7.5); color(INK); txt.forEach(function (ln, k) { doc.text(ln, bx + 2, y + k * 3.4); });
       font(true, 6.5); color(G5); doc.text('by ' + mby + (m.by ? '' : ' (suggested)'), bx + gw - 3, y - 4.5, { align: 'right' });
-      var ixb = m.steps.filter(function (i) { return st[i]; }), by = (ixb.length ? [(ixb.length > 1 ? 'reference projects ' : 'reference project ') + ixb.map(function (i) { return i + 1; }).join(', ')] : []).concat(m.other.map(otherLabel)); font(false, 7.5); var BL = doc.splitTextToSize('Built by: ' + (by.length ? by.join(' · ') : 'nothing yet'), CW - 44).slice(0, 3);
+      var ixb = m.steps.filter(function (i) { return st[i]; }), by = ixb.map(function (i) { return trim(pname(i).split(':')[0], 34); }).concat(m.other.map(otherLabel)); font(false, 7.5); var BL = doc.splitTextToSize('Helped by: ' + (by.length ? by.join(' · ') : 'nothing in your path yet'), CW - 44).slice(0, 3);
       font(false, 7.5); color(by.length ? G7 : RED); BL.forEach(function (ln, k) { doc.text(ln, gx, y + 5 + txt.length * 3.4 + k * 3.4); });
       y += Math.max(16, 5 + txt.length * 3.4 + BL.length * 3.4) + 10;
     });
     if (!RM.ms.length) text('No roadmap yet: in the app, open “My roadmap” and pick what your lab must build.', 9.5, false, G5, 3);
 
     /* ===== 3. guidelines ===== */
-    newPage(); y = 0; band(INK, '3 · Your guidelines', 'Rules for your next initiatives', 'Drawn from your position, your 2030, your roadmap and your reference projects');
+    y += 4; need(40); label('Rules for the road'); y += 2;
     var n = 0;
     if (S.lab.vision) rule(++n, 'Say yes to a project only if it moves you towards your 2030.', '“' + S.lab.vision + '” Projects that do not serve it cost the same work and leave less behind.', RED);
-    function refs(ix) { return ix.length ? (ix.length > 1 ? 'reference projects ' : 'reference project ') + ix.map(function (i) { return i + 1; }).join(', ') : ''; }
-    RM.ms.forEach(function (m) { var v = capLevel(m.cap), ix = m.steps.filter(function (i) { return st[i]; }), by = (ix.length ? [refs(ix)] : []).concat(m.other.map(otherLabel)); rule(++n, 'Until ' + (m.by || '2028') + ', build “' + capLabel(m.cap) + '”: from ' + (v ? LV[v] : 'not rated') + ' to ' + LV[m.to] + '.', (v && CA[m.cap] ? CA[m.cap][v - 1] + ' ' : '') + (by.length ? 'In your path: ' + by.join(', ') + '.' : 'Nothing in your path builds it yet.'), BLUE); });
-    var weak = CAPS.filter(function (c) { return capLevel(c.id) === 1 && !RM.ms.some(function (m) { return m.cap === c.id; }); });
-    weak.slice(0, 2).forEach(function (c) { rule(++n, 'Watch your weakest point: “' + c.label + '”.', CA[c.id][0], RED); });
+    function refs(ix) { return ix.map(pname).join(', '); }
+    if (RM.ms.length) rule(++n, 'Until ' + (RM.ms[0].by || '2028') + ', grow ' + RM.ms.map(function (m) { return '“' + capLabel(m.cap) + '”'; }).join(', ').replace(/, ([^,]*)$/, ' and $1') + '.', 'Every step in your plan should build at least one of them. The roadmap above shows which reference projects help, and the table in section 1 what to do about each one.', BLUE);
     if (S.lab.targets.indexOf('coordinator') > -1) rule(++n, 'Coordinate a small project before a large one.', 'Large partnerships and Creative Europe ask for a track record and financial capacity; a small-scale partnership builds both.', BLUE);
     if (S.lab.targets.indexOf('accredited') > -1) rule(++n, 'Start the record for an accreditation now.', 'Accreditation asks for experience in the field and a plan for several years: short mobility projects are the usual way in. Today’s accreditations are valid until 31 December 2027; the new rules come with the next programme.', BLUE);
     if (S.lab.targets.indexOf('partner') > -1) rule(++n, 'Join good projects as a partner, and lead one clear part of the work.', 'Ask the coordinator which part you lead, what money comes to you, and what stays in your lab afterwards.', BLUE);
     var prep = [], bf = {}; GC.forEach(function (g, i) { if (g.lacks.length) { var k = g.lacks.map(capLabel).join(' and ').toLowerCase(); (bf[k] = bf[k] || []).push(i); } }); Object.keys(bf).forEach(function (k) { prep.push('before ' + refs(bf[k]) + ', build ' + k); });
     rule(++n, 'Go only when: a partner you trust is on board three months before the deadline, someone has the time to write, and you can advance the costs.', prep.length ? 'In your path: ' + prep.join('; ') + '.' : 'Check it again for each call.', RED);
     readings().slice(0, 2).forEach(function (t) { rule(++n, t.split('. ')[0] + '.', t.split('. ').slice(1).join('. '), BLUE); });
-    if (AI && AI.advice) AI.advice.slice(0, 5).forEach(function (t) { rule(++n, String(t), '', BLUE); });
+    if (AI && AI.advice) AI.advice.slice(0, 3).forEach(function (t) { rule(++n, String(t), '', BLUE); });
     rule(++n, 'Make inclusion your strongest priority, and argue only for the priorities you select.', 'Inclusion and diversity weighs most in Erasmus+: the Guide for Experts on Quality Assessment asks evaluators to look for it in every action. Name who takes part, which barrier you lower and how, and show the priorities in the activities, the public and the results. Read your text against that guide before you submit.', RED);
     rule(++n, 'Prepare for 2028 without betting on details.', 'The new Erasmus+ (with the Solidarity Corps) and AgoraEU are still being negotiated. Trusted partners, results you can show and the horizontal priorities will count in any version.', BLUE);
     rule(++n, 'Review this roadmap with your team in ' + (RM.review || 'November 2027') + '.', 'By then the 2028 calls and the new Programme Guide should be known. Change the projects, keep the rules.', RED);
 
     /* ===== 4. reference projects ===== */
-    newPage(); y = 0; band(RED, '4 · Your reference projects', 'What each one means for your lab', 'What it would build, what it pays, and the answers to your doubts');
+    if (SEC.cuenca) {
+      newPage(); y = 0; band(SUN, SEC.cuenca + ' · Here in Cuenca', 'Learn from the labs around you', 'What to ask this week, and a message to send after it');
+      if ((AI.cuenca || []).length) { label('What to do this week, and after'); AI.cuenca.forEach(function (t) { text('\u2022 ' + t, 10, false, INK, 2); }); y += 3; }
+      if (AI.message) box('A message to send after the seminar', String(AI.message).split(/\n+/).filter(Boolean), { rule: BLUE, bg: WALL, size: 9.5 });
+    }
+    newPage(); y = 0; band(RED, SEC.proj + ' · Your reference projects', 'What each one means for your lab', 'How you could enter it, what it pays, and the answers to your doubts');
     st.forEach(function (s, i) {
       var p = ps[i], a = action(p.action), f = pfam(p), g = GC[i], mo = (D.money || {})[p.action];
       need(40); fill(famColor(f)); doc.rect(M, y - 4, CW, 9, 'F'); color(famText(f)); font(true, 10.5); doc.text(doc.splitTextToSize((i + 1) + ' · ' + p.name, CW - 50)[0], M + 3, y + 2); font(true, 8); doc.text((a ? a.short : '') + (s.when ? ' · ' + s.when : ''), M + CW - 3, y + 2, { align: 'right' }); y += 11;
-      var pairs = [];
-      pairs.push(['Ready?', g.badge + (g.todo.length ? ': ' + g.todo.join(' ') : '. Nothing missing from what you entered.')]);
-      var bl = RM.ms.filter(function (m) { return m.steps.indexOf(i) > -1; }).map(function (m) { return capLabel(m.cap); });
-      pairs.push(['It would build', bl.length ? bl.join(', ') : 'none of what you want to build yet']);
-      if (s.why.length) pairs.push(['Your needs it serves', whyLabels(s.why).join(', ')]);
+      var pairs = [], ap = aiProj(p);
+      if (ap && ap.parallel) pairs.push(['For your lab', ap.parallel]);
+      else {
+        pairs.push(['Ready?', g.badge + (g.todo.length ? ': ' + g.todo.join(' ') : '. Nothing missing from what you entered.')]);
+        var bl = RM.ms.filter(function (m) { return m.steps.indexOf(i) > -1; }).map(function (m) { return capLabel(m.cap); });
+        if (bl.length) pairs.push(['It would build', bl.join(', ')]);
+      }
       if (p.formPrio && p.formPrio.length) pairs.push(['Priorities in its application', p.formPrio.join(' · ') + (p.prioWhy ? '. Why: ' + p.prioWhy : '')]);
-      else if (p.external) pairs.push(['Priorities', 'Partnerships choose one main priority and up to two more; inclusion is in almost all funded projects. The Results Platform lists this project’s topics.']);
       if (mo) pairs.push(['What it pays', mo.model + ' ' + mo.lines[0]]);
-      var ap = aiProj(p); if (ap && ap.parallel) pairs.unshift(['For your lab', ap.parallel]);
       rows(pairs, 9);
       var ds = (s.doubts || []).map(function (d, k) { var lab = (byId(D.doubtAspects || [], d) || {}).label || d, ai = aiAns(p, k); return [lab, ai ? [ai] : doubtAnswers(p, d)]; }).filter(function (x) { return x[1].length; });
       if (s.q) { var aq = answerFor(s.q), aiq = aiAns(p, (s.doubts || []).length); ds.push(['Your question: ' + s.q, aiq ? [aiq] : aq.length ? aq.slice(0, 1).map(ansText) : ['No ready answer in our material: ask the National Agency or a Creative Europe Desk.']]); }
@@ -576,8 +587,14 @@
 
     /* ===== 5. questions ===== */
     if (S.questions.length) {
-      newPage(); y = 0; band(SUN, '5 · Your questions', 'Your questions, answered', 'From our experience and the official rules');
+      newPage(); y = 0; band(SUN, SEC.q + ' · Your questions', 'Your questions, answered', 'From our experience and the official rules');
       S.questions.forEach(function (q, qk) { var an = answerFor(q), aq = aiQ(qk); need(30); text(q, 11, true, INK, 1.5); if (aq) { box('From our experience', aq, { rule: INK, bg: WALL, size: 9.5 }); if (an[0] && an[0].links && an[0].links[0]) linkLine(an[0].links[0]); } else if (an.length) an.slice(0, 2).forEach(function (a) { box(a.topic, [a.a].concat(a.lines || []).concat(a.next ? [a.next] : []), { rule: INK, bg: WALL, size: 9.5 }); if (a.links && a.links[0]) linkLine(a.links[0]); }); else text('No ready answer in our material. A good next stop: your National Agency or Creative Europe Desk.', 9.5, false, G5, 3); y += 2; });
+    }
+
+    if (SEC.w) {
+      newPage(); y = 0; band(INK, SEC.w + ' · Writing your first application', 'What evaluators look for', 'From our experience writing applications, and reading evaluators\u2019 comments');
+      AI.writing.forEach(function (t) { text('\u2022 ' + t, 10, false, INK, 2.5); });
+      y += 2; linkLine({ label: 'Erasmus+ Guide for Experts on Quality Assessment 2026', url: 'https://www.leargas.ie/resource/2026-erasmus-guide-for-experts-on-quality-assessment/' });
     }
 
     /* ===== calendar ===== */
@@ -602,7 +619,6 @@
     label('Every application'); ((D.strategy || {}).checklist || []).forEach(check);
     function qitem(head, q, note) { var L1 = lines(head + ': ' + q, 9.5, false, CW - 6), L2 = note ? lines(note, 8.5, false, CW - 6) : []; need(L1.length * lh(9.5) + L2.length * lh(8.5) + 3); font(false, 9.5); color(INK); L1.forEach(function (ln, k) { doc.text(ln, M + 4, y + k * lh(9.5)); }); y += L1.length * lh(9.5); font(false, 8.5); color(G5); L2.forEach(function (ln, k) { doc.text(ln, M + 4, y + k * lh(8.5)); }); y += L2.length * lh(8.5) + 2.2; }
     y += 2; label('Questions to discuss with your team (long term)'); ((D.strategy || {}).dimensions || []).forEach(function (d) { qitem(d.title, d.ask[0], d.buinho ? 'At Buinho: ' + d.buinho : ''); });
-    y += 2; label('What we look for in a partner'); (D.partnerCriteria || []).forEach(function (c) { text('\u2022 ' + c.label + ': ' + c.text, 9.5, false, G7, 1.2); });
     y += 2; label('What we learned on the way (Buinho, since 2015)'); (D.lessons || []).forEach(function (t) { text('• ' + t, 9.5, false, G7, 1.2); });
     footer();
     doc.save('road-to-2028' + (S.lab.name ? '-' + S.lab.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 30) : '') + '.pdf');
