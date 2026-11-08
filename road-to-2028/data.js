@@ -77,6 +77,7 @@ module.exports = {
   callLinks: [
     { label: 'Erasmus+ National Agencies (where you apply for most Erasmus+ actions)', url: 'https://erasmus-plus.ec.europa.eu/contacts/national-agencies' },
     { label: 'Erasmus+ Programme Guide 2026 (rules and deadlines)', url: 'https://erasmus-plus.ec.europa.eu/programme-guide/erasmusplus-programme-guide' },
+    { label: 'Erasmus+ Guide for Experts on Quality Assessment 2026 (how evaluators score; inclusion weighs most)', url: 'https://www.leargas.ie/resource/2026-erasmus-guide-for-experts-on-quality-assessment/' },
     { label: 'EU Funding & Tenders Portal (Creative Europe, CERV calls)', url: 'https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/calls-for-proposals' },
     { label: 'Creative Europe Desks (free advice in your country)', url: 'https://culture.ec.europa.eu/resources/creative-europe-desks' },
     { label: 'European Solidarity Corps Quality Label', url: 'https://youth.europa.eu/solidarity/organisations/quality-label_en' }
@@ -546,7 +547,8 @@ module.exports = {
     'You have the last two years of accounts ready.',
     'You can advance costs until the final payment.',
     'You keep a folder of evidence: participants, photos, outputs, press.',
-    'You have read the evaluation criteria before writing.'
+    'You read the Guide for Experts on Quality Assessment before writing, and you check your text against it criterion by criterion before submitting.',
+    'Inclusion is visible and concrete: who takes part, which barrier you lower, how, and with what support.'
   ]
 };
 
@@ -558,6 +560,7 @@ var T = module.exports;
    CREA-CULT-2026-COOP, F&T financial capacity page, post-2027 sources) or Buinho's stated practice
    (marked "At Buinho"). Keywords: lowercase, no accents, EN/ES/PT/FR/IT stems. */
 var PG = { label: 'Erasmus+ Programme Guide 2026', url: 'https://erasmus-plus.ec.europa.eu/document/erasmus-programme-guide-2026' };
+var GE = { label: 'Erasmus+ Guide for Experts on Quality Assessment 2026 (how evaluators score)', url: 'https://www.leargas.ie/resource/2026-erasmus-guide-for-experts-on-quality-assessment/' };
 var NA = { label: 'Find your Erasmus+ National Agency', url: 'https://erasmus-plus.ec.europa.eu/contacts/national-agencies' };
 var RP = { label: 'Erasmus+ Project Results Platform', url: 'https://erasmus-plus.ec.europa.eu/projects' };
 var OT = { label: 'Last resort: SALTO-YOUTH Otlas partner finding', url: 'https://www.salto-youth.net/tools/otlas-partner-finding/' };
@@ -580,9 +583,9 @@ var PFC = { label: 'Programme Guide 2026: sector priorities (partnerships)', url
 module.exports = [
   { id: 'priorities', topic: 'Priorities: horizontal and per field',
     kw: ['priority', 'priorities', 'prioridad', 'prioridade', 'priorite', 'priorita', 'horizontal', 'transversal', 'transversais', 'sectoral', 'sector specific', 'inclusion', 'inclusao', 'green', 'digital', 'democratic', 'what do they want', 'what the eu wants', 'score', 'scoring'],
-    a: 'Erasmus+ has four horizontal priorities that apply to every action: inclusion and diversity; digital transformation; environment and fight against climate change; common values, civic engagement, preparedness and participation. Each field (schools, VET, adults, youth) adds its own specific priorities, and a partnership must address at least one, horizontal or of the field it affects most. Creative Europe cooperation projects choose an objective of the call and show how they address the EU overarching priorities (greening, inclusion and gender equality, digital, international relations). In the KA210/KA220 form you pick one main priority and up to two more.',
-    next: 'Pick few and make them real: experts read whether the activities, the public and the results actually answer the priority. Your guide has a page on the priorities your path speaks to.',
-    links: [PGP, PFC] },
+    a: 'In Erasmus+, inclusion and diversity is by far the priority that weighs most: the Guide for Experts on Quality Assessment, which evaluators score with, asks them to look for it in every action, and in our experience it decides close calls. Make it real: name who takes part, which barrier you lower and how. Erasmus+ has four horizontal priorities that apply to every action: inclusion and diversity; digital transformation; environment and fight against climate change; common values, civic engagement, preparedness and participation. Each field (schools, VET, adults, youth) adds its own specific priorities, and a partnership must address at least one, horizontal or of the field it affects most. Creative Europe cooperation projects choose an objective of the call and show how they address the EU overarching priorities (greening, inclusion and gender equality, digital, international relations). In the KA210/KA220 form you pick one main priority and up to two more.',
+    next: 'Read your application against the Guide for Experts before you submit: check each award criterion and make inclusion visible in the activities, the public and the results.',
+    links: [GE, PGP, PFC] },
   { id: 'newcomer', topic: 'Starting without experience',
     kw: ['without previous', 'no previous', 'without experience', 'previous projects', 'partners without', 'never', 'first time', 'first project', 'no experience', 'newcomer', 'beginner', 'start', 'nunca', 'primer', 'primeira', 'primeiro', 'sin experiencia', 'sem experiencia', 'debutant', 'jamais', 'mai', 'senza esperienza', 'join as partner', 'join a project'],
     a: 'Yes. You do not need previous Erasmus+ experience to be a partner, and small-scale partnerships (KA210) are explicitly aimed at newcomers and grassroots organisations. The cheapest first steps are a short mobility of your own (job shadowing, a course, a youth worker training) or a partner role in someone else’s project, where you lead one clear part of the work.',
@@ -786,6 +789,7 @@ module.exports = {
     title: 'How Buinho chooses and justifies them',
     source: 'From 25 of our own applications and partner applications, 2021\u20132026 (submitted forms in our archive).',
     lines: [
+      'Inclusion and diversity is by far the most important priority in Erasmus+: the Guide for Experts on Quality Assessment asks evaluators to look for it in every action. We review every application against that guide, criterion by criterion, before submitting.',
       'Since 2025, inclusion is the main priority in almost every Erasmus+ form we wrote or joined. Until 2024 we often put the environment first, with inclusion as an extra.',
       'We justify inclusion by the territory more than by labels: rural, low-density places, and who lives there (young people with fewer opportunities, migrant and seasonal workers\u2019 families, women over 45, older people). Neurodivergence became a second axis, with mixed groups and no diagnosis required.',
       'The environment comes in through making: repair caf\u00e9s, e-waste, textile recycling, mycelium. More and more it is a topic (green skills) rather than the main priority.',

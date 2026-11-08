@@ -549,7 +549,7 @@
     rule(++n, 'Go only when: a partner you trust is on board three months before the deadline, someone has the time to write, and you can advance the costs.', prep.length ? 'In your path: ' + prep.join('; ') + '.' : 'Check it again for each call.', RED);
     readings().slice(0, 2).forEach(function (t) { rule(++n, t.split('. ')[0] + '.', t.split('. ').slice(1).join('. '), BLUE); });
     if (AI && AI.advice) AI.advice.slice(0, 5).forEach(function (t) { rule(++n, String(t), '', BLUE); });
-    rule(++n, 'Argue only for the priorities you select, and show them in the activities, the public and the results.', 'Inclusion is expected in almost every funded project: name who takes part and which barrier you lower. We found the opposite slip in our own forms, more than once.', RED);
+    rule(++n, 'Make inclusion your strongest priority, and argue only for the priorities you select.', 'Inclusion and diversity weighs most in Erasmus+: the Guide for Experts on Quality Assessment asks evaluators to look for it in every action. Name who takes part, which barrier you lower and how, and show the priorities in the activities, the public and the results. Read your text against that guide before you submit.', RED);
     rule(++n, 'Prepare for 2028 without betting on details.', 'The new Erasmus+ (with the Solidarity Corps) and AgoraEU are still being negotiated. Trusted partners, results you can show and the horizontal priorities will count in any version.', BLUE);
     rule(++n, 'Review this roadmap with your team in ' + (RM.review || 'November 2027') + '.', 'By then the 2028 calls and the new Programme Guide should be known. Change the projects, keep the rules.', RED);
 
