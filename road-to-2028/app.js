@@ -256,7 +256,8 @@
         '<div class="qn"><b>1 · When would you like to do something like this?</b></div><div class="chips" data-when="' + i + '">' + ['2027', '2028', 'Later'].map(function (w) { return '<button class="chip" data-v="' + w + '" aria-pressed="' + (st.when === w) + '">' + w + '</button>'; }).join('') + '</div>' +
         '<div class="qn"><b>2 · Which of your needs would it serve?</b></div>' + whyChips(i, st) +
         '<div class="qn"><b>3 · What are your doubts about a project like this?</b> <span class="muted small">Your guidelines answer them.</span></div><div class="chips" data-doubt="' + i + '">' + (D.doubtAspects || []).map(function (d) { return '<button class="chip" data-v="' + d.id + '" aria-pressed="' + (st.doubts.indexOf(d.id) > -1) + '">' + esc(d.label) + '</button>'; }).join('') + '</div>' +
-        '<input type="text" data-dq="' + i + '" maxlength="200" placeholder="Or write your own question about it (optional)" value="' + esc(st.q) + '">' +
+        (st.q ? '<div class="qcard"><div class="q"><span>' + esc(st.q) + '</span><button aria-label="Remove question" data-dqr="' + i + '">×</button></div></div>'
+          : '<div class="row" style="gap:8px;align-items:stretch"><input type="text" data-dq="' + i + '" maxlength="200" placeholder="Or write your own question about it (optional)" style="flex:1"><button class="btn" data-dqa="' + i + '">Add</button></div>') +
         '</div>';
     }).join('') + '</div>';
     html += '<h2 class="h2">Other questions</h2><p class="muted">Anything else you want to know about EU funding. Your guidelines answer from our experience.</p>' +
@@ -269,10 +270,16 @@
     bindChips('[data-when]', function (box, b) { var st = S.path[+box.dataset.when]; st.when = st.when === b.dataset.v ? '' : b.dataset.v; box.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', x.dataset.v === st.when); }); });
     bindChips('[data-why]', function (box, b) { var st = S.path[+box.dataset.why], v = b.dataset.v, k = st.why.indexOf(v); if (k > -1) st.why.splice(k, 1); else st.why.push(v); b.setAttribute('aria-pressed', k < 0); });
     bindChips('[data-doubt]', function (box, b) { var st = S.path[+box.dataset.doubt], v = b.dataset.v, k = st.doubts.indexOf(v); if (k > -1) st.doubts.splice(k, 1); else st.doubts.push(v); b.setAttribute('aria-pressed', k < 0); });
-    app.querySelectorAll('[data-dq]').forEach(function (el) { el.addEventListener('input', function () { S.path[+el.dataset.dq].q = el.value; save(); }); });
+    function keepY(f) { var y = window.scrollY; f(); window.scrollTo(0, y); }
+    function addDq(i) { var el = app.querySelector('[data-dq="' + i + '"]'), t = el ? el.value.trim() : ''; if (t) keepY(function () { S.path[i].q = t; save(); pathView(); }); }
+    app.querySelectorAll('[data-dq]').forEach(function (el) { el.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); addDq(+el.dataset.dq); } }); });
+    app.querySelectorAll('[data-dqa]').forEach(function (b) { b.addEventListener('click', function () { addDq(+b.dataset.dqa); }); });
+    app.querySelectorAll('[data-dqr]').forEach(function (b) { b.addEventListener('click', function () { keepY(function () { S.path[+b.dataset.dqr].q = ''; save(); pathView(); }); }); });
     app.querySelectorAll('[data-unfav]').forEach(function (b) { b.addEventListener('click', function () { toggleFav(b.dataset.unfav); pathView(); }); });
-    app.querySelectorAll('[data-rq]').forEach(function (b) { b.addEventListener('click', function () { S.questions.splice(+b.dataset.rq, 1); save(); pathView(); }); });
-    document.getElementById('addq').addEventListener('click', function () { var t = document.getElementById('nq').value.trim(); if (t) { S.questions.push(t); save(); pathView(); } });
+    app.querySelectorAll('[data-rq]').forEach(function (b) { b.addEventListener('click', function () { keepY(function () { S.questions.splice(+b.dataset.rq, 1); save(); pathView(); }); }); });
+    function addQ() { var t = document.getElementById('nq').value.trim(); if (t) keepY(function () { S.questions.push(t); save(); pathView(); var n = document.getElementById('nq'); if (n) n.focus(); }); }
+    document.getElementById('addq').addEventListener('click', addQ);
+    document.getElementById('nq').addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); addQ(); } });
     chipGroup('qp', function (v) { if (S.questions.indexOf(v) < 0) { S.questions.push(v); save(); pathView(); } });
   }
 
