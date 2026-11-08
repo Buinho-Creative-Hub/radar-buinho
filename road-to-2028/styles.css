@@ -171,3 +171,9 @@ label.f{display:block;font-weight:600;margin:12px 0 6px}
 .capbox{border:2px solid var(--ink,#010101);border-radius:10px;padding:14px 14px 6px;margin:18px 0 8px;background:#fff}
 .capbox .h3{margin:0 0 6px}
 .capbox .caprow{padding:6px 0}
+.slot .step-h{display:block;padding:12px 12px 12px 10px}
+.slot .step-h b{display:block;margin:2px 0 8px;line-height:1.25}
+.slot input[type=text]{box-sizing:border-box;width:100%;max-width:100%}
+.slot{padding-bottom:12px}
+.slot>.qn,.slot>.chips,.slot>details,.slot>input[type=text]{margin-left:12px;margin-right:12px;width:auto}
+.slot>input[type=text]{width:calc(100% - 24px)}

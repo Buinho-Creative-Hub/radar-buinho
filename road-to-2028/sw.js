@@ -1,5 +1,5 @@
 /* Offline cache: everything the app needs is precached on first visit. */
-var CACHE = 'vulca-clinic-v28';
+var CACHE = 'vulca-clinic-v29';
 var FILES = ['./', 'index.html', 'styles.css', 'app.js', 'data.js', 'logo.svg', 'icon.svg', 'manifest.webmanifest'];
 var CDN = ['https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js',
   'https://cdn.jsdelivr.net/npm/@expo-google-fonts/asap@0.4.3/400Regular/Asap_400Regular.ttf',
