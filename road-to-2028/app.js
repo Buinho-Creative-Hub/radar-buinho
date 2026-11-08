@@ -600,8 +600,9 @@
     newPage(); y = 0; band(INK, 'Before you apply', 'A checklist for the long term', 'For competent applications, and for projects that connect into a path');
     function check(t) { var L = lines(t, 9.5, false, CW - 9); need(L.length * lh(9.5) + 3); stroke(INK); doc.setLineWidth(0.4); doc.rect(M, y - 3, 3.6, 3.6, 'S'); font(false, 9.5); color(INK); L.forEach(function (ln, k) { doc.text(ln, M + 7, y + k * lh(9.5)); }); y += L.length * lh(9.5) + 2.2; }
     label('Every application'); ((D.strategy || {}).checklist || []).forEach(check);
-    y += 2; label('Your long-term view'); ((D.strategy || {}).dimensions || []).forEach(function (d) { check(d.title + ': ' + d.ask[0]); });
-    y += 2; label('Choosing partners'); (D.partnerCriteria || []).forEach(function (c) { check(c.label + ': ' + c.text); });
+    function qitem(head, q, note) { var L1 = lines(head + ': ' + q, 9.5, false, CW - 6), L2 = note ? lines(note, 8.5, false, CW - 6) : []; need(L1.length * lh(9.5) + L2.length * lh(8.5) + 3); font(false, 9.5); color(INK); L1.forEach(function (ln, k) { doc.text(ln, M + 4, y + k * lh(9.5)); }); y += L1.length * lh(9.5); font(false, 8.5); color(G5); L2.forEach(function (ln, k) { doc.text(ln, M + 4, y + k * lh(8.5)); }); y += L2.length * lh(8.5) + 2.2; }
+    y += 2; label('Questions to discuss with your team (long term)'); ((D.strategy || {}).dimensions || []).forEach(function (d) { qitem(d.title, d.ask[0], d.buinho ? 'At Buinho: ' + d.buinho : ''); });
+    y += 2; label('What we look for in a partner'); (D.partnerCriteria || []).forEach(function (c) { text('\u2022 ' + c.label + ': ' + c.text, 9.5, false, G7, 1.2); });
     y += 2; label('What we learned on the way (Buinho, since 2015)'); (D.lessons || []).forEach(function (t) { text('• ' + t, 9.5, false, G7, 1.2); });
     footer();
     doc.save('road-to-2028' + (S.lab.name ? '-' + S.lab.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 30) : '') + '.pdf');
