@@ -523,9 +523,11 @@
     RM.ms.forEach(function (m) {
       need(24); stroke(G2); doc.setLineWidth(0.2); doc.line(M, y - 6, M + CW, y - 6);
       font(true, 8.5); color(INK); doc.text(doc.splitTextToSize(capLabel(m.cap), 40), M, y); font(false, 7.5); color(G5); doc.text('today ' + (capLevel(m.cap) ? LV[capLevel(m.cap)] : '?') + ' → ' + LV[m.to], M, y + 8);
-      var j = colOf(m.by === '2030' ? 'Later' : m.by), bx = gx + j * gw, txt = doc.splitTextToSize(m.proof || 'Not defined yet: how will you know you got there?', gw - 6).slice(0, 3);
-      fill(m.proof ? '#ffffff' : WALL); stroke(m.proof ? INK : G2); doc.setLineWidth(0.4); doc.rect(bx, y - 3.5, gw - 2, 4 + txt.length * 3.4, 'FD'); font(false, 7.5); color(m.proof ? INK : G5); txt.forEach(function (ln, k) { doc.text(ln, bx + 2, y + k * 3.4); });
-      if (m.by) { font(true, 6.5); color(G5); doc.text('by ' + m.by, bx + gw - 3, y - 4.5, { align: 'right' }); }
+      var cur = capLevel(m.cap) || 1, mby = m.by || (m.to - cur >= 2 ? '2030' : '2028'), sug = (capOf(m.cap) || {}).proof || '';
+      var ptxt = m.proof ? m.proof : 'Goal: ' + LV[m.to] + '. A sign you got there: ' + sug.replace(/^e\.g\.\s*/, '') + '.';
+      var j = colOf(mby === '2030' ? 'Later' : mby), bx = gx + j * gw, txt = doc.splitTextToSize(ptxt, gw - 6).slice(0, 4);
+      fill('#ffffff'); stroke(INK); doc.setLineWidth(0.4); doc.rect(bx, y - 3.5, gw - 2, 4 + txt.length * 3.4, 'FD'); font(false, 7.5); color(INK); txt.forEach(function (ln, k) { doc.text(ln, bx + 2, y + k * 3.4); });
+      font(true, 6.5); color(G5); doc.text('by ' + mby + (m.by ? '' : ' (suggested)'), bx + gw - 3, y - 4.5, { align: 'right' });
       var ixb = m.steps.filter(function (i) { return st[i]; }), by = (ixb.length ? [(ixb.length > 1 ? 'reference projects ' : 'reference project ') + ixb.map(function (i) { return i + 1; }).join(', ')] : []).concat(m.other.map(otherLabel)); font(false, 7.5); var BL = doc.splitTextToSize('Built by: ' + (by.length ? by.join(' · ') : 'nothing yet'), CW - 44).slice(0, 3);
       font(false, 7.5); color(by.length ? G7 : RED); BL.forEach(function (ln, k) { doc.text(ln, gx, y + 5 + txt.length * 3.4 + k * 3.4); });
       y += Math.max(16, 5 + txt.length * 3.4 + BL.length * 3.4) + 10;
