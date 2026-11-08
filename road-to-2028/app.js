@@ -410,7 +410,7 @@
   function makePDF() {
     var msg = document.getElementById('pdfmsg'); msg.textContent = 'Writing your guide… this can take up to a minute.';
     var pb = document.getElementById('pdf'); if (pb) pb.disabled = true;
-    Promise.all([loadFonts().catch(function () { return null; }), fetchAI()]).then(function (r) { if (pb) pb.disabled = false; AI = r[1] && r[1].projects ? r[1] : null; return r[0]; }).then(function (f) {
+    Promise.all([loadFonts().catch(function () { return null; }), fetchAI()]).then(function (r) { if (pb) pb.disabled = false; AI = r[1] && r[1].projects ? r[1] : null; if (!AI && /buinho\.pt$/.test(location.hostname)) msg.textContent = 'Writing your PDF with our standard answers (the personal texts were not available this time)\u2026'; return r[0]; }).then(function (f) {
       try { buildPDF(f); msg.textContent = 'Done. Check your downloads.'; }
       catch (e) { console.error('pdf', e && e.stack); try { buildPDF(null); msg.textContent = 'Done (basic font). Check your downloads.'; } catch (e2) { console.error('pdf2', e2 && e2.stack); msg.textContent = 'Sorry, the PDF could not be made on this phone.'; } }
     });
@@ -468,8 +468,8 @@
     function trim(t, n) { t = String(t || ''); if (t.length <= n) return t; var c = t.slice(0, n), k = c.lastIndexOf('. '); return (k > n * 0.5 ? c.slice(0, k + 1) : c.replace(/\s+\S*$/, '') + '\u2026'); }
     function ansText(a) { return trim([a.a].concat((a.lines || []).slice(0, 2)).join(' '), 420); }
     function aiProj(p) { return AI ? (AI.projects || []).filter(function (x) { return x.id === p.id; })[0] : null; }
-    function aiDoubt(p, label) { var a = aiProj(p); if (!a) return null; var d = (a.doubts || []).filter(function (x) { return x.doubt === label || (x.doubt || '').indexOf(label) === 0; })[0]; return d ? d.answer : null; }
-    function aiQ(q) { if (!AI) return null; var x = (AI.questions || []).filter(function (z) { return z.q === q; })[0]; return x ? x.a : null; }
+    function aiAns(p, k) { var a = aiProj(p); return a && a.answers && a.answers[k] ? a.answers[k] : null; }
+    function aiQ(k) { return AI && AI.questions && AI.questions[k] ? AI.questions[k] : null; }
     function ansShort(id) { var a = byId(D.answers || [], id); return a ? a : null; }
     function doubtAnswers(p, d) {
       var out = [], add = function (id) { var a = ansShort(id); if (a) out.push(trim(a.a, 420)); };
@@ -568,8 +568,8 @@
       if (mo) pairs.push(['What it pays', mo.model + ' ' + mo.lines[0]]);
       var ap = aiProj(p); if (ap && ap.parallel) pairs.unshift(['For your lab', ap.parallel]);
       rows(pairs, 9);
-      var ds = (s.doubts || []).map(function (d) { var lab = (byId(D.doubtAspects || [], d) || {}).label || d, ai = aiDoubt(p, lab); return [lab, ai ? [ai] : doubtAnswers(p, d)]; }).filter(function (x) { return x[1].length; });
-      if (s.q) { var aq = answerFor(s.q), aiq = aiDoubt(p, s.q); ds.push(['Your question: ' + s.q, aiq ? [aiq] : aq.length ? aq.slice(0, 1).map(ansText) : ['No ready answer in our material: ask the National Agency or a Creative Europe Desk.']]); }
+      var ds = (s.doubts || []).map(function (d, k) { var lab = (byId(D.doubtAspects || [], d) || {}).label || d, ai = aiAns(p, k); return [lab, ai ? [ai] : doubtAnswers(p, d)]; }).filter(function (x) { return x[1].length; });
+      if (s.q) { var aq = answerFor(s.q), aiq = aiAns(p, (s.doubts || []).length); ds.push(['Your question: ' + s.q, aiq ? [aiq] : aq.length ? aq.slice(0, 1).map(ansText) : ['No ready answer in our material: ask the National Agency or a Creative Europe Desk.']]); }
       if (ds.length) { label('Your doubts, answered'); ds.forEach(function (d) { box(d[0], d[1].slice(0, 1), { rule: famColor(f) === SUN ? INK : famColor(f), bg: WALL, size: 9 }); }); }
       y += 4;
     });
@@ -577,7 +577,7 @@
     /* ===== 5. questions ===== */
     if (S.questions.length) {
       newPage(); y = 0; band(SUN, '5 · Your questions', 'Your questions, answered', 'From our experience and the official rules');
-      S.questions.forEach(function (q) { var an = answerFor(q), aq = aiQ(q); need(30); text(q, 11, true, INK, 1.5); if (aq) { box('From our experience', aq, { rule: INK, bg: WALL, size: 9.5 }); if (an[0] && an[0].links && an[0].links[0]) linkLine(an[0].links[0]); } else if (an.length) an.slice(0, 2).forEach(function (a) { box(a.topic, [a.a].concat(a.lines || []).concat(a.next ? [a.next] : []), { rule: INK, bg: WALL, size: 9.5 }); if (a.links && a.links[0]) linkLine(a.links[0]); }); else text('No ready answer in our material. A good next stop: your National Agency or Creative Europe Desk.', 9.5, false, G5, 3); y += 2; });
+      S.questions.forEach(function (q, qk) { var an = answerFor(q), aq = aiQ(qk); need(30); text(q, 11, true, INK, 1.5); if (aq) { box('From our experience', aq, { rule: INK, bg: WALL, size: 9.5 }); if (an[0] && an[0].links && an[0].links[0]) linkLine(an[0].links[0]); } else if (an.length) an.slice(0, 2).forEach(function (a) { box(a.topic, [a.a].concat(a.lines || []).concat(a.next ? [a.next] : []), { rule: INK, bg: WALL, size: 9.5 }); if (a.links && a.links[0]) linkLine(a.links[0]); }); else text('No ready answer in our material. A good next stop: your National Agency or Creative Europe Desk.', 9.5, false, G5, 3); y += 2; });
     }
 
     /* ===== calendar ===== */
