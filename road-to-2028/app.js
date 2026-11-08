@@ -403,7 +403,7 @@
   function fetchAI() {
     var test = false; try { test = !!localStorage.getItem('vulca-ai-test'); } catch (e) {}
     if (!window.fetch || (!test && (location.protocol !== 'https:' || !/buinho\.pt$/.test(location.hostname)))) return Promise.resolve(null);
-    var ctl = window.AbortController ? new AbortController() : null, t = setTimeout(function () { if (ctl) ctl.abort(); }, 75000);
+    var ctl = window.AbortController ? new AbortController() : null, t = setTimeout(function () { if (ctl) ctl.abort(); }, 120000);
     return fetch('/ai/guide', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(aiPayload()), signal: ctl ? ctl.signal : undefined })
       .then(function (r) { clearTimeout(t); return r.ok ? r.json() : null; }).catch(function () { clearTimeout(t); return null; });
   }
