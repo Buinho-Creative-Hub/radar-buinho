@@ -641,12 +641,17 @@
     label: 'Get international experience as a partner before you coordinate a project like this.'
   };
   function roadLevel(m, k) {
-    var t = S.lab.cap[m.cap] || 0, h = '<div class="f lab">From where you are to where you want to be</div>';
-    if (!t) return h + '<p class="muted small">You did not rate this on the start screen. <a href="#/">Rate it there first</a>, then come back.</p>';
-    h += '<div class="fromto"><span class="ft-now">Today: ' + t + ' \u00b7 ' + LV[t] + '</span><span class="muted small">you said this on the start screen</span></div>';
-    if (t >= 3) return h + '<p class="muted small">Already solid. Keep it: pick another thing to build if you want to grow.</p>';
-    return h + '<div class="muted small" style="margin:6px 0 4px">By the date below, you want it to be:</div><div class="chips" data-mto="' + k + '">' + [2, 3].filter(function (n) { return n > t; }).map(function (n) { return '<button class="chip" data-v="' + n + '" aria-pressed="' + (m.to === n) + '">\u2192 ' + n + ' \u00b7 ' + LV[n] + '</button>'; }).join('') + '</div>';
+    var t = S.lab.cap[m.cap] || 0;
+    if (!t) return '<p class="muted small">You did not rate this on the start screen. <a href="#/">Rate it there first</a>, then come back.</p>';
+    var cells = [1, 2, 3].map(function (n) {
+      var cls = n === t ? 'lv now' : n === m.to && n > t ? 'lv goal' : n < t ? 'lv past' : 'lv';
+      var tag = n === t ? 'today' : n === m.to && n > t ? 'goal' : n > t ? 'tap to choose' : '';
+      return '<button class="' + cls + '"' + (n > t ? ' data-v="' + n + '"' : ' disabled') + '><b>' + LV[n] + '</b><span>' + tag + '</span></button>';
+    }).join('');
+    return '<div class="f lab">Where it is today, and where you want it</div><div class="ladder" data-mto="' + k + '">' + cells + '</div>' +
+      (t >= 3 ? '<p class="muted small">Already solid today. Choose another capacity if you want to grow.</p>' : '');
   }
+
   /* which kinds of action build which capacity, and which resources outside the EU help */
   var CAP_ACT = { team: ['ka122', 'ka1', 'youth', 'youth-acc', 'esc'], partners: ['ka122', 'youth', 'ka210', 'ka220', 'crea', 'cerv', 'esc'], track: ['ka210', 'ka220', 'crea', 'cerv', 'ka122', 'youth'], money: [], label: ['ka122', 'ka1', 'youth', 'youth-acc', 'ka210', 'ka220', 'crea', 'esc', 'cerv'], local: ['cerv', 'esc', 'ka210', 'youth', 'crea'] };
   var CAP_OTHER = { team: ['volunteers'], partners: ['network'], track: [], money: ['own', 'national', 'foundation', 'town'], label: ['network'], local: ['town', 'volunteers'] };
@@ -660,29 +665,29 @@
     roadInit();
     S.road.ms.forEach(function (m) { if (!m.manual) autoBuild(m); }); save();
     var st = steps(), R = S.road, html = '<div class="kicker">' + esc(S.lab.name || 'Your lab') + '</div><h1 class="h1">My roadmap</h1>' +
-      '<p class="lead">What must your lab be able to do to reach your 2030? Pick up to 3 things to build, then say what builds each one.</p>' +
+      '<p class="lead">Choose up to 3 things your lab must grow to reach its 2030. For each: how far, and by when.</p>' +
       (S.lab.vision ? '<div class="advice"><b>2030:</b> ' + esc(S.lab.vision) + (S.lab.targets.length ? '<br><span class="muted">' + esc(targetsTxt()) + '</span>' : '') + '</div>' : '<p class="muted">No 2030 sentence yet. <a href="#/">Write it on the start screen.</a></p>');
-    html += '<div class="qn"><b>1 \u00b7 What to build</b> <span class="muted">(up to 3)</span></div><div class="chips" data-msel>' + (D.capacities || []).map(function (c) { var on = R.ms.some(function (m) { return m.cap === c.id; }); return '<button class="chip" data-v="' + c.id + '" aria-pressed="' + on + '">' + esc(c.label) + ' <span class="muted">\u00b7 today ' + (S.lab.cap[c.id] ? LV[S.lab.cap[c.id]] : 'not rated') + '</span></button>'; }).join('') + '</div>';
+    html += '<div class="qn"><b>1 \u00b7 What do you want to grow?</b> <span class="muted">(up to 3)</span></div><p class="muted small">The dots show what you said on the start screen: \u25cf\u25cb\u25cb little, \u25cf\u25cf\u25cb some, \u25cf\u25cf\u25cf solid.</p><div class="chips" data-msel>' + (D.capacities || []).map(function (c) { var on = R.ms.some(function (m) { return m.cap === c.id; }), v = S.lab.cap[c.id] || 0; return '<button class="chip" data-v="' + c.id + '" aria-pressed="' + on + '">' + esc(c.label) + ' <span class="dots">' + (v ? '\u25cf'.repeat(v) + '\u25cb'.repeat(3 - v) : '?') + '</span></button>'; }).join('') + '</div>' + (R.ms.length ? '<div class="qn" style="margin-top:16px"><b>2 \u00b7 For each one: how far, by when, and what helps</b></div>' : '');
     html += '<div class="stack">' + R.ms.map(function (m, k) { var c = capOf(m.cap) || {};
-      return '<div class="slot"><div class="step-b"><div class="qn"><b>' + esc(c.label) + '</b></div>' +
+      return '<div class="slot"><div class="step-b"><h3 class="h3" style="margin:0 0 6px">' + esc(c.label) + '</h3>' +
         roadLevel(m, k) +
-        '<div class="f lab">By when</div><div class="chips" data-mby="' + k + '">' + ['2027', '2028', '2030'].map(function (y) { return '<button class="chip" data-v="' + y + '" aria-pressed="' + (m.by === y) + '">' + y + '</button>'; }).join('') + '</div>' +
-        '<div class="f lab">How you will know</div><input type="text" data-mproof="' + k + '" maxlength="80" placeholder="' + esc(c.proof || '') + '" value="' + esc(m.proof) + '">' +
-        '<div class="f lab">What builds it</div><p class="muted small">' + (m.manual ? 'Your own choice. <a href="#" data-mreset="' + k + '">Go back to the suggestion</a>' : 'Suggested from your reference projects and what they give your lab. Tap to change.') + '</p><div class="chips" data-msteps="' + k + '">' + st.map(function (s, i) { var p = project(s.project); return '<button class="chip" data-v="' + i + '" aria-pressed="' + (m.steps.indexOf(i) > -1) + '">Reference ' + (i + 1) + ' \u00b7 ' + esc(p.name) + '</button>'; }).join('') +
-        (D.otherRes || []).map(function (o) { return '<button class="chip" data-o="' + o.id + '" aria-pressed="' + (m.other.indexOf(o.id) > -1) + '">' + esc(o.label) + '</button>'; }).join('') + '</div>' +
+        '<div class="f lab">By when?</div><div class="chips" data-mby="' + k + '">' + ['2027', '2028', '2030'].map(function (y) { return '<button class="chip" data-v="' + y + '" aria-pressed="' + (m.by === y) + '">' + y + '</button>'; }).join('') + '</div>' +
+        '<div class="f lab">Which reference projects would help?</div><p class="muted small" style="margin:0 0 6px">We marked the ones that usually build this.</p>' + (m.manual ? '<p class="muted small"><a href="#" data-mreset="' + k + '">Back to our suggestion</a></p>' : '') + '<div class="chips" data-msteps="' + k + '">' + st.map(function (s, i) { var p = project(s.project), nm = p.name.length > 30 ? p.name.slice(0, 28).replace(/\s+\S*$/, '') + '\u2026' : p.name; return '<button class="chip" data-v="' + i + '" aria-pressed="' + (m.steps.indexOf(i) > -1) + '" title="' + esc(p.name) + '">' + esc(nm) + '</button>'; }).join('') + '</div>' +
+        '<details class="more"><summary>More (optional): other help, and how you will see it</summary><div class="f lab">Anything else that helps?</div><div class="chips" data-msteps="' + k + '">' + (D.otherRes || []).map(function (o) { return '<button class="chip" data-o="' + o.id + '" aria-pressed="' + (m.other.indexOf(o.id) > -1) + '">' + esc(o.label) + '</button>'; }).join('') + '</div>' +
+        '<div class="f lab">How will you see you got there?</div><input type="text" data-mproof="' + k + '" maxlength="80" placeholder="For example: ' + esc(c.proof || '') + '" value="' + esc(m.proof) + '"></details>' +
         (st.length ? '' : '<p class="muted small"><a href="#/path">Put steps in your path</a> to link them here.</p>') + '</div></div>'; }).join('') + '</div>';
     if (st.length) {
-      html += '<div class="qn" style="margin-top:20px"><b>2 \u00b7 Can you apply for something like this?</b></div><p class="muted small">A quick reading of each reference project in your path, against what you said you have today. It tells you what to build before you apply.</p><div class="stack">' + st.map(function (s, i) { var g = goCheck(i), p = project(s.project);
-        return '<div class="advice"><div><b>Reference project ' + (i + 1) + '</b> \u00b7 ' + esc(p.name) + '</div>' +
-          '<div class="chips" data-ready="' + i + '" style="margin-top:8px"><span class="muted small" style="align-self:center">Who would write the application?</span>' + [['team', 'Someone in our team'], ['partner', 'A partner coordinates'], ['none', 'Nobody yet']].map(function (o) { return '<button class="chip" data-v="' + o[0] + '" aria-pressed="' + (g.who === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</div>' +
-          '<p style="margin-top:8px"><span class="badge ' + (g.todo.length ? 'b-prepare' : 'b-go') + '">' + g.badge + '</span></p>' + (g.todo.length ? ul(g.todo) : '<p class="small">Nothing missing from what you told the app. Check the call when it opens.</p>') + '</div>'; }).join('') + '</div>';
+      html += '<div class="qn" style="margin-top:20px"><b>3 \u00b7 Who would write each application?</b> <span class="muted small">Your guidelines say what to build first.</span></div><div class="stack">' + st.map(function (s, i) { var g = goCheck(i), p = project(s.project);
+        return '<div class="readyrow"><div><b>' + esc(p.name) + '</b> <span class="badge ' + (g.todo.length ? 'b-prepare' : 'b-go') + '">' + g.badge + '</span></div>' +
+          '<div class="chips" data-ready="' + i + '">' + [['team', 'Our team'], ['partner', 'A partner'], ['none', 'Nobody yet']].map(function (o) { return '<button class="chip" data-v="' + o[0] + '" aria-pressed="' + (g.who === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</div>' +
+          (g.todo.length ? '<details class="more"><summary>What to build first</summary>' + ul(g.todo) + '</details>' : '') + '</div>'; }).join('') + '</div>';
     }
-    html += '<div class="qn" style="margin-top:20px"><b>3 \u00b7 When will you look at this roadmap again?</b></div><p class="muted small">Plans change, and the 2028 calls and the new Programme Guide come out during 2027. Pick a date to review it with your team.</p><div class="chips" data-review>' + ['June 2027', 'November 2027', 'Early 2028'].map(function (r) { return '<button class="chip" data-v="' + r + '" aria-pressed="' + (R.review === r) + '">' + r + '</button>'; }).join('') + '</div>' +
+    html += '<div class="qn" style="margin-top:20px"><b>4 \u00b7 When will you look at this roadmap again?</b></div><div class="chips" data-review>' + ['June 2027', 'November 2027', 'Early 2028'].map(function (r) { return '<button class="chip" data-v="' + r + '" aria-pressed="' + (R.review === r) + '">' + r + '</button>'; }).join('') + '</div>' +
       '<hr><div class="row"><a class="btn blue" href="#/guide">5 \u00b7 My guidelines</a><a class="btn ghost" href="#/path">Back to my path</a></div>';
     render(html, 'road', true);
     function bind(sel, fn) { app.querySelectorAll(sel).forEach(function (box) { box.addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) { fn(box, b); save(); roadView(); } }); }); }
     bind('[data-msel]', function (box, b) { var v = b.dataset.v, k = -1; R.ms.forEach(function (m, j) { if (m.cap === v) k = j; }); if (k > -1) R.ms.splice(k, 1); else if (R.ms.length < 3) R.ms.push({ cap: v, to: Math.min(3, (S.lab.cap[v] || 0) + 1) || 2, by: '', proof: '', steps: [], other: [], otherTxt: '' }); });
-    bind('[data-mto]', function (box, b) { R.ms[+box.dataset.mto].to = +b.dataset.v; });
+    bind('[data-mto]', function (box, b) { if (b.dataset.v) R.ms[+box.dataset.mto].to = +b.dataset.v; });
     bind('[data-mby]', function (box, b) { var m = R.ms[+box.dataset.mby]; m.by = m.by === b.dataset.v ? '' : b.dataset.v; });
     bind('[data-msteps]', function (box, b) { var m = R.ms[+box.dataset.msteps]; m.manual = true; if (b.dataset.o) { var j = m.other.indexOf(b.dataset.o); if (j > -1) m.other.splice(j, 1); else m.other.push(b.dataset.o); } else { var v = +b.dataset.v, q = m.steps.indexOf(v); if (q > -1) m.steps.splice(q, 1); else m.steps.push(v); } });
     bind('[data-ready]', function (box, b) { var pid = S.path[+box.dataset.ready].project, v = b.dataset.v; R.ready[pid] = R.ready[pid] === v ? undefined : v; });

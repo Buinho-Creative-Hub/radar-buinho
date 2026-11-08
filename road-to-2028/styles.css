@@ -177,3 +177,16 @@ label.f{display:block;font-weight:600;margin:12px 0 6px}
 .slot{padding-bottom:12px}
 .slot>.qn,.slot>.chips,.slot>details,.slot>input[type=text]{margin-left:12px;margin-right:12px;width:auto}
 .slot>input[type=text]{width:calc(100% - 24px)}
+.ladder{display:flex;gap:0;margin:4px 0 6px;max-width:520px}
+.ladder .lv{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 6px;border:2px solid var(--ink,#010101);background:#fff;font:inherit;cursor:pointer}
+.ladder .lv+.lv{border-left:none}
+.ladder .lv span{font-size:13px;color:#555}
+.ladder .lv.past{background:#f0f0f0;color:#888;cursor:default}
+.ladder .lv.now{background:#e6ecff;cursor:default}
+.ladder .lv.now span{color:var(--blue,#2364ff);font-weight:700}
+.ladder .lv.goal{background:var(--blue,#2364ff);color:#fff}
+.ladder .lv.goal span{color:#fff;font-weight:700}
+.dots{letter-spacing:1px;color:var(--blue,#2364ff);margin-left:4px}
+details.more{margin-top:10px}
+details.more>summary{cursor:pointer;color:#555;font-size:15px}
+.readyrow{background:#fff;border:1px solid var(--g2,#ddd);padding:10px 12px;display:flex;flex-direction:column;gap:6px}
