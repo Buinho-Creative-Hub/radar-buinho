@@ -635,7 +635,7 @@
   }
   var LV = ['', 'little', 'some', 'solid'];
   var TODO = {
-    partners: 'Find partners first: partner searches (Otlas, EPALE), contact seminars, or a short mobility that takes you to them.',
+    partners: 'Find partners first: ask organisations you know and respect for references, use networks like Vulca, or test a partner with a short mobility. Generic partner-search platforms only as a last resort.',
     track: 'Start smaller: a short mobility (KA122) or a small-scale partnership (KA210), or join a project like this as a partner.',
     money: 'Check your financial capability: above \u20ac60,000 the EU can check the coordinator\u2019s accounts. Be a partner, or plan the cash advance.',
     label: 'Get international experience as a partner before you coordinate a project like this.'

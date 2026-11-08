@@ -13,7 +13,7 @@ module.exports = {
   familyLabels: { mobility: 'Mobility', volunteering: 'Volunteering', cooperation: 'Cooperation', culture: 'Culture', citizens: 'Citizens' },
   partnerCriteria: [
     { label: 'Complementarity', text: 'What does each partner bring that the others do not? A method, a public, a sector, a city.' },
-    { label: 'Trust', text: 'Partners you have already worked with, or who answer and deliver on time. Most of our projects started from a previous one.' },
+    { label: 'Trust', text: 'Partners you have already worked with, or recommended by organisations you know and respect that already have international experience. Networks like Vulca first; generic partner-search platforms only as a last resort. Most of our projects started from a previous one.' },
     { label: 'Financial capacity', text: 'Who can receive, advance and co-finance money? Above \u20ac60,000 the EU can check the applicant\u2019s accounts (public bodies are exempt).' },
     { label: 'Sector', text: 'The field you apply in (schools, adults, youth, vocational, culture) decides the agency and who can credibly coordinate.' },
     { label: 'Size', text: 'How many partners and countries the action asks for, and how many you can really manage.' }
@@ -48,7 +48,7 @@ module.exports = {
     team: ['One person carrying the EU work alone is the most common bottleneck. Start where the admin is light: a short mobility (KA122), or join a project as partner, where the coordinator writes the application.',
       'Enough for one project at a time. Block writing time a few weeks before each deadline, and train a second person through a mobility so the knowledge is not in one head.',
       'You can coordinate. Split the roles (writing, finance, communication, reporting) so the work does not depend on one person.'],
-    partners: ['Without partners you trust, coordinating is risky. Join other labs\u2019 projects first; use partner searches (Otlas, EPALE) and contact seminars; a job shadowing is a cheap way to test a partner.',
+    partners: ['Without partners you trust, coordinating is risky. Look for partners through people you know and respect who already run international projects: ask them for references, and use networks like Vulca. Join a trusted lab\u2019s project first; a job shadowing is a cheap way to test a partner. Generic partner-search platforms (Otlas, EPALE) only as a last resort: you risk bad surprises with partners you know nothing about.',
       'Build on the partners you have: a new partner enters next to a trusted one, never a whole new consortium at once.',
       'You can propose and lead consortia. Bring newcomers in next to your trusted partners: evaluators value organisations new to the programme.'],
     track: ['Start small to build a record: a short mobility (KA122) or a small-scale partnership (KA210), or be a partner and lead one clear part of a larger project.',
@@ -476,11 +476,11 @@ module.exports = {
       "url": "https://erasmus-plus.ec.europa.eu/projects"
      },
      {
-      "label": "SALTO-YOUTH Otlas: partner finding for youth projects",
+      "label": "Last resort: SALTO-YOUTH Otlas partner finding (youth)",
       "url": "https://www.salto-youth.net/tools/otlas-partner-finding/"
      },
      {
-      "label": "EPALE Partner Search: adult learning",
+      "label": "Last resort: EPALE Partner Search (adult learning)",
       "url": "https://epale.ec.europa.eu/en/content/partner-search"
      }
     ]
@@ -560,8 +560,8 @@ var T = module.exports;
 var PG = { label: 'Erasmus+ Programme Guide 2026', url: 'https://erasmus-plus.ec.europa.eu/document/erasmus-programme-guide-2026' };
 var NA = { label: 'Find your Erasmus+ National Agency', url: 'https://erasmus-plus.ec.europa.eu/contacts/national-agencies' };
 var RP = { label: 'Erasmus+ Project Results Platform', url: 'https://erasmus-plus.ec.europa.eu/projects' };
-var OT = { label: 'SALTO-YOUTH Otlas partner finding', url: 'https://www.salto-youth.net/tools/otlas-partner-finding/' };
-var EP = { label: 'EPALE Partner Search (adult learning)', url: 'https://epale.ec.europa.eu/en/content/partner-search' };
+var OT = { label: 'Last resort: SALTO-YOUTH Otlas partner finding', url: 'https://www.salto-youth.net/tools/otlas-partner-finding/' };
+var EP = { label: 'Last resort: EPALE Partner Search (adult learning)', url: 'https://epale.ec.europa.eu/en/content/partner-search' };
 var GE = { label: 'Guide for Experts on Quality Assessment 2026', url: 'https://www.leargas.ie/resource/2026-erasmus-guide-for-experts-on-quality-assessment/' };
 var FC = { label: 'Financial capacity assessment (EU Funding & Tenders)', url: 'https://webgate.ec.europa.eu/funding-tenders-opportunities/display/OM/Financial+capacity+assessment' };
 var CED = { label: 'Creative Europe Desks', url: 'https://culture.ec.europa.eu/resources/creative-europe-desks' };
@@ -587,10 +587,10 @@ module.exports = [
     kw: ['without previous', 'no previous', 'without experience', 'previous projects', 'partners without', 'never', 'first time', 'first project', 'no experience', 'newcomer', 'beginner', 'start', 'nunca', 'primer', 'primeira', 'primeiro', 'sin experiencia', 'sem experiencia', 'debutant', 'jamais', 'mai', 'senza esperienza', 'join as partner', 'join a project'],
     a: 'Yes. You do not need previous Erasmus+ experience to be a partner, and small-scale partnerships (KA210) are explicitly aimed at newcomers and grassroots organisations. The cheapest first steps are a short mobility of your own (job shadowing, a course, a youth worker training) or a partner role in someone else’s project, where you lead one clear part of the work.',
     next: 'Before you say yes as partner, ask the coordinator which part you lead, what money comes to you and what stays in your lab afterwards.',
-    links: [KA210, OT, EP] },
+    links: [KA210, RP] },
   { id: 'coordinator', topic: 'Finding a reliable coordinator or partner',
     kw: ['coordinator', 'reliable', 'trust', 'find partner', 'finding partner', 'partners abroad', 'partner search', 'coordinador', 'coordenador', 'socio', 'socios', 'parceiro', 'parceiros', 'confianza', 'confianca', 'coordinateur', 'partenaire', 'coordinatore', 'partner affidabile', 'consortium', 'consorcio'],
-    a: 'Look for track record you can check: search the organisation’s name on the Erasmus+ Project Results Platform and see which projects it ran, with whom, and whether results are published or flagged as good practice. Most reliable partnerships start from people you already met: earlier projects, networks you are active in, partners of your partners, or seminars like this one. A short mobility or a job shadowing is a low-cost way to test how a partner works.',
+    a: 'Start with references from organisations you know and respect that already have international experience: ask them who they trust. Use networks like Vulca, earlier projects and seminars like this one: most reliable partnerships start from people you already met. Then check the track record: search the organisation’s name on the Erasmus+ Project Results Platform (projects, partners, published results, good practice). A short mobility or a job shadowing is a low-cost way to test how a partner works. Generic partner-search platforms such as Otlas or EPALE are a last resort: you risk bad surprises with partners nobody you know has worked with.',
     next: 'At Buinho, a new partner usually enters next to a trusted one, and we look at complementarity, trust, financial capacity and sector before writing anything.',
     links: [RP, OT, EP] },
   { id: 'agency', topic: 'Which agency, which field',
