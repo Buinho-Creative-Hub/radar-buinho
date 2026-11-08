@@ -94,7 +94,7 @@
       '<li><div><b>Your roadmap:</b> what your lab must build to get there.</div></li>' +
       '<li><div><b>Your guidelines:</b> download them and keep them for your next applications.</div></li>' +
       '</ol>' +
-      '<h2 class="h2">1 \u00b7 Where you stand</h2><p class="muted">It stays on this phone and only goes into your guide.</p>' +
+      '<h2 class="h2">1 \u00b7 Where you stand</h2><p class="muted">It stays on this phone. It is only used to write your guide.</p>' +
       '<label class="f" for="name">Lab name</label><input type="text" id="name" maxlength="80" value="' + esc(l.name) + '">' +
       '<label class="f" for="country">Country</label><input type="text" id="country" maxlength="40" value="' + esc(l.country) + '">' +
       '<div class="f lab" style="margin-top:16px">Experience with EU projects</div>' +
@@ -352,9 +352,9 @@
     var st = steps();
     render(
       '<div class="kicker">Your take-away</div><h1 class="h1">My guidelines</h1>' +
-      (st.length ? '<p class="lead">Your guidelines are made on this phone from what you entered: a PDF of about ten pages to keep and come back to when you prepare your next applications.</p>' +
+      (st.length ? '<p class="lead">Your guidelines are made from what you entered: a PDF of about ten pages to keep and come back to when you prepare your next applications.</p>' +
         '<div class="advice"><b>Inside:</b> what your position means · your roadmap · your guidelines · your ' + st.length + ' reference project' + (st.length > 1 ? 's' : '') + ' and the answers to your doubts · your year of deadlines · a checklist from our experience.</div>' +
-        '<div class="row" style="margin-top:16px"><button class="btn blue" id="pdf">Download my guidelines (PDF)</button></div><p class="muted" id="pdfmsg" role="status"></p>' +
+        '<div class="row" style="margin-top:16px"><button class="btn blue" id="pdf">Download my guidelines (PDF)</button></div><p class="muted" id="pdfmsg" role="status"></p><p class="muted small">To write the parts about your lab, what you entered is sent once to our server and to Claude (Anthropic). We do not keep it.</p>' +
         '<h2 class="h2">Next steps</h2>' + ul(['Read the guidelines with your team, and decide your first move for 2027.', 'Check the dates of the 2027 calls when they are published (links in the PDF).', 'Talk to the people you met here: partners start from people you already know.'])
         : '<div class="empty">Your guidelines need at least one reference project. <a href="#/cards">Choose your reference projects first.</a></div>') +
       '<hr><button class="btn ghost" id="reset">Start again</button>', 'guide');
@@ -376,9 +376,34 @@
     function b64(url) { return fetch(url).then(function (r) { return r.arrayBuffer(); }).then(function (buf) { var s = '', u = new Uint8Array(buf); for (var i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(s); }); }
     return Promise.all([b64(FONT_R), b64(FONT_B), logoPNG().catch(function () { return null; })]).then(function (r) { fontsB64 = r; return r; });
   }
+  /* personal texts written by Claude on the server (cuenca.buinho.pt/ai/); the guide works without them */
+  var AI = null;
+  function aiPayload() {
+    var st = steps(), lab = S.lab;
+    return {
+      lab: { name: lab.name, country: lab.country, experience: lab.exp, vision: lab.vision, roles: targetsTxt(),
+        works_with: (lab.domains || []).map(function (d) { return (byId(D.domains || [], d) || {}).label || d; }).join(', '),
+        needs: whyLabels(lab.needs).join(', '),
+        capacities: (D.capacities || []).map(function (c) { var v = lab.cap[c.id] || 0; return { label: c.label, level: v ? v + ' ' + LV[v] : 'not rated' }; }) },
+      roadmap: (S.road.ms || []).map(function (m) { return capLabel(m.cap) + ': from ' + (lab.cap[m.cap] ? LV[lab.cap[m.cap]] : 'not rated') + ' to ' + LV[m.to] + (m.by ? ' by ' + m.by : '') + (m.proof ? ' (' + m.proof + ')' : ''); }),
+      projects: st.map(function (s, i) { var p = project(s.project), a = action(p.action), g = goCheck(i);
+        return { id: p.id, name: p.name, action: a ? a.short + ' ' + a.name : p.action, when: s.when, needs: whyLabels(s.why).join(', '),
+          readiness: g ? g.badge + (g.todo.length ? ': ' + g.todo.join(' ') : '') : '',
+          doubts: (s.doubts || []).map(function (d) { return (byId(D.doubtAspects || [], d) || {}).label || d; }), question: s.q }; }),
+      questions: S.questions.slice()
+    };
+  }
+  function fetchAI() {
+    var test = false; try { test = !!localStorage.getItem('vulca-ai-test'); } catch (e) {}
+    if (!window.fetch || (!test && (location.protocol !== 'https:' || !/buinho\.pt$/.test(location.hostname)))) return Promise.resolve(null);
+    var ctl = window.AbortController ? new AbortController() : null, t = setTimeout(function () { if (ctl) ctl.abort(); }, 75000);
+    return fetch('/ai/guide', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(aiPayload()), signal: ctl ? ctl.signal : undefined })
+      .then(function (r) { clearTimeout(t); return r.ok ? r.json() : null; }).catch(function () { clearTimeout(t); return null; });
+  }
   function makePDF() {
-    var msg = document.getElementById('pdfmsg'); msg.textContent = 'Preparing your guide…';
-    loadFonts().catch(function () { return null; }).then(function (f) {
+    var msg = document.getElementById('pdfmsg'); msg.textContent = 'Writing your guide… this can take up to a minute.';
+    var pb = document.getElementById('pdf'); if (pb) pb.disabled = true;
+    Promise.all([loadFonts().catch(function () { return null; }), fetchAI()]).then(function (r) { if (pb) pb.disabled = false; AI = r[1] && r[1].projects ? r[1] : null; return r[0]; }).then(function (f) {
       try { buildPDF(f); msg.textContent = 'Done. Check your downloads.'; }
       catch (e) { console.error('pdf', e && e.stack); try { buildPDF(null); msg.textContent = 'Done (basic font). Check your downloads.'; } catch (e2) { console.error('pdf2', e2 && e2.stack); msg.textContent = 'Sorry, the PDF could not be made on this phone.'; } }
     });
@@ -435,6 +460,9 @@
     function rule(n, head, why, col) { var L1 = lines(head, 11, true, CW - 12), L2 = why ? lines(why, 9.5, false, CW - 12) : []; need(L1.length * lh(11) + L2.length * lh(9.5) + 6); fill(col || BLUE); doc.circle(M + 3.5, y - 1.3, 3.5, 'F'); color('#ffffff'); font(true, 9); doc.text(String(n), M + 3.5, y + 0.1, { align: 'center' }); font(true, 11); color(INK); L1.forEach(function (ln) { doc.text(ln, M + 11, y); y += lh(11); }); y += 0.6; font(false, 9.5); color(G5); L2.forEach(function (ln) { doc.text(ln, M + 11, y); y += lh(9.5); }); y += 4.5; }
     function trim(t, n) { t = String(t || ''); if (t.length <= n) return t; var c = t.slice(0, n), k = c.lastIndexOf('. '); return (k > n * 0.5 ? c.slice(0, k + 1) : c.replace(/\s+\S*$/, '') + '\u2026'); }
     function ansText(a) { return trim([a.a].concat((a.lines || []).slice(0, 2)).join(' '), 420); }
+    function aiProj(p) { return AI ? (AI.projects || []).filter(function (x) { return x.id === p.id; })[0] : null; }
+    function aiDoubt(p, label) { var a = aiProj(p); if (!a) return null; var d = (a.doubts || []).filter(function (x) { return x.doubt === label || (x.doubt || '').indexOf(label) === 0; })[0]; return d ? d.answer : null; }
+    function aiQ(q) { if (!AI) return null; var x = (AI.questions || []).filter(function (z) { return z.q === q; })[0]; return x ? x.a : null; }
     function ansShort(id) { var a = byId(D.answers || [], id); return a ? a : null; }
     function doubtAnswers(p, d) {
       var out = [], add = function (id) { var a = ansShort(id); if (a) out.push(trim(a.a, 420)); };
@@ -511,6 +539,7 @@
     var prep = [], bf = {}; GC.forEach(function (g, i) { if (g.lacks.length) { var k = g.lacks.map(capLabel).join(' and ').toLowerCase(); (bf[k] = bf[k] || []).push(i); } }); Object.keys(bf).forEach(function (k) { prep.push('before ' + refs(bf[k]) + ', build ' + k); });
     rule(++n, 'Go only when: a partner you trust is on board three months before the deadline, someone has the time to write, and you can advance the costs.', prep.length ? 'In your path: ' + prep.join('; ') + '.' : 'Check it again for each call.', RED);
     readings().slice(0, 2).forEach(function (t) { rule(++n, t.split('. ')[0] + '.', t.split('. ').slice(1).join('. '), BLUE); });
+    if (AI && AI.advice) AI.advice.slice(0, 5).forEach(function (t) { rule(++n, String(t), '', BLUE); });
     rule(++n, 'Argue only for the priorities you select, and show them in the activities, the public and the results.', 'Inclusion is expected in almost every funded project: name who takes part and which barrier you lower. We found the opposite slip in our own forms, more than once.', RED);
     rule(++n, 'Prepare for 2028 without betting on details.', 'The new Erasmus+ (with the Solidarity Corps) and AgoraEU are still being negotiated. Trusted partners, results you can show and the horizontal priorities will count in any version.', BLUE);
     rule(++n, 'Review this roadmap with your team in ' + (RM.review || 'November 2027') + '.', 'By then the 2028 calls and the new Programme Guide should be known. Change the projects, keep the rules.', RED);
@@ -528,9 +557,10 @@
       if (p.formPrio && p.formPrio.length) pairs.push(['Priorities in its application', p.formPrio.join(' · ') + (p.prioWhy ? '. Why: ' + p.prioWhy : '')]);
       else if (p.external) pairs.push(['Priorities', 'Partnerships choose one main priority and up to two more; inclusion is in almost all funded projects. The Results Platform lists this project’s topics.']);
       if (mo) pairs.push(['What it pays', mo.model + ' ' + mo.lines[0]]);
+      var ap = aiProj(p); if (ap && ap.parallel) pairs.unshift(['For your lab', ap.parallel]);
       rows(pairs, 9);
-      var ds = (s.doubts || []).map(function (d) { var lab = (byId(D.doubtAspects || [], d) || {}).label || d; return [lab, doubtAnswers(p, d)]; }).filter(function (x) { return x[1].length; });
-      if (s.q) { var aq = answerFor(s.q); ds.push(['Your question: ' + s.q, aq.length ? aq.slice(0, 1).map(ansText) : ['No ready answer in our material: ask the National Agency or a Creative Europe Desk.']]); }
+      var ds = (s.doubts || []).map(function (d) { var lab = (byId(D.doubtAspects || [], d) || {}).label || d, ai = aiDoubt(p, lab); return [lab, ai ? [ai] : doubtAnswers(p, d)]; }).filter(function (x) { return x[1].length; });
+      if (s.q) { var aq = answerFor(s.q), aiq = aiDoubt(p, s.q); ds.push(['Your question: ' + s.q, aiq ? [aiq] : aq.length ? aq.slice(0, 1).map(ansText) : ['No ready answer in our material: ask the National Agency or a Creative Europe Desk.']]); }
       if (ds.length) { label('Your doubts, answered'); ds.forEach(function (d) { box(d[0], d[1].slice(0, 1), { rule: famColor(f) === SUN ? INK : famColor(f), bg: WALL, size: 9 }); }); }
       y += 4;
     });
@@ -538,7 +568,7 @@
     /* ===== 5. questions ===== */
     if (S.questions.length) {
       newPage(); y = 0; band(SUN, '5 · Your questions', 'Your questions, answered', 'From our experience and the official rules');
-      S.questions.forEach(function (q) { var an = answerFor(q); need(30); text(q, 11, true, INK, 1.5); if (an.length) an.slice(0, 2).forEach(function (a) { box(a.topic, [a.a].concat(a.lines || []).concat(a.next ? [a.next] : []), { rule: INK, bg: WALL, size: 9.5 }); if (a.links && a.links[0]) linkLine(a.links[0]); }); else text('No ready answer in our material. A good next stop: your National Agency or Creative Europe Desk.', 9.5, false, G5, 3); y += 2; });
+      S.questions.forEach(function (q) { var an = answerFor(q), aq = aiQ(q); need(30); text(q, 11, true, INK, 1.5); if (aq) { box('From our experience', aq, { rule: INK, bg: WALL, size: 9.5 }); if (an[0] && an[0].links && an[0].links[0]) linkLine(an[0].links[0]); } else if (an.length) an.slice(0, 2).forEach(function (a) { box(a.topic, [a.a].concat(a.lines || []).concat(a.next ? [a.next] : []), { rule: INK, bg: WALL, size: 9.5 }); if (a.links && a.links[0]) linkLine(a.links[0]); }); else text('No ready answer in our material. A good next stop: your National Agency or Creative Europe Desk.', 9.5, false, G5, 3); y += 2; });
     }
 
     /* ===== calendar ===== */
