@@ -44,6 +44,43 @@ module.exports = {
     { id: 'label', label: 'International projects experience', proof: 'e.g. 2 international projects as partner' },
     { id: 'local', label: 'Work with local communities', proof: 'e.g. the town hall, 2 schools and a seniors group on board' }
   ],
+  capAdvice: {
+    team: ['One person carrying the EU work alone is the most common bottleneck. Start where the admin is light: a short mobility (KA122), or join a project as partner, where the coordinator writes the application.',
+      'Enough for one project at a time. Block writing time a few weeks before each deadline, and train a second person through a mobility so the knowledge is not in one head.',
+      'You can coordinate. Split the roles (writing, finance, communication, reporting) so the work does not depend on one person.'],
+    partners: ['Without partners you trust, coordinating is risky. Join other labs\u2019 projects first; use partner searches (Otlas, EPALE) and contact seminars; a job shadowing is a cheap way to test a partner.',
+      'Build on the partners you have: a new partner enters next to a trusted one, never a whole new consortium at once.',
+      'You can propose and lead consortia. Bring newcomers in next to your trusted partners: evaluators value organisations new to the programme.'],
+    track: ['Start small to build a record: a short mobility (KA122) or a small-scale partnership (KA210), or be a partner and lead one clear part of a larger project.',
+      'You can coordinate small-scale partnerships. Before a cooperation partnership (KA220) or Creative Europe, make sure your past results are online and easy to show.',
+      'You are ready for larger partnerships, or Creative Europe as coordinator, if your partners and your cash flow allow it.'],
+    money: ['Start with actions paid by unit costs or lump sums, and stay below \u20ac60,000 per grant, where non-public organisations are not asked to prove their financial capacity. In co-financed programmes (Creative Europe: 20% own funds), be a partner first.',
+      'Plan the cash gap between the start of a project and its final payment, and count any co-financing before you commit.',
+      'You can coordinate co-financed projects. Above \u20ac60,000, keep your last two years of accounts ready in case the agency checks them.'],
+    label: ['Get international experience first as a participant or partner: mobilities, contact seminars, a partner role in a small-scale partnership.',
+      'Turn your partner experience into a proposal of your own: a small-scale partnership as coordinator.',
+      'Use your experience to bring newer labs in, and consider coordinating cooperation projects.'],
+    local: ['European projects are judged by what they leave in the territory. Start with one local ally (town hall, school, association) and design the activities with them.',
+      'Name your local partners in every application and show how results stay in your territory after the project.',
+      'Your local roots are an asset: make them visible (the town hall as partner, open events, results used by the community).']
+  },
+  doubtAspects: [
+    { id: 'partners', label: 'Finding partners' },
+    { id: 'role', label: 'Partner or coordinator' },
+    { id: 'money', label: 'Budget and money' },
+    { id: 'rules', label: 'Eligibility and rules' },
+    { id: 'priorities', label: 'Priorities and impact' },
+    { id: 'writing', label: 'Writing and scoring' },
+    { id: 'deadlines', label: 'Deadlines' },
+    { id: 'after', label: 'What changes after 2027' }
+  ],
+  callLinks: [
+    { label: 'Erasmus+ National Agencies (where you apply for most Erasmus+ actions)', url: 'https://erasmus-plus.ec.europa.eu/contacts/national-agencies' },
+    { label: 'Erasmus+ Programme Guide 2026 (rules and deadlines)', url: 'https://erasmus-plus.ec.europa.eu/programme-guide/erasmusplus-programme-guide' },
+    { label: 'EU Funding & Tenders Portal (Creative Europe, CERV calls)', url: 'https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/calls-for-proposals' },
+    { label: 'Creative Europe Desks (free advice in your country)', url: 'https://culture.ec.europa.eu/resources/creative-europe-desks' },
+    { label: 'European Solidarity Corps Quality Label', url: 'https://youth.europa.eu/solidarity/organisations/quality-label_en' }
+  ],
   otherRes: [
     { id: 'national', label: 'National or regional fund' },
     { id: 'town', label: 'Town hall' },

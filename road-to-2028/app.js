@@ -6,9 +6,9 @@
   var KEY = 'vulca-clinic-v2';
 
   /* ---------- state ---------- */
-  function blank() { return { lab: { code: '', name: '', country: '', exp: '', domains: [], needs: [], vision: '', themes: ['', '', ''], cap: {}, targets: [] }, fav: [], path: [], questions: [], told: {}, road: { ms: [], ready: {}, review: '', init: false } }; }
+  function blank() { return { lab: { code: '', name: '', country: '', exp: '', domains: [], needs: [], vision: '', cap: {}, targets: [] }, fav: [], path: [], questions: [], road: { ms: [], ready: {}, review: '', init: false } }; }
   var S = load() || blank();
-  (function () { if (!S.told) S.told = {}; if (S.lab && !S.lab.targets) S.lab.targets = S.lab.target ? [S.lab.target] : []; if (!S.road) S.road = blank().road; var b = blank().lab; Object.keys(b).forEach(function (k) { if (S.lab[k] == null) S.lab[k] = b[k]; }); S.path.forEach(function (st) { if (!st.themes) st.themes = []; if (!st.prio) st.prio = []; if (!st.prio.length && !st.prioSet) { var pp = byId((window.VULCA || {}).projects, st.project); if (pp && pp.prio) st.prio = pp.prio.slice(); } if (st.how == null) st.how = ''; if (st.peer == null) st.peer = ''; }); })();
+  (function () { if (S.lab && !S.lab.targets) S.lab.targets = S.lab.target ? [S.lab.target] : []; if (!S.road) S.road = blank().road; var b = blank().lab; Object.keys(b).forEach(function (k) { if (S.lab[k] == null) S.lab[k] = b[k]; }); if (S.fav.length > 5) S.fav = S.fav.slice(0, 5); var r = S.road.ready || {}, nr = {}; Object.keys(r).forEach(function (k) { if (/^\d+$/.test(k)) { if (S.path[+k]) nr[S.path[+k].project] = r[k]; } else nr[k] = r[k]; }); S.road.ready = nr; delete S.told; })();
   function load() { try { var s = JSON.parse(localStorage.getItem(KEY)); return s && s.fav ? s : null; } catch (e) { return null; } }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 
@@ -29,7 +29,7 @@
   function isFav(id) { return S.fav.indexOf(id) > -1; }
   var MAXFAV = 5;
   function toast(t) { var el = document.getElementById('toast'); if (!el) { el = document.createElement('div'); el.id = 'toast'; el.setAttribute('role', 'status'); document.body.appendChild(el); } el.textContent = t; el.className = 'show'; clearTimeout(toast.t); toast.t = setTimeout(function () { el.className = ''; }, 3200); }
-  function toggleFav(id) { var i = S.fav.indexOf(id); if (i > -1) { S.fav.splice(i, 1); S.path = S.path.filter(function (s) { return s.project !== id; }); } else if (S.fav.length >= MAXFAV) { toast('You already have ' + MAXFAV + ' projects. Remove one star to add another.'); return; } else S.fav.push(id); save(); }
+  function toggleFav(id) { var i = S.fav.indexOf(id); if (i > -1) { S.fav.splice(i, 1); } else if (S.fav.length >= MAXFAV) { toast('You already have ' + MAXFAV + ' projects. Remove one star to add another.'); return; } else S.fav.push(id); save(); }
   var PR = D.priorities || { horizontal: [], sectors: {}, culture: { shorts: [], items: [] }, rules: [], future: { lines: [] }, reflect: [], links: [] };
   function prioOpts(p) {
     var o = PR.horizontal.map(function (h) { return { id: h.id, short: h.short, name: h.name, group: 'Horizontal' }; });
@@ -90,8 +90,8 @@
       '<ol class="steps">' +
       '<li><div><b>Where you stand</b> and what your lab needs. <span class="muted">Just below.</span></div></li>' +
       '<li><div><b>Where you want to be</b> in 2030. <span class="muted">Your strategy, in one sentence.</span></div></li>' +
-      '<li><div><b>Choose your reference projects:</b> star the ones that interest you, then put up to 3 in order. <span class="muted">Your path.</span></div></li>' +
-      '<li><div><b>Your roadmap:</b> what your lab must build to get there. <span class="muted">Your questions go to Carlos and the experienced colleagues in the room.</span></div></li>' +
+      '<li><div><b>Choose your reference projects:</b> star up to 5 that interest you. <span class="muted">Then 3 short questions for each, in My path.</span></div></li>' +
+      '<li><div><b>Your roadmap:</b> what your lab must build to get there.</div></li>' +
       '<li><div><b>Your guidelines:</b> download them and keep them for your next applications.</div></li>' +
       '</ol>' +
       '<h2 class="h2">1 \u00b7 Where you stand</h2><p class="muted">It stays on this phone and only goes into your guide.</p>' +
@@ -103,17 +103,15 @@
       '<div class="chips" data-group="domains">' + (D.domains || []).map(function (d) { return '<button class="chip" data-v="' + esc(d.id) + '" aria-pressed="' + (l.domains.indexOf(d.id) > -1) + '">' + esc(d.label) + '</button>'; }).join('') + '</div>' +
       '<div class="f lab">What your organisation needs most (up to 3)</div>' +
       '<div class="chips" data-group="needs">' + (D.whys || []).map(function (w) { return '<button class="chip" data-v="' + esc(w.id) + '" aria-pressed="' + (l.needs.indexOf(w.id) > -1) + '">' + esc(w.label) + '</button>'; }).join('') + '</div>' +
-      '<div class="f lab">What you have today</div><p class="muted small">For each: 1 little \u00b7 2 some \u00b7 3 solid. Sheet 2 helps you think it through.</p>' +
-      (D.capacities || []).map(function (c) { var v = l.cap[c.id] || 0; return '<div class="caprow"><span>' + esc(c.label) + '</span><span class="chips" data-cap="' + c.id + '">' + [1, 2, 3].map(function (n) { return '<button class="chip dot' + (n <= v ? ' on' : '') + '" data-v="' + n + '" aria-pressed="' + (n === v) + '" aria-label="' + esc(c.label) + ' ' + n + '">' + n + '</button>'; }).join('') + '</span></div>'; }).join('') +
+      '<div class="capbox"><h3 class="h3">What you have today</h3><p class="small">Rate each one. <b>1 = little</b> (you have not done it yet) \u00b7 <b>2 = some</b> (you have done it once or twice) \u00b7 <b>3 = solid</b> (you do it well and often). Your guidelines give advice for each level.</p>' +
+      (D.capacities || []).map(function (c) { var v = l.cap[c.id] || 0; return '<div class="caprow"><span>' + esc(c.label) + '</span><span class="chips" data-cap="' + c.id + '">' + [1, 2, 3].map(function (n) { return '<button class="chip dot' + (n <= v ? ' on' : '') + '" data-v="' + n + '" aria-pressed="' + (n === v) + '" aria-label="' + esc(c.label) + ' ' + n + '">' + n + '</button>'; }).join('') + '</span></div>'; }).join('') + '</div>' +
       '<h2 class="h2">2 \u00b7 Where you want to be</h2><p class="muted">EU projects should serve your lab\'s plans, not the other way round.</p>' +
       '<label class="f" for="vision">Your lab in 2030, in one sentence</label><input type="text" id="vision" maxlength="160" placeholder="What will you be known for, and for whom?" value="' + esc(l.vision) + '">' +
       '<div class="f lab" style="margin-top:12px">Your role in EU projects by 2030 <span class="muted" style="text-transform:none;letter-spacing:0">(one or more)</span></div><div class="chips" data-group="target">' + (D.targets || []).map(function (t) { return '<button class="chip" data-v="' + t.id + '" aria-pressed="' + (l.targets.indexOf(t.id) > -1) + '">' + esc(t.label) + '</button>'; }).join('') + '</div>' +
-      '<div class="f lab" style="margin-top:12px">What your lab is about (up to 3)</div><p class="muted small">The few things you keep working on, project after project, whatever the funding. Each EU project should feed at least one.</p>' + [0, 1, 2].map(function (k) { return '<input type="text" id="theme' + k + '" maxlength="40" placeholder="' + ['e.g. Repair', 'e.g. Citizen science', 'e.g. Young people and technology'][k] + '" value="' + esc(l.themes[k] || '') + '" style="margin-bottom:8px">'; }).join('') +
       '<div class="row" style="margin-top:18px"><a class="btn blue" href="#/cards">3 \u00b7 Choose your reference projects</a></div><p class="muted" style="margin-top:10px">Background, when you need it: <a href="#/actions">the 2028 map</a> \u00b7 <a href="#/priorities">priorities in plain words</a></p>', 'home');
     ['name', 'country'].forEach(function (k) { document.getElementById(k).addEventListener('input', function (e) { S.lab[k] = e.target.value; save(); }); });
     chipGroup('exp', function (v) { S.lab.exp = S.lab.exp === v ? '' : v; save(); home(); });
     document.getElementById('vision').addEventListener('input', function (e) { S.lab.vision = e.target.value; save(); });
-    [0, 1, 2].forEach(function (k) { document.getElementById('theme' + k).addEventListener('input', function (e) { S.lab.themes[k] = e.target.value; save(); }); });
     chipGroup('needs', function (v, b) { var i = S.lab.needs.indexOf(v); if (i > -1) S.lab.needs.splice(i, 1); else if (S.lab.needs.length < 3) S.lab.needs.push(v); else return; b.setAttribute('aria-pressed', i < 0); save(); });
     chipGroup('target', function (v, b) { var i = S.lab.targets.indexOf(v); if (i > -1) S.lab.targets.splice(i, 1); else S.lab.targets.push(v); b.setAttribute('aria-pressed', i < 0); save(); });
     app.querySelectorAll('[data-cap]').forEach(function (box) { box.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; var c = box.dataset.cap, n = +b.dataset.v; S.lab.cap[c] = S.lab.cap[c] === n ? 0 : n; save(); box.querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', +x.dataset.v <= S.lab.cap[c]); x.setAttribute('aria-pressed', +x.dataset.v === S.lab.cap[c]); }); }); });
@@ -149,7 +147,7 @@
     render(
       '<div class="kicker">Buinho · 2016–2028</div><h1 class="h1">The projects</h1>' +
       '<div class="chips" data-group="src">' + [['buinho', 'Buinho projects'], ['ext', 'Other labs in Europe']].map(function (o) { return '<button class="chip" data-v="' + o[0] + '" aria-pressed="' + (F.src === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</div>' +
-      '<p class="lead">All the projects are here. Star 3 to 5 that look like your next step: they become your reference projects. The ones that fit where you stand come first, with a badge.</p>' + (S.fav.length > MAXFAV ? '<p class="advice">You have ' + S.fav.length + ' starred: keep the 5 that matter most.</p>' : '') +
+      '<p class="lead">All the projects are here. Star up to 5 that look like your next step: they become your reference projects. The ones that fit where you stand come first, with a badge.</p>' + (S.fav.length > MAXFAV ? '<p class="advice">You have ' + S.fav.length + ' starred: keep the 5 that matter most.</p>' : '') +
       '<div class="chips" data-group="dom">' + doms.map(function (d) { return '<button class="chip" data-v="' + esc(d) + '" aria-pressed="' + (F.dom === d) + '">' + esc(d) + '</button>'; }).join('') + '</div>' +
       '<div class="chips" data-group="fam">' + fams.map(function (f) { return '<button class="chip f-' + f + '" data-v="' + f + '" aria-pressed="' + (F.fam === f) + '">' + esc(famLabel(f)) + '</button>'; }).join('') +
       '<button class="chip" data-v="mine" aria-pressed="' + F.mine + '">★ My cards (' + S.fav.length + ' of ' + MAXFAV + ')</button></div>' +
@@ -245,75 +243,48 @@
     if (!mine.length) return '<div class="chips" data-why="' + i + '">' + rest.map(ch).join('') + '</div>';
     return '<div class="chips" data-why="' + i + '">' + mine.map(ch).join('') + '</div><details class="more"><summary>Something else</summary><div class="chips" data-why="' + i + '">' + rest.map(ch).join('') + '</div></details>';
   }
-  function prioHTML(i, st, p) {
-    var o = prioOpts(p), g = '', h = '<div class="qn"><b>3 \u00b7 What will Europe see in it?</b> <span class="muted">Pick a priority. <a href="#/priorities">What are they?</a></span></div><div class="chips" data-prio="' + i + '">';
-    if (p && p.formPrio && p.formPrio.length) h += '<p class="muted small">In the real application of ' + esc(p.name) + ': ' + esc(p.formPrio.join(' \u00b7 ')) + '.' + (p.prio && p.prio.length ? ' Already marked below: keep what fits your step.' : '') + (p.prioWhy ? ' <b>Why:</b> ' + esc(p.prioWhy) : '') + '</p>';
-    o.forEach(function (x) { if (x.group !== g) { if (g) h += '</div><div class="muted small">' + esc(x.group) + '</div><div class="chips" data-prio="' + i + '">'; g = x.group; } h += '<button class="chip" data-v="' + esc(x.id) + '" aria-pressed="' + (st.prio.indexOf(x.id) > -1) + '" title="' + esc(x.name) + '">' + esc(x.short) + '</button>'; });
-    h += '</div>' + (S.lab.domains.length ? '' : '<p class="muted small">Tell the app who you work with (start screen) to see the priorities of your field.</p>');
-    h += '<input type="text" data-how="' + i + '" maxlength="140" placeholder="In one line: who takes part, what you will show" value="' + esc(st.how) + '">';
-    return h;
-  }
   function stepOf(id) { for (var i = 0; i < S.path.length; i++) if (S.path[i].project === id) return i; return -1; }
   function pathView() {
-    var favs = S.fav.map(project).filter(Boolean);
-    var html = '<div class="kicker">' + esc(S.lab.name || 'Your lab') + '</div><h1 class="h1">My path</h1>';
-    if (!favs.length) {
-      render(html + '<div class="empty">Star a few projects first: they are the bricks of your path.<br><br><a class="btn blue" href="#/cards">See the projects</a></div>', 'path'); return;
-    }
-    html += '<p class="lead">Put up to 3 cards in order, then answer 3 short questions for each step.</p>';
-    html += '<div class="slots">';
-    for (var i = 0; i < 3; i++) {
-      var st = S.path[i], p = st && project(st.project);
-      if (p) {
-        var f = pfam(p), pl = ppil(p);
-        html += '<div class="slot"><div class="slot-h"><span class="dot" style="background:' + famColor(f) + ';color:' + famText(f) + '"><b>' + (i + 1) + '</b>' + '' + '</span>' +
-          '<div><b>' + esc(p.name) + '</b><div class="muted">' + esc(famLabel(f)) + (pl ? ' · ' + esc(pl.label) : '') + ' · ' + esc(p.domain) + '</div></div>' +
-          '<button class="x" data-unstep="' + i + '" aria-label="Remove from path">×</button></div><div class="step-b">' +
-          '<div class="dist">' + distance(i).map(function (d) { return '<p>' + esc(d) + '</p>'; }).join('') + '</div>' +
-          '<details class="stepd"' + (!st.when || !st.why.length || !st.prio.length ? ' open' : '') + '><summary>' + (st.when && st.why.length && st.prio.length ? '\u2713 3 questions answered' : 'Answer 3 short questions') + '</summary>' +
-          '<div class="qn"><b>1 \u00b7 When?</b></div><div class="chips" data-when="' + i + '">' + ['2027', '2028', 'Later'].map(function (w) { return '<button class="chip" data-v="' + w + '" aria-pressed="' + (st.when === w) + '">' + w + '</button>'; }).join('') + '</div>' +
-          '<div class="qn"><b>2 \u00b7 Which of your needs does it serve?</b></div>' + whyChips(i, st) +
-          prioHTML(i, st, p) +
-          (S.lab.themes.filter(Boolean).length ? '<div class="qn">Optional \u00b7 which part of what your lab is about does it feed?</div><div class="chips" data-theme="' + i + '">' + S.lab.themes.map(function (t, k) { return t ? '<button class="chip" data-v="' + k + '" aria-pressed="' + (st.themes.indexOf(k) > -1) + '">' + esc(t) + '</button>' : ''; }).join('') + '</div>' : '') +
-          '</details>' +
-          (i > 0 ? '<button class="mini" data-up="' + i + '">↑ Move up</button>' : '') + '</div></div>';
-      } else {
-        html += '<div class="slot empty-slot"><span class="dot ghost"><b>' + (i + 1) + '</b></span><span class="muted">Reference project ' + (i + 1) + ': pick a card below</span></div>';
-      }
-    }
-    html += '</div><h2 class="h2">My shortlist <span class="muted" style="font-size:16px">(' + S.fav.length + ' of ' + MAXFAV + ')</span></h2><p class="muted small">Put up to 3 in your path. To change one, take it out or swap it with another.</p><div class="mycards">' + favs.map(function (p) {
-      var k = stepOf(p.id), f = pfam(p), act;
-      if (k > -1) act = '<span class="inpath">Reference ' + (k + 1) + '</span><button class="mini" data-unstep="' + k + '">Take out</button>';
-      else if (S.path.length < 3) act = '<button class="btn" data-addstep="' + esc(p.id) + '" style="min-height:40px;padding:0 12px">+ Reference ' + (S.path.length + 1) + '</button>';
-      else act = '<span class="muted small">Swap with</span>' + S.path.map(function (x, n) { return '<button class="mini" data-swap="' + n + '" data-pid="' + esc(p.id) + '">' + (n + 1) + '</button>'; }).join('');
-      return '<div class="mc"><span class="bar" style="background:' + famColor(f) + '"></span><div class="mc-t"><b>' + esc(p.name) + '</b><span class="muted">' + esc(famLabel(f)) + ' \u00b7 ' + esc(p.domain) + '</span></div><span class="mc-a">' + act + '<button class="mini" data-unfav="' + esc(p.id) + '" aria-label="Remove from shortlist">\u2606 Remove</button></span></div>';
-    }).join('') + '</div>' + (S.fav.length < MAXFAV ? '<p class="muted" style="margin-top:8px"><a href="#/cards">Star more projects</a></p>' : '');
-    html += '<h2 class="h2">Ask the experts in the room</h2><div class="advice small"><b>Who:</b> Carlos (Buinho) and the colleagues at the clinic who already run and coordinate EU projects.<br><b>What:</b> what you need to know to take your next step, about your own lab and your reference projects.<br><b>How:</b> write it here, ask them during the clinic, and note what they said. It goes into your guidelines.</div>' +
-      '<div class="stack">' + S.questions.map(function (q, i) { var an = answerFor(q); return '<div class="qcard"><div class="q"><span>' + esc(q) + '<span class="qa">' + (an.length ? '\u2192 Your guide answers part of it: ' + esc(an.map(function (a) { return a.topic; }).join(' \u00b7 ')) : '\u2192 Ask Carlos or an experienced colleague') + '</span></span><button aria-label="Remove question" data-dq="' + i + '">\u00d7</button></div>' +
-        '<input type="text" data-told="' + i + '" maxlength="300" placeholder="What they told you, and who (e.g. Carlos)" value="' + esc(S.told[q] || '') + '"></div>'; }).join('') + '</div>' +
-      '<label class="f" for="nq">Your question</label><textarea id="nq" maxlength="300"></textarea>' +
-      '<div class="row" style="margin-top:10px"><button class="btn" id="addq">Add</button></div>' +
-      (D.questionPrompts && D.questionPrompts.length ? '<p class="muted" style="margin-top:14px">Questions newcomers often ask the experts (tap to add):</p><div class="chips" data-group="qp">' + D.questionPrompts.map(function (q) { return '<button class="chip" data-v="' + esc(q) + '">' + esc(q) + '</button>'; }).join('') + '</div>' : '') +
-      '<hr><a class="btn blue" href="#/road">4 \u00b7 My roadmap</a>';
+    syncPath();
+    var html = '<div class="kicker">' + esc(S.lab.name || 'Your lab') + '</div><h1 class="h1">My path</h1>' +
+      '<p class="lead">Your reference projects (up to ' + MAXFAV + '). Three short questions for each: your answers shape your guidelines.</p>';
+    if (!S.path.length) html += '<div class="empty">No reference projects yet. <a href="#/cards">Star up to ' + MAXFAV + ' projects first.</a></div>';
+    html += '<div class="stack">' + S.path.map(function (st, i) {
+      var p = project(st.project); if (!p) return ''; var f = pfam(p), a = action(p.action);
+      return '<div class="slot"><div class="step-h" style="border-left:6px solid ' + famColor(f) + ';padding-left:10px"><div class="muted small">Reference project ' + (i + 1) + ' · ' + esc(famLabel(f)) + (a ? ' · ' + esc(a.short) : '') + '</div><b style="font-size:18px"><a href="#/p/' + esc(p.id) + '">' + esc(p.name) + '</a></b>' +
+        '<div><button class="mini" data-unfav="' + esc(p.id) + '">☆ Remove</button></div></div>' +
+        '<div class="qn"><b>1 · When would you like to do something like this?</b></div><div class="chips" data-when="' + i + '">' + ['2027', '2028', 'Later'].map(function (w) { return '<button class="chip" data-v="' + w + '" aria-pressed="' + (st.when === w) + '">' + w + '</button>'; }).join('') + '</div>' +
+        '<div class="qn"><b>2 · Which of your needs would it serve?</b></div>' + whyChips(i, st) +
+        '<div class="qn"><b>3 · What are your doubts about a project like this?</b> <span class="muted small">Your guidelines answer them.</span></div><div class="chips" data-doubt="' + i + '">' + (D.doubtAspects || []).map(function (d) { return '<button class="chip" data-v="' + d.id + '" aria-pressed="' + (st.doubts.indexOf(d.id) > -1) + '">' + esc(d.label) + '</button>'; }).join('') + '</div>' +
+        '<input type="text" data-dq="' + i + '" maxlength="200" placeholder="Or write your own question about it (optional)" value="' + esc(st.q) + '">' +
+        '</div>';
+    }).join('') + '</div>';
+    html += '<h2 class="h2">Other questions</h2><p class="muted">Anything else you want to know about EU funding. Your guidelines answer from our experience.</p>' +
+      '<div class="stack">' + S.questions.map(function (q, i) { return '<div class="qcard"><div class="q"><span>' + esc(q) + '</span><button aria-label="Remove question" data-rq="' + i + '">×</button></div></div>'; }).join('') + '</div>' +
+      '<label class="f" for="nq">Your question</label><textarea id="nq" maxlength="300"></textarea><div class="row" style="margin-top:8px"><button class="btn" id="addq">Add</button></div>' +
+      (D.questionPrompts && D.questionPrompts.length ? '<p class="muted" style="margin-top:14px">Questions newcomers often ask (tap to add):</p><div class="chips" data-group="qp">' + D.questionPrompts.map(function (q) { return '<button class="chip" data-v="' + esc(q) + '">' + esc(q) + '</button>'; }).join('') + '</div>' : '') +
+      '<hr><a class="btn blue" href="#/road">4 · My roadmap</a>';
     render(html, 'path', true);
-    app.querySelectorAll('[data-addstep]').forEach(function (b) { b.addEventListener('click', function () { var pp = project(b.dataset.addstep); S.path.push({ project: b.dataset.addstep, why: [], when: '', themes: [], prio: (pp && pp.prio ? pp.prio.slice() : []), how: '', peer: '' }); save(); pathView(); }); });
-    app.querySelectorAll('[data-unstep]').forEach(function (b) { b.addEventListener('click', function () { var u = +b.dataset.unstep; S.path.splice(u, 1); S.road.ms.forEach(function (m) { m.steps = m.steps.filter(function (x) { return x !== u; }).map(function (x) { return x > u ? x - 1 : x; }); }); S.road.ready = {}; save(); pathView(); }); });
-    app.querySelectorAll('[data-swap]').forEach(function (b) { b.addEventListener('click', function () { var n = +b.dataset.swap, st = S.path[n]; st.project = b.dataset.pid; var pp = project(st.project); st.prio = pp && pp.prio ? pp.prio.slice() : []; st.why = []; st.how = ''; st.themes = []; delete S.road.ready[n]; save(); pathView(); }); });
-    app.querySelectorAll('[data-unfav]').forEach(function (b) { b.addEventListener('click', function () { var id = b.dataset.unfav, k = stepOf(id); if (k > -1) { S.road.ms.forEach(function (m) { m.steps = m.steps.filter(function (x) { return x !== k; }).map(function (x) { return x > k ? x - 1 : x; }); }); S.road.ready = {}; } toggleFav(id); pathView(); }); });
-    app.querySelectorAll('[data-up]').forEach(function (b) { b.addEventListener('click', function () { var i = +b.dataset.up, t = S.path[i - 1]; S.path[i - 1] = S.path[i]; S.path[i] = t; S.road.ms.forEach(function (m) { m.steps = m.steps.map(function (x) { return x === i ? i - 1 : x === i - 1 ? i : x; }); }); var r0 = S.road.ready[i - 1]; S.road.ready[i - 1] = S.road.ready[i]; S.road.ready[i] = r0; save(); pathView(); }); });
-    app.querySelectorAll('[data-why]').forEach(function (box) { box.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; var st = S.path[+box.dataset.why], v = b.dataset.v, k = st.why.indexOf(v); if (k > -1) st.why.splice(k, 1); else st.why.push(v); b.setAttribute('aria-pressed', k < 0); save(); }); });
-    app.querySelectorAll('[data-theme]').forEach(function (box) { box.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; var st = S.path[+box.dataset.theme], v = +b.dataset.v, k = st.themes.indexOf(v); if (k > -1) st.themes.splice(k, 1); else st.themes.push(v); b.setAttribute('aria-pressed', k < 0); save(); }); });
-    app.querySelectorAll('[data-prio]').forEach(function (box) { box.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; var st = S.path[+box.dataset.prio]; st.prioSet = true; var v = b.dataset.v, k = st.prio.indexOf(v); if (k > -1) st.prio.splice(k, 1); else st.prio.push(v); b.setAttribute('aria-pressed', k < 0); save(); }); });
-    app.querySelectorAll('[data-how]').forEach(function (el) { el.addEventListener('input', function () { S.path[+el.dataset.how].how = el.value; save(); }); });
-    app.querySelectorAll('[data-when]').forEach(function (box) { box.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; var st = S.path[+box.dataset.when]; st.when = st.when === b.dataset.v ? '' : b.dataset.v; box.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', x.dataset.v === st.when); }); save(); }); });
-    app.querySelectorAll('[data-told]').forEach(function (el) { el.addEventListener('input', function () { var q = S.questions[+el.dataset.told]; if (el.value.trim()) S.told[q] = el.value; else delete S.told[q]; save(); }); });
-    app.querySelectorAll('[data-dq]').forEach(function (b) { b.addEventListener('click', function () { delete S.told[S.questions[+b.dataset.dq]]; S.questions.splice(+b.dataset.dq, 1); save(); pathView(); }); });
+    function bindChips(sel, fn) { app.querySelectorAll(sel).forEach(function (box) { box.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; fn(box, b); save(); }); }); }
+    bindChips('[data-when]', function (box, b) { var st = S.path[+box.dataset.when]; st.when = st.when === b.dataset.v ? '' : b.dataset.v; box.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', x.dataset.v === st.when); }); });
+    bindChips('[data-why]', function (box, b) { var st = S.path[+box.dataset.why], v = b.dataset.v, k = st.why.indexOf(v); if (k > -1) st.why.splice(k, 1); else st.why.push(v); b.setAttribute('aria-pressed', k < 0); });
+    bindChips('[data-doubt]', function (box, b) { var st = S.path[+box.dataset.doubt], v = b.dataset.v, k = st.doubts.indexOf(v); if (k > -1) st.doubts.splice(k, 1); else st.doubts.push(v); b.setAttribute('aria-pressed', k < 0); });
+    app.querySelectorAll('[data-dq]').forEach(function (el) { el.addEventListener('input', function () { S.path[+el.dataset.dq].q = el.value; save(); }); });
+    app.querySelectorAll('[data-unfav]').forEach(function (b) { b.addEventListener('click', function () { toggleFav(b.dataset.unfav); pathView(); }); });
+    app.querySelectorAll('[data-rq]').forEach(function (b) { b.addEventListener('click', function () { S.questions.splice(+b.dataset.rq, 1); save(); pathView(); }); });
     document.getElementById('addq').addEventListener('click', function () { var t = document.getElementById('nq').value.trim(); if (t) { S.questions.push(t); save(); pathView(); } });
     chipGroup('qp', function (v) { if (S.questions.indexOf(v) < 0) { S.questions.push(v); save(); pathView(); } });
   }
 
   /* ---------- guide / PDF ---------- */
-  function steps() { return S.path.filter(function (s) { return project(s.project); }); }
+  function steps() { syncPath(); return S.path.filter(function (s) { return project(s.project); }); }
+  function syncPath() {
+    if (S.fav.length > MAXFAV) S.fav = S.fav.slice(0, MAXFAV);
+    var old = {}, changed = false; S.path.forEach(function (s) { old[s.project] = s; });
+    var np = S.fav.filter(function (id) { return project(id); }).map(function (id) { var s = old[id] || { project: id, when: '', why: [] }; if (!s.doubts) s.doubts = []; if (s.q == null) s.q = ''; if (!s.why) s.why = []; return s; });
+    if (np.map(function (s) { return s.project; }).join() !== S.path.map(function (s) { return s.project; }).join()) { changed = true; (S.road.ms || []).forEach(function (m) { m.manual = false; }); }
+    S.path = np; if (changed) save();
+  }
   function whyLabels(ids) { return (ids || []).map(function (id) { var w = byId(D.whys || [], id); return w ? w.label : id; }); }
   /* ---------- answers to the lab's own questions ---------- */
   function norm(t) { return String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9,\s-]/g, ' ').replace(/\s+/g, ' '); }
@@ -329,6 +300,7 @@
     });
     scored.sort(function (x, y) { return y[0] - x[0]; });
     var res = scored.map(function (x) { return x[1]; });
+    if (/advance|adiant|adelant|prefinanc|pre-financ|cash|when .*pa(y|id)|quando pag|cuando pag|tesour|tesor/.test(t)) { var mA = byId(D.answers, 'money'); res = [mA].concat(res.filter(function (a) { return a !== mA; })); return res.slice(0, 2); }
     if (/\b(money|grant|budget|euro|euros|fund|funding|pay|paid|receive|cost|costs|how much|dinheiro|dinero|quanto|cuanto|argent|soldi|financ)/.test(t)) {
       var acts = []; ACT_WORDS.forEach(function (w) { if (w[0].test(t) && acts.indexOf(w[1]) < 0) acts.push(w[1]); });
       if (!acts.length) steps().forEach(function (s) { var p = project(s.project); if (p && acts.indexOf(p.action) < 0) acts.push(p.action); });
@@ -377,22 +349,17 @@
   }
 
   function guide() {
-    var st = steps(), R = readings();
+    var st = steps();
     render(
       '<div class="kicker">Your take-away</div><h1 class="h1">My guidelines</h1>' +
-      '<p class="lead">Made from your choices. It is not a summary of today: it is a map to come back to when you prepare your next applications.</p>' +
-      (st.length ? '<div class="stack">' + st.map(function (s, i) { var p = project(s.project), f = pfam(p); return '<div class="aitem"><span class="sw fam-' + f + '">' + (i + 1) + '</span><span class="tx"><b>' + esc(p.name) + '</b><span>' + esc(famLabel(f) + (s.when ? ' · ' + s.when : '') + (s.why.length ? ' · ' + whyLabels(s.why).join(', ') : '')) + '</span></span></div>'; }).join('') + '</div>'
-        : '<div class="empty">No path yet. <a href="#/path">Put your starred cards in order first.</a></div>') +
-      (S.questions.length ? '<h2 class="h2">Your questions, answered</h2><div class="stack">' + S.questions.map(function (q) { var an = answerFor(q); return '<div class="qcard"><div class="q"><span>' + esc(q) + '</span></div>' + (S.told[q] ? '<div class="ans"><div class="lab">What the experts told you</div><p>' + esc(S.told[q]) + '</p></div>' : '') + (an.length ? an.map(function (a) { var pl = pathLink(a); return '<div class="ans"><div class="lab">' + esc(a.topic) + '</div><p>' + esc(a.a) + '</p>' + (a.lines ? ul(a.lines) : '') + (a.next ? '<p class="muted">' + esc(a.next) + '</p>' : '') + (pl ? '<p><b>' + esc(pl) + '</b></p>' : '') + '<p>' + a.links.map(function (l) { return link(l.url, l.label); }).join(' · ') + '</p></div>'; }).join('') : '<div class="ans"><p>No ready answer in this guide. Take it to the next clinics, or ask your National Agency or Creative Desk (links in your PDF). That is exactly what the clinics are for.</p></div>') + '</div>'; }).join('') + '</div>' : '') +
-      (st.length ? '<h2 class="h2">Priorities your path answers</h2><div class="stack">' + st.map(function (s, i) { var pr = prioList(s); return '<div class="advice"><b>Reference project ' + (i + 1) + ':</b> ' + (pr.length ? esc(pr.join(' \u00b7 ')) + (s.how ? '<br><span class="muted">' + esc(s.how) + '</span>' : '') : '<span class="muted">No priority chosen yet. <a href="#/path">Which one would an expert see in it?</a></span>') + '</div>'; }).join('') + '</div>' : '') +
-      (R.length ? '<h2 class="h2">What your path says</h2><div class="stack">' + R.map(function (t) { return '<div class="advice">' + esc(t) + '</div>'; }).join('') + '</div>' : '') +
-      ((D.strategy && D.strategy.references) ? '<h2 class="h2">Official references</h2><p class="muted">The documents and tools behind this guide. Always read the current version.</p>' + D.strategy.references.map(function (g) { return '<h3 class="h3">' + esc(g.group) + '</h3><ul class="links">' + g.items.map(function (l) { return '<li><a href="' + esc(l.url) + '" target="_blank" rel="noopener">' + esc(l.label) + '</a></li>'; }).join('') + '</ul>'; }).join('') : '') +
-      '<p class="muted" style="margin-top:14px">' + S.fav.length + ' starred card(s) · ' + S.questions.length + ' question(s)</p>' +
-      '<div class="row" style="margin-top:16px"><button class="btn blue" id="pdf"' + (st.length ? '' : ' disabled') + '>Download my guidelines (PDF)</button></div>' +
-      '<p class="muted" id="pdfmsg" role="status"></p>' +
+      (st.length ? '<p class="lead">Your guidelines are made on this phone from what you entered: a PDF of about ten pages to keep and come back to when you prepare your next applications.</p>' +
+        '<div class="advice"><b>Inside:</b> what your position means · your roadmap · your guidelines · your ' + st.length + ' reference project' + (st.length > 1 ? 's' : '') + ' and the answers to your doubts · your year of deadlines · a checklist from our experience.</div>' +
+        '<div class="row" style="margin-top:16px"><button class="btn blue" id="pdf">Download my guidelines (PDF)</button></div><p class="muted" id="pdfmsg" role="status"></p>' +
+        '<h2 class="h2">Next steps</h2>' + ul(['Read the guidelines with your team, and decide your first move for 2027.', 'Check the dates of the 2027 calls when they are published (links in the PDF).', 'Talk to the people you met here: partners start from people you already know.'])
+        : '<div class="empty">Your guidelines need at least one reference project. <a href="#/cards">Choose your reference projects first.</a></div>') +
       '<hr><button class="btn ghost" id="reset">Start again</button>', 'guide');
-    document.getElementById('pdf').addEventListener('click', makePDF);
-    document.getElementById('reset').addEventListener('click', function () { if (window.confirm('Clear your cards, path and questions on this phone?')) { S = blank(); save(); home(); } });
+    var pb = document.getElementById('pdf'); if (pb) pb.addEventListener('click', makePDF);
+    document.getElementById('reset').addEventListener('click', function () { if (window.confirm('Clear everything you entered on this phone?')) { S = blank(); save(); home(); } });
   }
 
   var FONT_R = 'https://cdn.jsdelivr.net/npm/@expo-google-fonts/asap@0.4.3/400Regular/Asap_400Regular.ttf';
@@ -460,278 +427,143 @@
     }
 
     var st = steps(), ps = st.map(function (s) { return project(s.project); });
-
-    /* ===== 1. cover with path diagram ===== */
-    fill(BLUE); doc.rect(0, 0, W, H, 'F');
-    if (fonts && fonts[2]) { try { doc.addImage('data:image/png;base64,' + fonts[2], 'PNG', W - M - 44, 14, 44, 11); } catch (e) {} }
-    color('#ffffff'); font(true, 9); doc.text('EU FUNDING POLICY CLINIC · VULCA SEMINAR 2026 · CUENCA', M, 20);
-    font(true, 40); doc.text('Your lab\'s', M, 62); doc.text('road to 2028', M, 78);
-    font(false, 14); doc.text(doc.splitTextToSize((S.lab.name || 'Your lab') + (S.lab.country ? ' · ' + S.lab.country : '') + '', CW), M, 96);
-    font(false, 10); doc.text(new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }), M, 104);
-    if (S.lab.vision) { font(true, 12); doc.text(doc.splitTextToSize('\u201c' + S.lab.vision + '\u201d', CW), M, 118); }
-    if (S.lab.targets.length) { font(false, 10.5); doc.text(doc.splitTextToSize('By 2030: ' + targetsTxt(), CW), M, 136); }
-    /* path diagram */
-    var n = Math.max(st.length, 1), gx0 = M + 14, gx1 = W - M - 14, gy = 168, stepW = n > 1 ? (gx1 - gx0) / (n - 1) : 0;
-    doc.setLineWidth(1.2); stroke('#ffffff');
-    if (n > 1) doc.line(gx0, gy, gx1, gy);
-    st.forEach(function (s, i) {
-      var p = ps[i], f = pfam(p), pl = ppil(p), cx = n > 1 ? gx0 + i * stepW : (gx0 + gx1) / 2;
-      fill('#ffffff'); doc.circle(cx, gy, 13, 'F'); fill(famColor(f)); doc.circle(cx, gy, 11, 'F');
-      color(famText(f)); font(true, 18); doc.text(String(i + 1), cx, gy + 2.4, { align: 'center' });
-      color('#ffffff'); font(true, 12); doc.text(doc.splitTextToSize(famLabel(f), 52), cx, gy + 22, { align: 'center' });
-      font(false, 9.5); doc.text(doc.splitTextToSize('like ' + p.name, 52), cx, gy + 28, { align: 'center' });
-      font(false, 8.5); doc.text(doc.splitTextToSize((pl ? pl.label : '') + (s.when ? ' · ' + s.when : ''), 52), cx, gy + 38, { align: 'center' });
-    });
-    font(false, 10.5); color('#ffffff');
-    doc.text(doc.splitTextToSize('This guide reads the path you sketched during the clinic against eleven years of Buinho\'s European projects. It is a starting point, not a recommendation: rules and amounts refer to the 2021–2027 programmes, and what comes after 2027 is still a proposal.', CW), M, 232);
-    footer();
-
-    /* ===== R. your roadmap ===== */
     roadInit(); S.road.ms.forEach(function (m) { if (!m.manual) autoBuild(m); });
-    var RM = S.road, GC = st.map(function (s, i) { return goCheck(i); });
-    doc.addPage(); page++; band(BLUE, 'Your roadmap', 'From where you stand to your 2030', 'What your lab must build, by when, and what builds it');
-    box('Where you want to be', [(S.lab.vision ? '\u201c' + S.lab.vision + '\u201d' : 'No 2030 sentence yet: what will your lab be known for, and for whom?')].concat(S.lab.targets.length ? ['Your role by 2030: ' + targetsTxt()] : []), { rule: INK, bg: WALL, size: 11 });
-    label('Where you stand today');
-    var capList = D.capacities || [], cw2 = CW / 2;
-    capList.forEach(function (c, k) { var cx = M + (k % 2) * cw2, cy = y + Math.floor(k / 2) * 7, v = S.lab.cap[c.id] || 0; font(false, 8.5); color(INK); doc.text(c.label, cx, cy); for (var n = 1; n <= 3; n++) { if (n <= v) { fill(BLUE); doc.circle(cx + cw2 - 20 + n * 4.5, cy - 1.2, 1.5, 'F'); } else { stroke(G2); doc.setLineWidth(0.4); doc.circle(cx + cw2 - 20 + n * 4.5, cy - 1.2, 1.5, 'S'); } } });
-    y += 24;
-    /* timeline grid */
-    var COLS = ['2027', '2028', '2029\u20132034'], gx = M + 44, gw = (CW - 44) / 3, colOf = function (w) { return w === '2027' || !w ? 0 : w === '2028' ? 1 : 2; };
-    need(40); font(true, 8.5); color(INK); COLS.forEach(function (c, j) { fill(j === 1 ? '#eef3ff' : WALL); doc.rect(gx + j * gw, y - 4, gw - 2, 6, 'F'); color(INK); doc.text(c, gx + j * gw + 2, y); });
-    font(false, 6.8); color(G5); doc.text(['last calls under today\u2019s rules', 'new Erasmus+ with the Solidarity Corps', 'the new programmes run'][0], gx + 2, y + 4.5); doc.text('new Erasmus+ with the Solidarity Corps', gx + gw + 2, y + 4.5); doc.text('the new programmes run', gx + 2 * gw + 2, y + 4.5); y += 11;
-    function disc(cx, cy, i, r) { var f = pfam(ps[i]); fill(famColor(f)); doc.circle(cx, cy, r, 'F'); color(famText(f)); font(true, r > 3 ? 9 : 7); doc.text(String(i + 1), cx, cy + (r > 3 ? 1.2 : 0.9), { align: 'center' }); }
+    var RM = S.road, GC = st.map(function (s, i) { return goCheck(i); }), CAPS = D.capacities || [], CA = D.capAdvice || {};
+    function capLevel(id) { return S.lab.cap[id] || 0; }
+    function dots(x, yy, v, r) { for (var n = 1; n <= 3; n++) { var cx = x + (n - 1) * (r * 2 + 1.6); if (n <= v) { fill(BLUE); doc.circle(cx, yy, r, 'F'); } else { stroke(G2); doc.setLineWidth(0.4); doc.circle(cx, yy, r, 'S'); } } }
+    function pname(i) { return ps[i].name; }
+    function rule(n, head, why, col) { var L1 = lines(head, 11, true, CW - 12), L2 = why ? lines(why, 9.5, false, CW - 12) : []; need(L1.length * lh(11) + L2.length * lh(9.5) + 6); fill(col || BLUE); doc.circle(M + 3.5, y - 1.3, 3.5, 'F'); color('#ffffff'); font(true, 9); doc.text(String(n), M + 3.5, y + 0.1, { align: 'center' }); font(true, 11); color(INK); L1.forEach(function (ln) { doc.text(ln, M + 11, y); y += lh(11); }); y += 0.6; font(false, 9.5); color(G5); L2.forEach(function (ln) { doc.text(ln, M + 11, y); y += lh(9.5); }); y += 4.5; }
+    function trim(t, n) { t = String(t || ''); if (t.length <= n) return t; var c = t.slice(0, n), k = c.lastIndexOf('. '); return (k > n * 0.5 ? c.slice(0, k + 1) : c.replace(/\s+\S*$/, '') + '\u2026'); }
+    function ansText(a) { return trim([a.a].concat((a.lines || []).slice(0, 2)).join(' '), 420); }
+    function ansShort(id) { var a = byId(D.answers || [], id); return a ? a : null; }
+    function doubtAnswers(p, d) {
+      var out = [], add = function (id) { var a = ansShort(id); if (a) out.push(trim(a.a, 420)); };
+      if (d === 'partners') { add('coordinator'); add('partnersnum'); }
+      else if (d === 'role') add('rolechoice');
+      else if (d === 'money') { var mo = (D.money || {})[p.action]; if (mo) out.push(mo.model + ' ' + mo.lines.slice(0, 2).join(' ')); if (p.action === 'ka220' || p.action === 'crea') add('fincap'); }
+      else if (d === 'rules') { if (REQ[p.action]) out.push('What it asks for: ' + REQ[p.action]); add('eligible'); }
+      else if (d === 'priorities') { add('priorities'); if (p.formPrio && p.formPrio.length) out.push('In its application: ' + p.formPrio.join(' \u00b7 ') + (p.prioWhy ? ' Why: ' + p.prioWhy : '')); }
+      else if (d === 'writing') { add('criteria'); add('time'); }
+      else if (d === 'deadlines') { var ev = ((D.strategy || {}).calendar || {})[p.action] || []; if (ev.length) out.push('In the 2026 calls: ' + ev.map(function (e) { return e.l + ' (' + ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][e.m - 1] + ')'; }).join('; ') + '. Check the 2027 call when it is published.'); add('deadlines'); }
+      else if (d === 'after') { add('after2027'); if (p.action === 'youth' || p.action === 'esc') add('youth2028'); }
+      return out;
+    }
+
+    /* ===== cover ===== */
+    fill(BLUE); doc.rect(0, 0, W, 150, 'F'); color('#ffffff');
+    font(true, 9); doc.text('ROAD TO 2028 · EU FUNDING CLINIC · VULCA 2026, CUENCA', M, 24);
+    font(true, 30); doc.text(doc.splitTextToSize('Guidelines for ' + (S.lab.name || 'your lab'), CW), M, 52);
+    font(false, 12); var cy = 86; if (S.lab.country) { doc.text(S.lab.country, M, cy); cy += 8; }
+    if (S.lab.vision) { font(true, 13); var VL = doc.splitTextToSize('“' + S.lab.vision + '”', CW); doc.text(VL, M, cy + 6); cy += 8 + VL.length * 6; }
+    if (S.lab.targets.length) { font(false, 11); doc.text(doc.splitTextToSize('By 2030: ' + targetsTxt(), CW), M, cy + 6); }
+    font(false, 9); doc.text(new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }), M, 140);
+    y = 166; label('Inside');
+    ['1 · Where you stand, and what it means', '2 · Your roadmap to 2030', '3 · Your guidelines', '4 · Your reference projects, and the answers to your doubts', (S.questions.length ? '5 · Your questions, answered' : null), 'Your year of deadlines, with links to the calls', 'Before you apply: a checklist from our experience'].filter(Boolean).forEach(function (t) { text(t, 11.5, false, INK, 1.5); });
+    y += 4; text('Made with the Road to 2028 app by Buinho Creative Hub (Messejana, Portugal), from what you entered. Rules and amounts are those of the 2026 calls: always check the current call.', 9, false, G5, 2);
+
+    /* ===== 1. where you stand ===== */
+    newPage(); y = 0; band(BLUE, '1 · Where you stand', 'What your position means', 'Your answers on the start screen, read with our experience');
+    var EN = (D.expNotes || {})[S.lab.exp]; if (EN) box('Your experience with EU projects', EN, { rule: INK, bg: WALL, size: 10 });
+    label('What you have today, and what to do about it');
+    CAPS.forEach(function (c) {
+      var v = capLevel(c.id), adv = v ? (CA[c.id] || [])[v - 1] : 'Not rated on the start screen.', L = lines(adv, 9.5, false, CW - 58);
+      var CL = lines(c.label, 9.5, true, 50), dy = CL.length * lh(9.5) + 1.5; need(Math.max(L.length * lh(9.5), dy + 4) + 5); font(true, 9.5); color(INK); doc.text(CL, M, y); dots(M + 2, y + dy, v, 1.6); font(false, 8); color(G5); doc.text(v ? ['', 'little', 'some', 'solid'][v] : '', M + 14, y + dy + 0.9);
+      font(false, 9.5); color(INK); L.forEach(function (ln, k) { doc.text(ln, M + 58, y + k * lh(9.5)); }); y += Math.max(L.length * lh(9.5), dy + 4) + 3; stroke(G2); doc.setLineWidth(0.2); doc.line(M, y - 2, M + CW, y - 2); y += 2;
+    });
+    if (S.lab.needs.length) {
+      y += 2; label('What you need most, and which reference project serves it');
+      S.lab.needs.forEach(function (n) { var w = byId(D.whys || [], n), by = st.map(function (s, i) { return s.why.indexOf(n) > -1 ? pname(i) : null; }).filter(Boolean); text((w ? w.label : n) + ': ' + (by.length ? by.join(', ') : 'none of your reference projects yet. Look for a project that does, or a resource outside the EU.'), 10, false, by.length ? INK : RED, 1.5); });
+    }
+
+    /* ===== 2. roadmap ===== */
+    newPage(); y = 0; band(BLUE, '2 · Your roadmap', 'From where you stand to your 2030', 'What your lab must build, by when, and what builds it');
+    if (S.lab.vision) box('Where you want to be', ['“' + S.lab.vision + '”'].concat(S.lab.targets.length ? ['Your role by 2030: ' + targetsTxt()] : []), { rule: INK, bg: WALL, size: 10.5 });
+    var gx = M + 44, gw = (CW - 44) / 3, colOf = function (w) { return w === '2027' || !w ? 0 : w === '2028' ? 1 : 2; };
+    need(40); font(true, 8.5); ['2027', '2028', '2029–2034'].forEach(function (c, j) { fill(j === 1 ? '#eef3ff' : WALL); doc.rect(gx + j * gw, y - 4, gw - 2, 6, 'F'); color(INK); doc.text(c, gx + j * gw + 2, y); });
+    font(false, 6.8); color(G5); ['last calls under today’s rules', 'new Erasmus+ with the Solidarity Corps', 'the new programmes run'].forEach(function (t, j) { doc.text(t, gx + j * gw + 2, y + 4.5); }); y += 11;
+    function disc(cx, cy2, i, r) { var f = pfam(ps[i]); fill(famColor(f)); doc.circle(cx, cy2, r, 'F'); color(famText(f)); font(true, r > 3 ? 9 : 7); doc.text(String(i + 1), cx, cy2 + (r > 3 ? 1.2 : 0.9), { align: 'center' }); }
     font(true, 8.5); color(INK); doc.text('Reference projects', M, y + 1);
-    var used = [0, 0, 0]; st.forEach(function (s, i) { var j = colOf(s.when), cx = gx + j * gw + 6 + used[j] * 22; used[j]++; disc(cx, y, i, 4); font(true, 7); color(G5); doc.text(GC[i].todo.length ? 'build first' : 'ready', cx + 5.5, y + 1.2); });
-    y += 6; font(false, 7.5); color(G5); doc.text(doc.splitTextToSize(st.map(function (s, i) { return (i + 1) + ' = ' + ps[i].name; }).join('   \u00b7   '), CW)[0] || '', M, y); y += 8;
+    var used = [0, 0, 0]; st.forEach(function (s, i) { var j = colOf(s.when), cx = gx + j * gw + 5 + used[j] * 10; used[j]++; if (s.when) disc(cx, y, i, 3.6); else { stroke(G5); doc.setLineWidth(0.4); doc.setLineDashPattern([0.8, 0.8], 0); doc.circle(cx, y, 3.6, 'S'); doc.setLineDashPattern([], 0); color(G5); font(true, 9); doc.text(String(i + 1), cx, y + 1.2, { align: 'center' }); } });
+    y += 7; font(false, 7.5); color(G5); doc.splitTextToSize(st.map(function (s, i) { return (i + 1) + ' = ' + pname(i) + (s.when ? '' : ' (no date yet, dashed)'); }).join('   ·   '), CW).forEach(function (ln) { doc.text(ln, M, y); y += 3.4; }); y += 5;
     RM.ms.forEach(function (m) {
-      need(22); stroke(G2); doc.setLineWidth(0.2); doc.line(M, y - 6, M + CW, y - 6);
-      font(true, 8.5); color(INK); doc.text(doc.splitTextToSize(capLabel(m.cap), 40), M, y); font(false, 7.5); color(G5); doc.text('today ' + (S.lab.cap[m.cap] ? LV[S.lab.cap[m.cap]] : '?') + ' \u2192 ' + LV[m.to], M, y + 8);
-      var j = colOf(m.by === '2030' ? 'Later' : m.by), bx = gx + j * gw, txt = doc.splitTextToSize(m.proof || 'How will you know?', gw - 6).slice(0, 3);
-      fill(m.proof ? '#ffffff' : '#fff1f1'); stroke(INK); doc.setLineWidth(0.4); doc.rect(bx, y - 3.5, gw - 2, 4 + txt.length * 3.4, 'FD'); font(false, 7.5); color(INK); txt.forEach(function (ln, k) { doc.text(ln, bx + 2, y + k * 3.4); });
+      need(24); stroke(G2); doc.setLineWidth(0.2); doc.line(M, y - 6, M + CW, y - 6);
+      font(true, 8.5); color(INK); doc.text(doc.splitTextToSize(capLabel(m.cap), 40), M, y); font(false, 7.5); color(G5); doc.text('today ' + (capLevel(m.cap) ? LV[capLevel(m.cap)] : '?') + ' → ' + LV[m.to], M, y + 8);
+      var j = colOf(m.by === '2030' ? 'Later' : m.by), bx = gx + j * gw, txt = doc.splitTextToSize(m.proof || 'Not defined yet: how will you know you got there?', gw - 6).slice(0, 3);
+      fill(m.proof ? '#ffffff' : WALL); stroke(m.proof ? INK : G2); doc.setLineWidth(0.4); doc.rect(bx, y - 3.5, gw - 2, 4 + txt.length * 3.4, 'FD'); font(false, 7.5); color(m.proof ? INK : G5); txt.forEach(function (ln, k) { doc.text(ln, bx + 2, y + k * 3.4); });
       if (m.by) { font(true, 6.5); color(G5); doc.text('by ' + m.by, bx + gw - 3, y - 4.5, { align: 'right' }); }
-      var by = m.steps.filter(function (i) { return st[i]; }).map(function (i) { return 'Reference ' + (i + 1); }).concat(m.other.map(otherLabel)); font(false, 7); color(by.length ? G5 : RED); doc.text(doc.splitTextToSize('Built by: ' + (by.length ? by.join(' \u00b7 ') : 'nothing yet'), gw * 3 - 4)[0], gx, y + 6 + txt.length * 3.4);
-      y += 19;
+      var ixb = m.steps.filter(function (i) { return st[i]; }), by = (ixb.length ? [(ixb.length > 1 ? 'reference projects ' : 'reference project ') + ixb.map(function (i) { return i + 1; }).join(', ')] : []).concat(m.other.map(otherLabel)); font(false, 7.5); var BL = doc.splitTextToSize('Built by: ' + (by.length ? by.join(' · ') : 'nothing yet'), CW - 44).slice(0, 3);
+      font(false, 7.5); color(by.length ? G7 : RED); BL.forEach(function (ln, k) { doc.text(ln, gx, y + 5 + txt.length * 3.4 + k * 3.4); });
+      y += Math.max(16, 5 + txt.length * 3.4 + BL.length * 3.4) + 10;
     });
-    if (!RM.ms.length) text('No roadmap yet: in the app, open \u201cMy roadmap\u201d and pick what your lab must build.', 9.5, false, G5, 3);
-    var warn = []; RM.ms.forEach(function (m) { if (!m.steps.length && !m.other.length) warn.push('Nothing builds \u201c' + capLabel(m.cap) + '\u201d yet: which step, or which resource outside the EU?'); });
-    GC.forEach(function (g, i) { if (!g.builds) warn.push('Reference project ' + (i + 1) + ' builds none of your roadmap: a good project, but what does it leave behind?'); });
-    if (warn.length) box('What this says', warn.slice(0, 3), { rule: RED, bg: WALL, size: 9.5 });
-    var TH = S.lab.themes.map(function (t, k) { return [t, k]; }).filter(function (x) { return x[0]; });
-    if (TH.length && st.length && st.some(function (s) { return (s.themes || []).length; })) { label('Which reference project feeds what your lab is about'); var tw2 = (CW - 62) / TH.length; font(true, 8); color(INK); TH.forEach(function (x, j) { doc.text(doc.splitTextToSize(x[0], tw2 - 4)[0], M + 62 + j * tw2, y); }); y += 6;
-      st.forEach(function (s, i) { need(8); font(true, 8.5); color(INK); doc.text(doc.splitTextToSize((i + 1) + ' \u00b7 ' + ps[i].name, 58)[0], M, y); TH.forEach(function (x, j) { var on = (s.themes || []).indexOf(x[1]) > -1, cx = M + 62 + j * tw2 + 4; if (on) { fill(INK); doc.circle(cx, y - 1, 2.2, 'F'); } else { stroke(G2); doc.setLineWidth(0.4); doc.circle(cx, y - 1, 2.2, 'S'); } }); y += 7; }); }
-    else if (TH.length && st.length) text('You have not yet said which of your reference projects feeds what your lab is about (' + TH.map(function (x) { return x[0]; }).join(', ') + '). In \u201cMy path\u201d, the last question of each reference does that.', 9.5, false, G5, 3);
+    if (!RM.ms.length) text('No roadmap yet: in the app, open “My roadmap” and pick what your lab must build.', 9.5, false, G5, 3);
 
-    /* ===== G. your guidelines (the deliverable) ===== */
-    newPage(); y = 0; band(INK, 'Your guidelines', 'Rules for your next initiatives', 'Drawn from your position, your 2030 and your roadmap');
-    var GL = [], th3 = S.lab.themes.filter(Boolean);
-    if (th3.length) GL.push(['Say yes to a project only if it feeds: ' + th3.join(' \u00b7 ') + '.', 'Projects that do not feed what your lab is about cost the same work and leave less behind.']);
-    else GL.push(['Write down the 2 or 3 things your lab is about, and test every project against them.', 'Without them, each call decides your direction for you.']);
-    RM.ms.forEach(function (m) { GL.push(['Until ' + (m.by || '2028') + ', put \u201c' + capLabel(m.cap) + '\u201d first' + (m.proof ? ': ' + m.proof + '.' : '.'), (m.steps.length || m.other.length ? 'Built by ' + m.steps.map(function (i) { return 'reference project ' + (i + 1); }).concat(m.other.map(otherLabel)).join(', ') + '.' : 'Nothing builds it yet: find a step or a resource outside the EU.')]); });
-    var seenM = {}; st.forEach(function (s, i) { var a = ps[i].action, mo = (D.money || {})[a]; if (mo && !seenM[a]) { seenM[a] = 1; var ac = action(a); GL.push(['Know what a project like reference ' + (i + 1) + ' pays (' + (ac ? ac.short : a) + '): ' + mo.model, mo.lines[0] + ' Plan your budget before you write.']); } });
-    var prep = []; GC.forEach(function (g, i) { if (g.lacks.length) prep.push('for a project like reference ' + (i + 1) + ', build ' + g.lacks.map(capLabel).join(' and ').toLowerCase()); });
-    GL.push(['Go only when: a partner you trust is on board three months before the deadline, someone has the time to write, and you can advance the costs.', prep.length ? 'Before you go: ' + prep.join('; ') + '.' : 'Check it again for each call.']);
-    if (S.lab.targets.indexOf('coordinator') > -1) GL.push(['Coordinate a small project before a large one.', 'Large partnerships and Creative Europe ask for a track record and financial capacity; a small-scale partnership builds both.']);
-    if (S.lab.targets.indexOf('accredited') > -1) GL.push(['Start the record for an accreditation now.', 'Accreditation asks for experience in the field and a plan for several years: short mobility projects are the usual way in.']);
-    if (S.lab.targets.indexOf('partner') > -1) GL.push(['Join good projects as a partner, and lead one clear part of the work.', 'Ask the coordinator which part you lead, what money comes to you, and what stays in your lab afterwards.']);
-    GL.push(['In every application, argue only for the priorities you selected, and show them in the activities, the public and the results.', 'Inclusion is expected in almost every funded project: name who takes part and which barrier you lower.']);
-    GL.push(['Prepare for 2028 without betting on details.', 'The horizontal priorities, trusted partners and results you can show will count in any version of the new programmes.']);
-    GL.push(['Review this roadmap with your team in ' + (RM.review || 'November 2027') + '. Change the projects, keep the rules.', 'By then the 2028 calls and the new Programme Guide should be known.']);
-    GL.forEach(function (g, k) { var L1 = lines(g[0], 11.5, true, CW - 14), L2 = lines(g[1], 9.5, false, CW - 14); need(L1.length * lh(11.5) + L2.length * lh(9.5) + 8); fill(k % 2 ? BLUE : RED); doc.circle(M + 4, y - 1.4, 4, 'F'); color('#ffffff'); font(true, 10); doc.text(String(k + 1), M + 4, y + 0.2, { align: 'center' }); font(true, 11.5); color(INK); L1.forEach(function (ln) { doc.text(ln, M + 12, y); y += lh(11.5); }); y += 0.8; font(false, 9.5); color(G5); L2.forEach(function (ln) { doc.text(ln, M + 12, y); y += lh(9.5); }); y += 6; });
+    /* ===== 3. guidelines ===== */
+    newPage(); y = 0; band(INK, '3 · Your guidelines', 'Rules for your next initiatives', 'Drawn from your position, your 2030, your roadmap and your reference projects');
+    var n = 0;
+    if (S.lab.vision) rule(++n, 'Say yes to a project only if it moves you towards your 2030.', '“' + S.lab.vision + '” Projects that do not serve it cost the same work and leave less behind.', RED);
+    function refs(ix) { return ix.length ? (ix.length > 1 ? 'reference projects ' : 'reference project ') + ix.map(function (i) { return i + 1; }).join(', ') : ''; }
+    RM.ms.forEach(function (m) { var v = capLevel(m.cap), ix = m.steps.filter(function (i) { return st[i]; }), by = (ix.length ? [refs(ix)] : []).concat(m.other.map(otherLabel)); rule(++n, 'Until ' + (m.by || '2028') + ', build “' + capLabel(m.cap) + '”: from ' + (v ? LV[v] : 'not rated') + ' to ' + LV[m.to] + '.', (v && CA[m.cap] ? CA[m.cap][v - 1] + ' ' : '') + (by.length ? 'In your path: ' + by.join(', ') + '.' : 'Nothing in your path builds it yet.'), BLUE); });
+    var weak = CAPS.filter(function (c) { return capLevel(c.id) === 1 && !RM.ms.some(function (m) { return m.cap === c.id; }); });
+    weak.slice(0, 2).forEach(function (c) { rule(++n, 'Watch your weakest point: “' + c.label + '”.', CA[c.id][0], RED); });
+    if (S.lab.targets.indexOf('coordinator') > -1) rule(++n, 'Coordinate a small project before a large one.', 'Large partnerships and Creative Europe ask for a track record and financial capacity; a small-scale partnership builds both.', BLUE);
+    if (S.lab.targets.indexOf('accredited') > -1) rule(++n, 'Start the record for an accreditation now.', 'Accreditation asks for experience in the field and a plan for several years: short mobility projects are the usual way in. Today’s accreditations are valid until 31 December 2027; the new rules come with the next programme.', BLUE);
+    if (S.lab.targets.indexOf('partner') > -1) rule(++n, 'Join good projects as a partner, and lead one clear part of the work.', 'Ask the coordinator which part you lead, what money comes to you, and what stays in your lab afterwards.', BLUE);
+    var prep = [], bf = {}; GC.forEach(function (g, i) { if (g.lacks.length) { var k = g.lacks.map(capLabel).join(' and ').toLowerCase(); (bf[k] = bf[k] || []).push(i); } }); Object.keys(bf).forEach(function (k) { prep.push('before ' + refs(bf[k]) + ', build ' + k); });
+    rule(++n, 'Go only when: a partner you trust is on board three months before the deadline, someone has the time to write, and you can advance the costs.', prep.length ? 'In your path: ' + prep.join('; ') + '.' : 'Check it again for each call.', RED);
+    readings().slice(0, 2).forEach(function (t) { rule(++n, t.split('. ')[0] + '.', t.split('. ').slice(1).join('. '), BLUE); });
+    rule(++n, 'Argue only for the priorities you select, and show them in the activities, the public and the results.', 'Inclusion is expected in almost every funded project: name who takes part and which barrier you lower. We found the opposite slip in our own forms, more than once.', RED);
+    rule(++n, 'Prepare for 2028 without betting on details.', 'The new Erasmus+ (with the Solidarity Corps) and AgoraEU are still being negotiated. Trusted partners, results you can show and the horizontal priorities will count in any version.', BLUE);
+    rule(++n, 'Review this roadmap with your team in ' + (RM.review || 'November 2027') + '.', 'By then the 2028 calls and the new Programme Guide should be known. Change the projects, keep the rules.', RED);
 
-    /* ===== 1b. your plan on one page ===== */
-    var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-    doc.addPage(); page++; band(BLUE, 'Your plan on one page', 'Where you stand, where you go next', 'The rest of this guide explains each line');
-    var stageTxt = { none: 'Never applied to EU programmes', partner: 'Partner in EU projects before', coordinator: 'Coordinated EU projects before' }[S.lab.exp] || 'Not given';
-    rows([['Where you stand', stageTxt], ['What you need', (S.lab.needs || []).map(function (n) { var w = byId(D.whys || [], n); return w ? w.label : n; }).join(', ') || 'Not given'], ['Your lab in 2030', S.lab.vision || 'Not written yet: it is the question this guide ends with'], ['What your lab is about', S.lab.themes.filter(Boolean).join(' \u00b7 ') || 'Not written yet']]);
+    /* ===== 4. reference projects ===== */
+    newPage(); y = 0; band(RED, '4 · Your reference projects', 'What each one means for your lab', 'What it would build, what it pays, and the answers to your doubts');
     st.forEach(function (s, i) {
-      var p = ps[i], a = action(p.action), f = fit(p), ev = ((T.calendar || {})[p.action] || []).filter(function (e) { return e.t === 'deadline'; })[0];
-      var body = [(a ? a.short + ' \u00b7 ' + a.name : p.today) + (s.when ? ' \u00b7 ' + s.when : '') + (f.level ? ' \u00b7 ' + FIT_LABEL[f.level] : ''),
-        'Example: ' + p.name + (p.external && p.coordinator ? ' (' + p.coordinator.name + ', ' + p.coordinator.country + ')' : ' (Buinho)')];
-      if (REQ[p.action]) body.push('It asks for: ' + REQ[p.action]);
-      var prl = prioList(s); body.push('Answers: ' + (prl.length ? prl.join(', ') + (s.how ? ' \u2014 ' + s.how : '') : 'no priority chosen yet'));
-      if (ev) { var prep = (ev.m + 8) % 12 + 1; body.push('Next move: talk to partners from ' + MONTHS.at(prep - 1) + '; the deadline was in ' + MONTHS.at(ev.m - 1) + ' in the 2026 calls (check the 2027 call).'); }
-      box('Reference project ' + (i + 1) + ' \u00b7 ' + famLabel(pfam(p)), body, { rule: famColor(pfam(p)) === SUN ? INK : famColor(pfam(p)), bg: WALL, size: 9.8 });
+      var p = ps[i], a = action(p.action), f = pfam(p), g = GC[i], mo = (D.money || {})[p.action];
+      need(40); fill(famColor(f)); doc.rect(M, y - 4, CW, 9, 'F'); color(famText(f)); font(true, 10.5); doc.text(doc.splitTextToSize((i + 1) + ' · ' + p.name, CW - 50)[0], M + 3, y + 2); font(true, 8); doc.text((a ? a.short : '') + (s.when ? ' · ' + s.when : ''), M + CW - 3, y + 2, { align: 'right' }); y += 11;
+      var pairs = [];
+      pairs.push(['Ready?', g.badge + (g.todo.length ? ': ' + g.todo.join(' ') : '. Nothing missing from what you entered.')]);
+      var bl = RM.ms.filter(function (m) { return m.steps.indexOf(i) > -1; }).map(function (m) { return capLabel(m.cap); });
+      pairs.push(['It would build', bl.length ? bl.join(', ') : 'none of what you want to build yet']);
+      if (s.why.length) pairs.push(['Your needs it serves', whyLabels(s.why).join(', ')]);
+      if (p.formPrio && p.formPrio.length) pairs.push(['Priorities in its application', p.formPrio.join(' · ') + (p.prioWhy ? '. Why: ' + p.prioWhy : '')]);
+      else if (p.external) pairs.push(['Priorities', 'Partnerships choose one main priority and up to two more; inclusion is in almost all funded projects. The Results Platform lists this project’s topics.']);
+      if (mo) pairs.push(['What it pays', mo.model + ' ' + mo.lines[0]]);
+      rows(pairs, 9);
+      var ds = (s.doubts || []).map(function (d) { var lab = (byId(D.doubtAspects || [], d) || {}).label || d; return [lab, doubtAnswers(p, d)]; }).filter(function (x) { return x[1].length; });
+      if (s.q) { var aq = answerFor(s.q); ds.push(['Your question: ' + s.q, aq.length ? aq.slice(0, 1).map(ansText) : ['No ready answer in our material: ask the National Agency or a Creative Europe Desk.']]); }
+      if (ds.length) { label('Your doubts, answered'); ds.forEach(function (d) { box(d[0], d[1].slice(0, 1), { rule: famColor(f) === SUN ? INK : famColor(f), bg: WALL, size: 9 }); }); }
+      y += 4;
     });
-    if (S.questions.length) { var qs = S.questions.slice(0, 3).map(function (q) { var an = answerFor(q); return q + (S.told[q] ? '  \u2192 answered by the experts' : '') + (an.length ? '  \u2192 in this guide: ' + an.map(function (a) { return a.topic; }).join(', ') : '  \u2192 take it to the clinics'); }); box('Your questions (answers on the next pages)', qs, { rule: SUN === SUN ? INK : INK, bg: '#fff8d6', bullets: true, size: 9.8 }); }
 
-    /* ===== 2. path at a glance: map against 2028 pillars ===== */
-    doc.addPage(); page++; band(INK, 'Your path at a glance', 'Where your steps sit after 2027', 'Erasmus+ pillars and AgoraEU, according to the proposals for 2028–2034');
-    var cols = D.pillars || [], cw3 = (CW - 8) / 3;
-    cols.forEach(function (pl, k) {
-      var x = M + k * (cw3 + 4); fill(WALL); doc.rect(x, y, cw3, 112, 'F');
-      font(true, 11); color(INK); doc.text(pl.label, x + 4, y + 8); font(false, 8.5); color(G5); doc.text(doc.splitTextToSize(pl.name, cw3 - 8), x + 4, y + 13);
-      font(false, 7.5); doc.text(doc.splitTextToSize(pl.today, cw3 - 8), x + 4, y + 22);
-    });
-    var colY = cols.map(function () { return y + 40; });
-    st.forEach(function (s, i) {
-      var p = ps[i], a = action(p.action), k = Math.max(0, cols.map(function (c) { return c.id; }).indexOf(a ? a.pillar : '')), x = M + k * (cw3 + 4) + 4, f = pfam(p), yy = colY[k];
-      fill(famColor(f)); doc.rect(x, yy, cw3 - 8, 20, 'F'); color(famText(f));
-      font(true, 14); doc.text(String(i + 1), x + 4, yy + 8); font(true, 9.5); doc.text(doc.splitTextToSize(famLabel(f), cw3 - 22)[0], x + 12, yy + 7);
-      font(false, 8); doc.text(doc.splitTextToSize(p.name, cw3 - 18)[0], x + 12, yy + 12); doc.text(doc.splitTextToSize('Today: ' + (a ? a.short : p.today) + (s.when ? ' · ' + s.when : ''), cw3 - 18)[0], x + 12, yy + 16.5);
-      colY[k] += 24;
-    });
-    y += 120;
-    label('About your lab');
-    rows([['Experience', { none: 'Never applied to EU programmes', partner: 'Partner in EU projects before', coordinator: 'Coordinated EU projects before' }[S.lab.exp] || 'Not given'],
-      ['Works with', (S.lab.domains || []).map(function (d) { var x = byId(D.domains || [], d); return x ? x.label : d; }).join(', ') || 'Not given'],
-      ['Why these steps', st.map(function (s, i) { return (i + 1) + ': ' + (whyLabels(s.why).join(', ') || '—'); }).join('   ')]]);
-    if (S.lab.exp && D.expNotes) box('A first reading', D.expNotes[S.lab.exp], { rule: BLUE, bg: WALL });
-
-    /* ===== 2b. priorities ===== */
-    if (PR.horizontal.length) {
-      newPage(); y = 0; band(BLUE, 'What Europe reads in your path', 'The priorities your path speaks to', 'Horizontal priorities for every action, specific ones for each field');
-      text(PR.intro, 10, false, G7, 3);
-      box('How they are used', PR.rules, { rule: BLUE, bg: WALL, bullets: true, size: 9.5 });
-      label('Which reference project answers which horizontal priority');
-      var hc = (CW - 50) / PR.horizontal.length; font(true, 8.5); color(INK); PR.horizontal.forEach(function (h, j) { doc.text(h.short, M + 50 + j * hc, y); }); y += 7;
-      st.forEach(function (s, i) { need(10); font(true, 9.5); color(INK); doc.text(doc.splitTextToSize(ps[i].name, 46)[0], M, y); font(false, 8); color(G5); doc.text('Reference ' + (i + 1), M, y + 4); PR.horizontal.forEach(function (h, j) { var on = (s.prio || []).indexOf(h.id) > -1, ex = (ps[i].prio || []).indexOf(h.id) > -1, cx = M + 50 + j * hc + 4; if (on) { fill(BLUE); doc.circle(cx, y - 1, 2.6, 'F'); } else { stroke(G2); doc.setLineWidth(0.4); doc.circle(cx, y - 1, 2.6, 'S'); } if (ex) { stroke(INK); doc.setLineWidth(0.5); doc.circle(cx, y - 1, 4, 'S'); } }); y += 11; });
-      if (ps.some(function (p) { return p.prio && p.prio.length; })) { fill(BLUE); doc.circle(M + 2, y - 4, 1.6, 'F'); font(false, 7.5); color(G5); doc.text('your choice', M + 5, y - 3); stroke(INK); doc.setLineWidth(0.4); doc.circle(M + 30, y - 4, 2.4, 'S'); doc.text('chosen in the example project\u2019s real application', M + 34, y - 3); y += 3; }
-      var other = []; st.forEach(function (s, i) { var x = (s.prio || []).filter(function (id) { return id.indexOf('h-') !== 0; }).map(prioInfo).filter(Boolean).map(function (z) { return z.name; }); if (x.length) other.push(ps[i].name + ': ' + x.join('; ')); if (s.how) other.push(ps[i].name + ', how: ' + s.how); });
-      if (other.length) box('Field priorities and how', other, { rule: INK, bg: WALL, size: 9.5 });
-      var unused = PR.horizontal.filter(function (h) { return !st.some(function (s) { return (s.prio || []).indexOf(h.id) > -1; }); }).map(function (h) { return h.short; });
-      var none = st.filter(function (s) { return !(s.prio || []).length; }).length, pn = [];
-      if (none) pn.push('Without a priority yet: ' + st.map(function (s, i) { return (s.prio || []).length ? null : ps[i].name; }).filter(Boolean).join(', ') + '. Funded projects usually answer several: choose the ones you can really show.');
-      if (!st.some(function (s) { return (s.prio || []).indexOf('h-inc') > -1; })) pn.push('None of your reference projects marks Inclusion yet. In practice almost every funded project addresses it, and experts look for it: name who is missing today and which barrier you lower.');
-      else pn.push('Inclusion is in almost every funded project, so experts expect it. What makes it count is naming who takes part and which barrier you lower.');
-      if (unused.length && unused.length < PR.horizontal.length) pn.push('Not in your path yet: ' + unused.join(', ') + '. You do not need all four; but is one of them already part of how your lab works?');
-      if (!none && st.length) pn.push('Every step has a priority. Now check that each one shows in the activities, the public and the results, not only in the text.');
-      if (pn.length) box('What this says', pn, { rule: RED, bg: WALL, size: 10 });
-      box('To discuss with your neighbour', PR.horizontal.map(function (h) { return h.short + ': ' + h.q; }), { rule: SUN === SUN ? INK : INK, bg: '#fff8d6', bullets: true, size: 10 });
-      var mine = (S.lab.domains || []).filter(function (d) { return PR.sectors[d]; });
-      mine.forEach(function (d) { var sc = PR.sectors[d]; box(sc.field + ' \u00b7 specific priorities (2026)', sc.items.concat([sc.lab]), { rule: BLUE, bg: '#ffffff', bullets: true, size: 9.5 }); });
-      if (!mine.length) text('Tell the app who you work with (start screen) and the specific priorities of your fields appear here.', 9.5, false, G5, 3);
-      if (acts0().indexOf('crea') > -1) box(PR.culture.field + ' (2026)', PR.culture.items.concat([PR.culture.rule]), { rule: famColor('culture') === SUN ? INK : famColor('culture'), bg: '#ffffff', bullets: true, size: 9.5 });
-      if (PR.buinho) box(PR.buinho.title, PR.buinho.lines.concat([PR.buinho.source]), { rule: RED, bg: '#ffffff', bullets: true, size: 9.5 });
-      box(PR.future.title, PR.future.lines.concat([PR.future.status, PR.future.reading]), { rule: INK, bg: WALL, bullets: true, size: 9.5 });
-      label('Official sources'); PR.links.slice(0, 6).forEach(function (l) { linkLine(l); });
+    /* ===== 5. questions ===== */
+    if (S.questions.length) {
+      newPage(); y = 0; band(SUN, '5 · Your questions', 'Your questions, answered', 'From our experience and the official rules');
+      S.questions.forEach(function (q) { var an = answerFor(q); need(30); text(q, 11, true, INK, 1.5); if (an.length) an.slice(0, 2).forEach(function (a) { box(a.topic, [a.a].concat(a.lines || []).concat(a.next ? [a.next] : []), { rule: INK, bg: WALL, size: 9.5 }); if (a.links && a.links[0]) linkLine(a.links[0]); }); else text('No ready answer in our material. A good next stop: your National Agency or Creative Europe Desk.', 9.5, false, G5, 3); y += 2; });
     }
-    function acts0() { return ps.map(function (p) { return p.action; }); }
 
-    /* ===== 3. reading your path ===== */
-    newPage(); y = 0; band(RED, 'Practical advice', 'Reading your path', 'Inferences from your steps, their order, your reasons and your timing');
-    var RD = readings();
-    RD.forEach(function (t, i) { box('Note ' + (i + 1), t, { rule: i % 2 ? BLUE : RED, bg: WALL, size: 10.5 }); });
-    if (T.buinho) { y += 2; box('How Buinho reads its own path', [T.buinho.intro, T.buinho.themes, T.buinho.base], { rule: INK, bg: '#ffffff', size: 10 }); }
-
-    /* ===== 3b. your questions, answered ===== */
-    newPage(); y = 0; band(SUN, 'Where your path stops', 'Your questions, answered', 'What this guide can already tell you, and where to take the rest');
-    function notes(n, lb) { need(n * 7 + 6); font(true, 7.5); color(G5); doc.text(lb || 'NOTES FROM THE CLINIC', M, y); y += 2; stroke(G2); doc.setLineWidth(0.3); for (var k = 0; k < n; k++) { y += 7; doc.line(M, y, M + CW, y); } y += 7; }
-    if (S.questions.length) S.questions.forEach(function (q, qi) {
-      var L = lines(q, 11.5, true, CW - 12), h = L.length * lh(11.5) + 9; need(h + 70);
-      fill(NOTE); doc.rect(M, y - 4, CW, h, 'F'); font(true, 11.5); color(INK); L.forEach(function (ln, k) { doc.text(ln, M + 6, y + 2 + k * lh(11.5)); }); y += h + 3;
-      var an = answerFor(q);
-      if (S.told[q]) box('What the experts told you', S.told[q], { rule: INK, bg: '#fff8d6', size: 10.5 });
-      if (an.length) an.forEach(function (a) {
-        var body = [a.a].concat(a.lines || []); if (a.next) body.push(a.next); var pl = pathLink(a); if (pl) body.push(pl);
-        box(a.topic, body, { rule: SUN === SUN ? INK : INK, bg: '#ffffff', size: 10 });
-        a.links.forEach(function (l) { linkLine(l, M + 6, CW - 6); });
-      });
-      else if (!S.told[q]) box('No ready answer in this guide', ['That is what the clinics are for: bring this question to the next sessions of the seminar, to a lab that has done it, or to your National Agency or Creative Europe Desk.'], { rule: RED, bg: WALL, size: 10 });
-      if (!S.told[q]) notes(3); y += 2;
-    });
-    else text('(No questions written in the app. Write them in "My path" and download the guide again.)', 10, false, G5, 4);
-    if (D.whereToAsk && D.whereToAsk.length) { y += 2; label('Where to look for answers'); D.whereToAsk.forEach(function (l) { linkLine(l); }); }
-
-    /* ===== 4. one spread per step ===== */
-    st.forEach(function (s, i) {
-      var p = ps[i], a = action(p.action), f = pfam(p), pl = ppil(p), P = p.partnership || {}, SP = (T.projects || {})[p.id] || {};
-      newPage(); y = 0; band(famColor(f), 'Reference project ' + (i + 1) + (pl ? ' · ' + pl.label + ' · ' + pl.name : '') + (s.when ? ' · ' + s.when : ''), famLabel(f) + ' — like ' + p.name, 'Today: ' + p.today + (p.external ? ' · ' + (p.coordinator ? p.coordinator.name + ' (' + p.coordinator.country + ')' : '') : ' · Buinho was ' + p.role.toLowerCase()) + ' · ' + p.years);
-      label(p.external ? 'An example from another lab' + (p.goodPractice ? ' · good practice' : '') : 'The Buinho example'); text(p.objective, 11, true, INK, 2); text(p.did, 10, false, G7, 3);
-      if (p.external) { if (p.whyMakers) box('What a lab can take from it', p.whyMakers, { rule: famColor(f) === SUN ? INK : famColor(f), bg: WALL }); if (p.url) linkLine({ label: 'Official project page' + (p.number ? ' ' + p.number : ''), url: p.url }); if (p.extraUrl) linkLine({ label: 'Project website', url: p.extraUrl }); }
-      if (SP.place) box('Where it sits in our strategy', [SP.place, SP.connects], { rule: famColor(f) === SUN ? INK : famColor(f), bg: WALL });
-      label('The partnership');
-      rows([['Partners', P.size + (list(P.countries).length ? ' (' + P.countries.join(', ') + ')' : '')], ['Who brings what', P.roles], ['Money', P.money], ['What it took', p.needed], ['What it left', p.left]]);
-      if (p.lesson) box('Lesson', p.lesson, { rule: RED, bg: '#ffffff' });
-      var dd = distance(i); if (dd.length) box('Distance from where you are', dd, { rule: BLUE, bg: WALL, size: 10 });
-      var th = (s.themes || []).map(function (k) { return S.lab.themes[k]; }).filter(Boolean); if (S.lab.themes.filter(Boolean).length) box('Feeds what your lab is about', th.length ? th.join(' \u00b7 ') : 'Nothing marked yet. Is this step worth it, or does it need a different angle?', { rule: th.length ? INK : RED, bg: '#ffffff', size: 10 });
-      if (p.formPrio && p.formPrio.length) box('Priorities in the real application of ' + p.name + ', and why', p.formPrio.concat(p.prioWhy ? [p.prioWhy] : []), { rule: G2, bg: WALL, size: 9.5 });
-      var gc = goCheck(i), bl = S.road.ms.filter(function (m) { return m.steps.indexOf(i) > -1; }).map(function (m) { return capLabel(m.cap) + (m.proof ? ' \u2192 ' + m.proof : ''); });
-      box(gc.badge + ' \u00b7 what it builds for your lab', (bl.length ? bl : ['None of your roadmap yet.']).concat(gc.todo), { rule: gc.todo.length ? SUN : BLUE, bg: '#ffffff', size: 10 });
-      var mo = (D.money || {})[p.action]; if (mo) box('What your lab would receive (2026 rules)', [mo.model].concat(mo.lines).concat(mo.note ? [mo.note] : []), { rule: famColor(f) === SUN ? INK : famColor(f), bg: WALL, size: 9.5 });
-      var prf = prioList(s, true); box('Priorities this step answers', prf.length ? prf.concat(s.how ? ['How: ' + s.how] : []) : ['No priority chosen yet. Which one would an expert see in this step, and what would you show for it?'], { rule: prf.length ? BLUE : RED, bg: '#ffffff', size: 10, bullets: !!prf.length });
-      if (SP.advice) box('If this is your step: practical advice', SP.advice, { rule: RED, bg: WALL, bullets: true, size: 10.5 });
-      if (a) {
-        box('After 2027', a.future, { rule: INK, bg: '#ffffff' });
-        label('How this kind of action works today · ' + a.short + ' · ' + a.name);
-        rows([['For', a.purpose], ['Who can apply', a.who], ['Partners', a.partners], ['Duration', a.duration], ['Money', a.funding], ['Where', a.where], ['Deadlines', a.deadlines], ['First step?', a.firstStep], ['It builds', a.builds]], 9);
-        if (a.links && a.links.length) { label('Official links'); a.links.forEach(function (l) { linkLine(l); }); }
-        var dom = (S.lab.domains || []).map(function (d) { return byId(D.domains || [], d); }).filter(Boolean);
-        if (a.searchUrl && dom.length) { label('Find similar projects in your field'); dom.forEach(function (d) { linkLine({ label: d.label, url: a.searchUrl(d) }); }); }
-      }
-    });
-
-    /* ===== reference part ===== */
-    newPage(); fill(WALL); doc.rect(0, 0, W, H, 'F'); color(INK); font(true, 9); doc.text('PART 2', M, 120); font(true, 30); doc.text('Reference', M, 136); font(false, 11); color(G7); doc.text(doc.splitTextToSize('The yearly calendar, the long-term questions behind every application, choosing partners, a checklist, what changes after 2027, official sources and what Buinho learned. Keep it for when you write.', CW - 20), M, 148);
-
-    /* ===== 5. your year ===== */
-    newPage(); y = 0; band(SUN, 'Annual planning', 'Your year of deadlines', 'A typical year, based on the 2026 calls, for the actions on your path');
-    var CAL = T.calendar || {}, acts = []; ps.forEach(function (p) { if (p.action && acts.indexOf(p.action) < 0) acts.push(p.action); });
-    var gx = M + 46, gw = CW - 46, mw = gw / 12, MON = 'JFMAMJJASOND';
-    font(true, 8); color(G5); for (var mi = 0; mi < 12; mi++) doc.text(MON[mi], gx + mi * mw + mw / 2, y, { align: 'center' });
-    y += 3;
+    /* ===== calendar ===== */
+    newPage(); y = 0; band(SUN, 'Your year of deadlines', 'When to apply, and where', 'A typical year based on the 2026 calls, for the actions in your path');
+    var CAL = (D.strategy || {}).calendar || {}, acts = []; ps.forEach(function (p) { if (p.action && acts.indexOf(p.action) < 0) acts.push(p.action); });
+    var MN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], cx0 = M + 50, mw = (CW - 50) / 12;
+    font(true, 7.5); color(G5); MN.forEach(function (m, k) { doc.text(m, cx0 + k * mw + mw / 2, y, { align: 'center' }); }); y += 3;
     acts.forEach(function (aid) {
-      var a = action(aid), ev = CAL[aid] || []; need(16);
-      font(true, 9); color(INK); doc.text(doc.splitTextToSize(a.short + ' · ' + a.name, 44), M, y + 5);
-      fill(WALL); doc.rect(gx, y, gw, 12, 'F'); stroke(G2); doc.setLineWidth(0.2); for (var k = 1; k < 12; k++) doc.line(gx + k * mw, y, gx + k * mw, y + 12);
-      ev.forEach(function (e) {
-        var cx = gx + (e.m - 1) * mw + mw / 2;
-        if (e.t === 'deadline') { fill(famColor(a.family) === SUN ? '#e0a800' : famColor(a.family)); for (var b = 1; b <= 3; b++) { var pm = e.m - b; if (pm >= 1) { doc.setGState && doc.setGState(new doc.GState({ opacity: 0.18 })); doc.rect(gx + (pm - 1) * mw, y, mw, 12, 'F'); doc.setGState && doc.setGState(new doc.GState({ opacity: 1 })); } } doc.circle(cx, y + 6, 2.6, 'F'); }
-        else if (e.t === 'optional') { stroke(INK); doc.setLineWidth(0.5); doc.circle(cx, y + 6, 2.4, 'S'); }
-        else { fill(INK); doc.rect(cx - 2, y + 4, 4, 4, 'F'); }
-      });
-      y += 15;
-      ev.forEach(function (e) { font(false, 8); color(G7); doc.text('· ' + MON.charAt(e.m - 1) + ' (' + ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][e.m - 1] + '): ' + e.l, gx, y); y += 3.8; });
-      y += 2;
+      var a = action(aid), ev = CAL[aid] || []; need(14);
+      font(true, 8.5); color(INK); doc.text(doc.splitTextToSize(a.short + ' · ' + a.name, 48).slice(0, 2), M, y + 4);
+      stroke(G2); doc.setLineWidth(0.2); for (var k = 0; k <= 12; k++) doc.line(cx0 + k * mw, y, cx0 + k * mw, y + 8); doc.line(cx0, y + 8, cx0 + 12 * mw, y + 8);
+      ev.forEach(function (e) { var x0 = cx0 + (e.m - 1) * mw; if (e.t === 'deadline' || e.t === 'optional') { fill('#e6ecff'); var s0 = Math.max(0, e.m - 4); doc.rect(cx0 + s0 * mw, y + 1, (e.m - 1 - s0) * mw, 6, 'F'); } if (e.t === 'deadline') { fill(RED); doc.rect(x0 + 1, y + 1, mw - 2, 6, 'F'); } else if (e.t === 'optional') { stroke(RED); doc.setLineWidth(0.6); doc.rect(x0 + 1, y + 1, mw - 2, 6, 'S'); } else { fill(INK); doc.rect(x0 + 1, y + 1, mw - 2, 6, 'F'); } });
+      y += 11; ev.forEach(function (e) { font(false, 8); color(G7); doc.text(MN[e.m - 1] + ': ' + e.l, cx0, y); y += 3.6; }); y += 3;
     });
-    y += 2; font(false, 8.5); color(G5);
-    fill(INK); doc.circle(M + 2, y - 1, 2, 'F'); doc.text('deadline', M + 6, y); stroke(INK); doc.circle(M + 32, y - 1, 2, 'S'); doc.text('optional second round', M + 36, y); fill(INK); doc.rect(M + 80, y - 3, 3.5, 3.5, 'F'); doc.text('results', M + 86, y); fill('#c9d7ff'); doc.rect(M + 106, y - 3, 6, 3.5, 'F'); doc.text('3 months to find partners and write', M + 114, y);
-    y += 8;
-    box('Planning the year', ['Talk to partners three months before each deadline; the first months of the year are the busiest.', 'Results of partnerships usually arrive in summer; Creative Europe in November. Projects start months later: plan cash for the gap.', 'The Erasmus+ Programme Guide for the next year is published in late autumn. Read it before you plan.', 'Running projects need reporting at the same time as new applications. Count both.'], { rule: SUN === SUN ? INK : INK, bg: WALL, bullets: true });
+    font(false, 8); color(G5); fill(RED); doc.rect(M, y - 3, 5, 3.5, 'F'); doc.text('deadline', M + 7, y); stroke(RED); doc.setLineWidth(0.6); doc.rect(M + 26, y - 3, 5, 3.5, 'S'); doc.text('second round (some agencies)', M + 33, y); fill(INK); doc.rect(M + 78, y - 3, 5, 3.5, 'F'); doc.text('results', M + 85, y); fill('#e6ecff'); doc.rect(M + 102, y - 3, 8, 3.5, 'F'); doc.text('find partners and write', M + 112, y); y += 9;
+    label('Where the calls are published'); (D.callLinks || []).forEach(function (l) { linkLine(l); });
+    text('Talk to partners three months before each deadline. Results of partnerships usually arrive in summer, Creative Europe in November, and projects start months later: plan cash for the gap.', 9.5, false, G7, 2);
 
-    /* ===== 6. long-term dimensions ===== */
-    newPage(); y = 0; band(BLUE, 'Behind every application', 'The long-term questions', 'What we look at beyond the forms, and questions for your lab');
-    (T.dimensions || []).forEach(function (d) {
-      var bl = lines(d.buinho, 9.5, false, CW - 8), ql = d.ask.map(function (q) { return lines('→ ' + q, 9.5, true, CW - 8); });
-      var h = 9 + bl.length * lh(9.5) + 2 + ql.reduce(function (s, L) { return s + L.length * lh(9.5) + 1; }, 0) + 4;
-      need(h + 3); fill(WALL); doc.rect(M, y - 4, CW, h, 'F'); fill(BLUE); doc.rect(M, y - 4, 1.6, h, 'F');
-      var yy = y + 1; font(true, 11.5); color(INK); doc.text(d.title, M + 5, yy); yy += 6;
-      font(false, 9.5); color(G7); bl.forEach(function (ln) { doc.text(ln, M + 5, yy); yy += lh(9.5); }); yy += 2;
-      font(true, 9.5); color(INK); ql.forEach(function (L) { L.forEach(function (ln) { doc.text(ln, M + 5, yy); yy += lh(9.5); }); yy += 1; });
-      y += h + 1;
-      if (d.sources && d.sources.length) { need(16); font(true, 7.5); color(G5); doc.text('OFFICIAL SOURCES', M + 5, y + 1); y += 4.5; d.sources.forEach(function (l) { linkLine(l, M + 5, CW - 8); }); }
-      y += 3;
-    });
-
-    /* ===== 7. partners + other starred cards ===== */
-    newPage(); y = 0; band(RED, 'Before you write anything together', 'Choosing partners', 'The five things we check');
-    (D.partnerCriteria || []).forEach(function (c, k) { need(18); fill(RED); doc.circle(M + 4, y - 1, 4, 'F'); color(INK); font(true, 11); doc.text(String(k + 1), M + 4, y + 0.6, { align: 'center' }); font(true, 11.5); doc.text(c.label, M + 12, y); y += 5.5; text(c.text, 10, false, G7, 4, M + 12, CW - 12); });
-    var other = S.fav.filter(function (id) { return stepOf(id) < 0; }).map(project).filter(Boolean);
-    if (other.length) { y += 2; label('Other cards you starred: their partnerships'); other.forEach(function (p) { box(p.name + ' · ' + famLabel(pfam(p)) + ' · ' + p.domain, [p.partnership ? p.partnership.size + '. ' + p.partnership.roles : p.objective].concat(((T.projects || {})[p.id] || {}).advice ? [((T.projects || {})[p.id]).advice[0]] : []), { rule: famColor(pfam(p)) === SUN ? INK : famColor(pfam(p)), bg: WALL, size: 9.5 }); }); }
-
-    /* ===== 8. checklist ===== */
-    newPage(); y = 0; band(INK, 'Before you apply', 'A practical checklist', 'Small things that sink good projects');
-    (T.checklist || []).forEach(function (c) { var L = lines(c, 10.5, false, CW - 12); need(L.length * lh(10.5) + 5); stroke(INK); doc.setLineWidth(0.5); doc.rect(M, y - 4, 5, 5, 'S'); font(false, 10.5); color(INK); L.forEach(function (ln, k) { doc.text(ln, M + 10, y + k * lh(10.5)); }); y += L.length * lh(10.5) + 5; });
-
-    /* ===== 10. after 2027 ===== */
-    if (D.post2027) {
-      newPage(); y = 0; band(INK, 'After 2027', D.post2027.title, 'Proposals and negotiating positions, not law');
-      box('Status', D.post2027.status, { rule: RED, bg: WALL });
-      list(D.post2027.sections).forEach(function (s) { label(s.label); text(s.text, 10, false, INK, 3); });
-      box('How to prepare, without betting on details', D.post2027.implications, { rule: BLUE, bg: WALL, bullets: true });
-      label('Sources'); list(D.post2027.links).forEach(function (l) { linkLine(l); });
-    }
-
-    /* ===== 10b. official references ===== */
-    if (T.references && T.references.length) {
-      newPage(); y = 0; band(BLUE, 'Check it yourself', 'Official references', 'The documents and tools behind this guide. Rules change every year: always read the current version.');
-      T.references.forEach(function (g) { label(g.group); g.items.forEach(function (l) { linkLine(l); }); y += 2; });
-    }
-
-    /* ===== 11. Buinho ===== */
-    newPage(); y = 0; band(BLUE, 'From Buinho\'s experience', 'What we learned on the way', 'Eleven years of European projects from a rural fablab');
-    if (T.buinho) { (T.buinho.branches || []).forEach(function (b) { need(12); font(true, 11); color(INK); doc.text(b.name, M, y); font(false, 10); color(G7); doc.text(doc.splitTextToSize(b.text, CW - 34), M + 34, y); y += 8; }); y += 2; }
-    (D.lessons || []).forEach(function (t, k) { box('Lesson ' + (k + 1), t, { rule: k % 2 ? BLUE : RED, bg: WALL, size: 10.5 }); });
-    y += 4; text('Buinho Creative Hub · Rua Nova de São Brás, Messejana, Alentejo, Portugal · info@buinho.pt · buinho.pt', 9.5, false, G5, 2);
+    /* ===== checklist and lessons ===== */
+    newPage(); y = 0; band(INK, 'Before you apply', 'A checklist for the long term', 'For competent applications, and for projects that connect into a path');
+    function check(t) { var L = lines(t, 9.5, false, CW - 9); need(L.length * lh(9.5) + 3); stroke(INK); doc.setLineWidth(0.4); doc.rect(M, y - 3, 3.6, 3.6, 'S'); font(false, 9.5); color(INK); L.forEach(function (ln, k) { doc.text(ln, M + 7, y + k * lh(9.5)); }); y += L.length * lh(9.5) + 2.2; }
+    label('Every application'); ((D.strategy || {}).checklist || []).forEach(check);
+    y += 2; label('Your long-term view'); ((D.strategy || {}).dimensions || []).forEach(function (d) { check(d.title + ': ' + d.ask[0]); });
+    y += 2; label('Choosing partners'); (D.partnerCriteria || []).forEach(function (c) { check(c.label + ': ' + c.text); });
+    y += 2; label('What we learned on the way (Buinho, since 2015)'); (D.lessons || []).forEach(function (t) { text('• ' + t, 9.5, false, G7, 1.2); });
     footer();
     doc.save('road-to-2028' + (S.lab.name ? '-' + S.lab.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 30) : '') + '.pdf');
   }
@@ -754,12 +586,11 @@
     var a = p.action, c = S.lab.cap, lacks = [];
     function low(k, acts) { if (acts.indexOf(a) > -1 && c[k] && c[k] < 2) lacks.push(k); }
     low('partners', ['ka210', 'ka220', 'crea', 'youth', 'cerv']); low('track', ['ka220', 'crea', 'ka1', 'youth-acc']); low('money', ['crea', 'ka220']); low('label', ['ka220', 'crea']);
-    var hasTh = S.lab.themes.filter(Boolean).length > 0, feeds = hasTh ? (st.themes || []).length > 0 : null;
+    var feeds = null;
     var builds = S.road.ms.some(function (m) { return m.steps.indexOf(i) > -1; });
-    var w = S.road.ready[i]; if (w === true) w = 'team'; if (w === false) w = 'none';
+    var w = S.road.ready[st.project]; if (w === true) w = 'team'; if (w === false) w = 'none';
     var todo = [], big = a === 'ka220' || a === 'crea' || a === 'ka1' || a === 'youth-acc';
     lacks.forEach(function (k) { todo.push(TODO[k]); });
-    if (feeds === false) todo.push('It does not feed what your lab is about yet: adapt the idea to your lines of work, or choose another reference.');
     if (!builds) todo.push('Say above what it should build for your lab. If it builds nothing you want, it may not be worth the work.');
     if (w === 'none') todo.push(big ? 'Nobody to write it: join a project like this as a partner (the coordinator writes), or start with something smaller.' : 'Nobody to write it: book the time now, or find a partner who coordinates. Ask the labs here how many days it took them.');
     var badge = todo.length ? 'Build first' : 'Ready to apply';
@@ -817,7 +648,7 @@
     bind('[data-mto]', function (box, b) { R.ms[+box.dataset.mto].to = +b.dataset.v; });
     bind('[data-mby]', function (box, b) { var m = R.ms[+box.dataset.mby]; m.by = m.by === b.dataset.v ? '' : b.dataset.v; });
     bind('[data-msteps]', function (box, b) { var m = R.ms[+box.dataset.msteps]; m.manual = true; if (b.dataset.o) { var j = m.other.indexOf(b.dataset.o); if (j > -1) m.other.splice(j, 1); else m.other.push(b.dataset.o); } else { var v = +b.dataset.v, q = m.steps.indexOf(v); if (q > -1) m.steps.splice(q, 1); else m.steps.push(v); } });
-    bind('[data-ready]', function (box, b) { var i = +box.dataset.ready, v = b.dataset.v; R.ready[i] = R.ready[i] === v ? undefined : v; });
+    bind('[data-ready]', function (box, b) { var pid = S.path[+box.dataset.ready].project, v = b.dataset.v; R.ready[pid] = R.ready[pid] === v ? undefined : v; });
     bind('[data-review]', function (box, b) { R.review = R.review === b.dataset.v ? '' : b.dataset.v; });
     app.querySelectorAll('[data-mreset]').forEach(function (a) { a.addEventListener('click', function (e) { e.preventDefault(); var m = R.ms[+a.dataset.mreset]; m.manual = false; save(); roadView(); }); });
     app.querySelectorAll('[data-mproof]').forEach(function (el) { el.addEventListener('input', function () { R.ms[+el.dataset.mproof].proof = el.value; save(); }); });
