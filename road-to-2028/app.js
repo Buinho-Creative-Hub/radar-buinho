@@ -494,7 +494,7 @@
     if (S.lab.targets.length) { font(false, 11); doc.text(doc.splitTextToSize('By 2030: ' + targetsTxt(), CW), M, cy + 6); }
     font(false, 9); doc.text(new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }), M, 140);
     y = 166; label('Inside');
-    var HAS_C = !!(AI && ((AI.cuenca || []).length || AI.message)), HAS_W = !!(AI && (AI.writing || []).length), SN = 0, sec = function () { return ++SN + ' · '; };
+    var HAS_C = !!(AI && (AI.cuenca || []).length), HAS_W = !!(AI && (AI.writing || []).length), SN = 0, sec = function () { return ++SN + ' · '; };
     var SEC = { stand: 1, plan: 2, cuenca: HAS_C ? 3 : 0 }; SEC.proj = HAS_C ? 4 : 3; SEC.q = S.questions.length ? SEC.proj + 1 : 0; SEC.w = HAS_W ? (SEC.q || SEC.proj) + 1 : 0;
     [SEC.stand + ' · Where you stand', SEC.plan + ' · Your plan to 2028, your roadmap to 2030, and the rules for the road', SEC.cuenca ? SEC.cuenca + ' · Here in Cuenca: learn from the labs around you' : null, SEC.proj + ' · Your reference projects, and the answers to your doubts', SEC.q ? SEC.q + ' · Your questions, answered' : null, SEC.w ? SEC.w + ' · Writing your first application' : null, 'Your year of deadlines, with links to the calls', 'Before you apply: a checklist from our experience'].filter(Boolean).forEach(function (t) { text(t, 11.5, false, INK, 1.5); });
     y += 4; text('Made with the Road to 2028 app by Buinho Creative Hub (Messejana, Portugal), from what you entered. Rules and amounts are those of the 2026 calls: always check the current call.', 9, false, G5, 2);
@@ -520,26 +520,16 @@
       AI.plan.forEach(function (r) { var W1 = 26, L1 = lines(r[1], 10, true, CW - W1 - 2), L2 = r[2] ? lines(r[2], 9, false, CW - W1 - 2) : []; need(L1.length * lh(10) + L2.length * lh(9) + 5); font(true, 9); color(RED); doc.text(doc.splitTextToSize(r[0], W1 - 2), M, y); font(true, 10); color(INK); L1.forEach(function (ln, k) { doc.text(ln, M + W1, y + k * lh(10)); }); y += L1.length * lh(10); font(false, 9); color(G5); L2.forEach(function (ln, k) { doc.text(ln, M + W1, y + k * lh(9)); }); y += L2.length * lh(9) + 1.5; stroke(G2); doc.setLineWidth(0.2); doc.line(M, y, M + CW, y); y += 4.5; });
       y += 3;
     }
-    need(60); label('Your roadmap to 2030' + (S.lab.vision ? ': “' + trim(S.lab.vision, 70) + '”' : '')); y += 3;
-    var gx = M + 44, gw = (CW - 44) / 3, colOf = function (w) { return w === '2027' || !w ? 0 : w === '2028' ? 1 : 2; };
-    need(40); font(true, 8.5); ['2027', '2028', '2029–2034'].forEach(function (c, j) { fill(j === 1 ? '#eef3ff' : WALL); doc.rect(gx + j * gw, y - 4, gw - 2, 6, 'F'); color(INK); doc.text(c, gx + j * gw + 2, y); });
-    font(false, 6.8); color(G5); ['last calls under today’s rules', 'new Erasmus+ with the Solidarity Corps', 'the new programmes run'].forEach(function (t, j) { doc.text(t, gx + j * gw + 2, y + 4.5); }); y += 11;
-    function disc(cx, cy2, i, r) { var f = pfam(ps[i]); fill(famColor(f)); doc.circle(cx, cy2, r, 'F'); color(famText(f)); font(true, r > 3 ? 9 : 7); doc.text(String(i + 1), cx, cy2 + (r > 3 ? 1.2 : 0.9), { align: 'center' }); }
-    font(true, 8.5); color(INK); doc.text('Reference projects', M, y + 1);
-    var used = [0, 0, 0]; st.forEach(function (s, i) { var j = colOf(s.when), cx = gx + j * gw + 5 + used[j] * 10; used[j]++; if (s.when) disc(cx, y, i, 3.6); else { stroke(G5); doc.setLineWidth(0.4); doc.setLineDashPattern([0.8, 0.8], 0); doc.circle(cx, y, 3.6, 'S'); doc.setLineDashPattern([], 0); color(G5); font(true, 9); doc.text(String(i + 1), cx, y + 1.2, { align: 'center' }); } });
-    y += 7; font(false, 7.5); color(G5); doc.splitTextToSize(st.map(function (s, i) { return (i + 1) + ' = ' + pname(i) + (s.when ? '' : ' (no date yet, dashed)'); }).join('   ·   '), CW).forEach(function (ln) { doc.text(ln, M, y); y += 3.4; }); y += 5;
+    need(60); label('What your lab must build by 2030'); y += 1;
+    text('To get to “' + (S.lab.vision || 'your 2030') + '”' + (S.lab.targets.length ? ' as ' + targetsTxt().toLowerCase() : '') + ', your lab has to grow ' + (RM.ms.length === 1 ? 'one capacity' : RM.ms.length + ' capacities') + '. For each one: where you are today, where you want to be and by when, how you will know you got there, and what will help.', 9.5, false, G5, 3);
     RM.ms.forEach(function (m) {
-      need(24); stroke(G2); doc.setLineWidth(0.2); doc.line(M, y - 6, M + CW, y - 6);
-      font(true, 8.5); color(INK); doc.text(doc.splitTextToSize(capLabel(m.cap), 40), M, y); font(false, 7.5); color(G5); doc.text('today ' + (capLevel(m.cap) ? LV[capLevel(m.cap)] : '?') + ' → ' + LV[m.to], M, y + 8);
-      var cur = capLevel(m.cap) || 1, mby = m.by || (m.to - cur >= 2 ? '2030' : '2028'), sug = (capOf(m.cap) || {}).proof || '';
-      var ptxt = m.proof ? m.proof : 'Goal: ' + LV[m.to] + '. A sign you got there: ' + sug.replace(/^e\.g\.\s*/, '') + '.';
-      var j = colOf(mby === '2030' ? 'Later' : mby), bx = gx + j * gw, txt = doc.splitTextToSize(ptxt, gw - 6).slice(0, 4);
-      fill('#ffffff'); stroke(INK); doc.setLineWidth(0.4); doc.rect(bx, y - 3.5, gw - 2, 4 + txt.length * 3.4, 'FD'); font(false, 7.5); color(INK); txt.forEach(function (ln, k) { doc.text(ln, bx + 2, y + k * 3.4); });
-      font(true, 6.5); color(G5); doc.text('by ' + mby + (m.by ? '' : ' (suggested)'), bx + gw - 3, y - 4.5, { align: 'right' });
-      var ixb = m.steps.filter(function (i) { return st[i]; }), by = ixb.map(function (i) { return trim(pname(i).split(':')[0], 34); }).concat(m.other.map(otherLabel)); font(false, 7.5); var BL = doc.splitTextToSize('Helped by: ' + (by.length ? by.join(' · ') : 'nothing in your path yet'), CW - 44).slice(0, 3);
-      font(false, 7.5); color(by.length ? G7 : RED); BL.forEach(function (ln, k) { doc.text(ln, gx, y + 5 + txt.length * 3.4 + k * 3.4); });
-      y += Math.max(16, 5 + txt.length * 3.4 + BL.length * 3.4) + 10;
+      var cur = capLevel(m.cap), mby = m.by || (m.to - (cur || 1) >= 2 ? '2030' : '2028'), sug = ((capOf(m.cap) || {}).proof || '').replace(/^e\.g\.\s*/, '');
+      var ixb = m.steps.filter(function (i) { return st[i]; }), by = ixb.map(function (i) { return trim(pname(i).split(':')[0], 34); }).concat(m.other.map(otherLabel));
+      need(30); stroke(G2); doc.setLineWidth(0.2); doc.line(M, y - 4, M + CW, y - 4); y += 1;
+      font(true, 11); color(INK); doc.text(capLabel(m.cap), M, y); y += 5.5;
+      rows([['Today', cur ? LV[cur] : 'not rated'], ['Goal', LV[m.to] + ', by ' + mby + (m.by ? '' : ' (our suggestion)')], ['You will know when', m.proof || sug], ['What helps', by.length ? by.join(', ') : 'nothing in your path yet: add a project or a resource that builds it']], 9.5);
     });
+    if (st.length) { var yr = {}; st.forEach(function (s, i) { var k = s.when || 'no date yet'; (yr[k] = yr[k] || []).push(trim(pname(i).split(':')[0], 40)); }); y += 1; text('Your reference projects in time: ' + Object.keys(yr).map(function (k) { return k + ': ' + yr[k].join(', '); }).join(' · ') + '.', 9, false, G5, 3); }
     if (!RM.ms.length) text('No roadmap yet: in the app, open “My roadmap” and pick what your lab must build.', 9.5, false, G5, 3);
 
     /* ===== 3. guidelines ===== */
@@ -547,7 +537,7 @@
     var n = 0;
     if (S.lab.vision) rule(++n, 'Say yes to a project only if it moves you towards your 2030.', '“' + S.lab.vision + '” Projects that do not serve it cost the same work and leave less behind.', RED);
     function refs(ix) { return ix.map(pname).join(', '); }
-    if (RM.ms.length) rule(++n, 'Until ' + (RM.ms[0].by || '2028') + ', grow ' + RM.ms.map(function (m) { return '“' + capLabel(m.cap) + '”'; }).join(', ').replace(/, ([^,]*)$/, ' and $1') + '.', 'Every step in your plan should build at least one of them. The roadmap above shows which reference projects help, and the table in section 1 what to do about each one.', BLUE);
+    if (RM.ms.length) rule(++n, 'Until ' + (RM.ms[0].by || '2028') + ', grow ' + RM.ms.map(function (m) { return '“' + capLabel(m.cap) + '”'; }).join(', ').replace(/, ([^,]*)$/, ' and $1') + '.', 'Every step in your plan should build at least one of them; the list above says what helps each one.', BLUE);
     if (S.lab.targets.indexOf('coordinator') > -1) rule(++n, 'Coordinate a small project before a large one.', 'Large partnerships and Creative Europe ask for a track record and financial capacity; a small-scale partnership builds both.', BLUE);
     if (S.lab.targets.indexOf('accredited') > -1) rule(++n, 'Start the record for an accreditation now.', 'Accreditation asks for experience in the field and a plan for several years: short mobility projects are the usual way in. Today’s accreditations are valid until 31 December 2027; the new rules come with the next programme.', BLUE);
     if (S.lab.targets.indexOf('partner') > -1) rule(++n, 'Join good projects as a partner, and lead one clear part of the work.', 'Ask the coordinator which part you lead, what money comes to you, and what stays in your lab afterwards.', BLUE);
@@ -561,9 +551,8 @@
 
     /* ===== 4. reference projects ===== */
     if (SEC.cuenca) {
-      newPage(); y = 0; band(SUN, SEC.cuenca + ' · Here in Cuenca', 'Learn from the labs around you', 'What to ask this week, and a message to send after it');
+      newPage(); y = 0; band(SUN, SEC.cuenca + ' · Here in Cuenca', 'Learn from the labs around you', 'What to ask this week, and what to bring home');
       if ((AI.cuenca || []).length) { label('What to do this week, and after'); AI.cuenca.forEach(function (t) { text('\u2022 ' + t, 10, false, INK, 2); }); y += 3; }
-      if (AI.message) box('A message to send after the seminar', String(AI.message).split(/\n+/).filter(Boolean), { rule: BLUE, bg: WALL, size: 9.5 });
     }
     newPage(); y = 0; band(RED, SEC.proj + ' · Your reference projects', 'What each one means for your lab', 'How you could enter it, what it pays, and the answers to your doubts');
     st.forEach(function (s, i) {
